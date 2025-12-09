@@ -351,7 +351,7 @@
 
                                     <!-- Selesai Pembayaran Button -->
                                     <div class="mt-8 text-center">
-                                        <a href="{{ route('home') }}" class="inline-flex items-center bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg mb-4">
+                                        <a href="{{ route('profiles.index') }}" class="inline-flex items-center bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg mb-4" style="background: linear-gradient(to right, #16a34a, #15803d) !important; color: white !important; border: none !important; text-decoration: none;">
                                             <i class="fas fa-check-circle mr-2"></i>Selesai Pembayaran
                                         </a>
                                         <p class="text-sm text-green-700 font-medium mb-2">Pembayaran berhasil ditambahkan ke riwayat transaksi Anda!</p>
@@ -394,7 +394,7 @@
                                         </div>
                                     </div>
 
-                                    <button type="submit" id="uploadBtn" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl">
+                                    <button type="submit" id="uploadBtn" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl" style="background: linear-gradient(to right, #16a34a, #15803d) !important; color: white !important; border: none !important;">
                                         <i class="fas fa-cloud-upload-alt mr-2"></i>Upload Bukti Transfer
                                     </button>
                                 </form>

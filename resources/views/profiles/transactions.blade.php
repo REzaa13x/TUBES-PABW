@@ -38,6 +38,18 @@
                 <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Riwayat Transaksi</h1>
                 <p class="text-gray-600">Lihat semua transaksi donasi Anda</p>
             </div>
+			<!-- Search and Filter -->
+            <div class="mb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+               
+                <
+				
+				
+				
+				
+				
+				
+            </div>
+		
 
             <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
                 @if($transactions->count() > 0)

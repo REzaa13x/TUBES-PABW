@@ -146,6 +146,14 @@
                                         <i class="fas fa-times mr-1"></i> Tolak
                                     </button>
                                 </form>
+                                <!-- Delete button for pending verification -->
+                                <form action="{{ route('admin.donations.destroy', $transaction->order_id) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="w-full inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-800 hover:bg-red-900" onclick="return confirm('Yakin ingin menghapus transaksi ini? Data yang dihapus tidak dapat dikembalikan.')">
+                                        <i class="fas fa-trash mr-1"></i> Hapus
+                                    </button>
+                                </form>
                             </div>
                         @else
                             <div class="relative">
@@ -176,6 +184,15 @@
                                         @method('PUT')
                                         <input type="hidden" name="status" value="AWAITING_TRANSFER">
                                         <button type="submit" class="w-full text-left" onclick="return confirm('Yakin ingin mengubah status menjadi Pending?')">Pending</button>
+                                    </form>
+
+                                    <!-- Delete button -->
+                                    <form action="{{ route('admin.donations.destroy', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 w-full text-left border-t border-gray-100 mt-1">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="w-full text-left text-red-700 hover:text-red-900" onclick="return confirm('Yakin ingin menghapus transaksi ini? Data yang dihapus tidak dapat dikembalikan.')">
+                                            <i class="fas fa-trash mr-2 text-red-600"></i>Hapus
+                                        </button>
                                     </form>
                                 </div>
                             </div>

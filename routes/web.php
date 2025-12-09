@@ -14,7 +14,7 @@ use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\NotifikasiController;
 use App\Http\Controllers\Admin\VolunteerAdminController; // INI YANG BIKIN ERROR TADI
 
-
+    
 // Rute Autentikasi (Login/Register)
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.process');
@@ -29,10 +29,7 @@ Route::get('/', [Controller::class, 'home'])->name('home');
 // Rute Donation Details - Using modern design
 Route::get('/donation-details/{campaign?}', [DonationController::class, 'index'])->name('donation.details');
 Route::get('/donation-checkout/{campaign?}', [DonationController::class, 'checkout'])->name('donation.checkout');
-Route::get('/donation/manual-transfer/{order_id}', [DonationController::class, 'manualTransfer'])->name('donation.manual.transfer');
-Route::post('/donation/upload-proof/{order_id}', [DonationController::class, 'uploadProof'])->name('donation.upload.proof');
 Route::get('/transaction/download/{order_id}', [DonationController::class, 'downloadTransactionPDF'])->name('transaction.download.pdf');
-Route::post('/donation-process', [DonationController::class, 'process'])->name('donation.process');
 
 // Rute Halaman Relawan
 Route::get('/relawan', function () {
@@ -54,6 +51,11 @@ Route::get('/relawan/daftar', [VolunteerRegistrationController::class, 'create']
 Route::post('/relawan/daftar', [VolunteerRegistrationController::class, 'store'])->name('volunteer.store');
 
 Route::middleware(['auth'])->group(function () {
+
+    // Rute Donation Process
+    Route::post('/donation-process', [DonationController::class, 'process'])->name('donation.process');
+    Route::get('/donation/manual-transfer/{order_id}', [DonationController::class, 'manualTransfer'])->name('donation.manual.transfer');
+    Route::post('/donation/upload-proof/{order_id}', [DonationController::class, 'uploadProof'])->name('donation.upload.proof');
 
     // Rute Profil User (Bisa diakses user biasa & admin)
     Route::get('/profiles', [ProfileController::class, 'index'])->name('profiles.index');
@@ -81,13 +83,14 @@ Route::middleware(['auth'])->group(function () {
         })->name('settings');
 
         // Rute CRUD Admin (Resource)
-        Route::resource('campaigns', CampaignController::class);
-        Route::resource('notifications', NotifikasiController::class);
-        Route::resource('volunteers', VolunteerAdminController::class);
+        Route::resource('campaigns', CampaignController::class)->middleware('role:admin');
+        Route::resource('notifications', NotifikasiController::class)->middleware('role:admin');
+        Route::resource('volunteers', VolunteerAdminController::class)->middleware('role:admin');
 
         // Donation Transactions Management
-        Route::get('donation-transactions', [DonationController::class, 'adminIndex'])->name('donations.index');
-        Route::put('donation-transactions/{order_id}/status', [DonationController::class, 'updateStatus'])->name('donations.updateStatus');
+        Route::get('donation-transactions', [DonationController::class, 'adminIndex'])->name('donations.index')->middleware('role:admin');
+        Route::put('donation-transactions/{order_id}/status', [DonationController::class, 'updateStatus'])->name('donations.updateStatus')->middleware('role:admin');
+        Route::delete('donation-transactions/{order_id}', [DonationController::class, 'destroy'])->name('donations.destroy')->middleware('role:admin');
     });
 });
 

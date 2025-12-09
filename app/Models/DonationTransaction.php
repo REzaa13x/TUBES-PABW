@@ -15,6 +15,7 @@ class DonationTransaction extends Model
         'donor_name',
         'donor_email',
         'donor_phone',
+        'user_id',
         'status',
         'payment_method',
         'payment_method_data',
