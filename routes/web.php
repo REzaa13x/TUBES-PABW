@@ -31,20 +31,14 @@ Route::get('/donation-details/{campaign?}', [DonationController::class, 'index']
 Route::get('/donation-checkout/{campaign?}', [DonationController::class, 'checkout'])->name('donation.checkout');
 Route::get('/transaction/download/{order_id}', [DonationController::class, 'downloadTransactionPDF'])->name('transaction.download.pdf');
 
-// Rute Halaman Relawan
 Route::get('/relawan', function () {
     return view('volunteer.index');
-})->name('volunteer');
+})->name('volunteer.index');
 
 // Rute untuk menampilkan semua kampanye - arahkan ke halaman home
 Route::get('/campaigns', function () {
     return redirect('/');
 })->name('campaigns.all');
-
-// Rute Halaman Relawan
-Route::get('/relawan', function () {
-    return view('volunteer.index');
-})->name('volunteer');
 
 // Rute Form Pendaftaran Relawan
 Route::get('/relawan/daftar', [VolunteerRegistrationController::class, 'create'])->name('volunteer.register');
