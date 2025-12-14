@@ -3,103 +3,63 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Volunteer;
-use App\Models\VolunteerCampaign;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Models\VolunteerApplication;
+use App\Models\VolunteerCampaign;
+use App\Notifications\VolunteerStatusChanged;
 
 class VolunteerVerificationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+   public function index()
     {
-        $campaigns = VolunteerCampaign::withCount('volunteers')->orderBy('created_at', 'desc')->get();
-        $allVolunteers = Volunteer::with('campaign')->orderBy('created_at', 'desc')->get();
+        $allVolunteers = VolunteerApplication::with(['user', 'campaign'])
+            ->latest()
+            ->paginate(10);
 
-        // Group all volunteers by campaign
-        $volunteersByCampaign = [];
-        foreach ($campaigns as $campaign) {
-            $volunteersByCampaign[$campaign->id] = Volunteer::where('volunteer_campaign_id', $campaign->id)->with('campaign')->orderBy('created_at', 'desc')->get();
-        }
-
-        return view('admin.volunteers.index', compact('volunteersByCampaign', 'allVolunteers', 'campaigns'));
+        return view('admin.verifikasi-relawan.index', compact('allVolunteers'));
     }
 
-    /**
-     * Display the specified resource.
-     */
+  // 1. MENAMPILKAN DETAIL
     public function show($id)
     {
-        $volunteer = Volunteer::with('campaign')->find($id);
-
-        if (!$volunteer) {
-            return redirect()->route('admin.verifikasi-relawan.index')
-                ->with('error', 'Data relawan tidak ditemukan');
-        }
-
-        return view('admin.volunteers.show', compact('volunteer'));
+        $volunteer = VolunteerApplication::with(['user', 'campaign'])->findOrFail($id);
+        return view('admin.verifikasi-relawan.show', compact('volunteer'));
     }
 
-    /**
-     * Display volunteers for a specific campaign.
-     */
-    public function showByCampaign($campaignId)
-    {
-        $campaign = VolunteerCampaign::findOrFail($campaignId);
-        $campaigns = VolunteerCampaign::all();
-        $volunteers = Volunteer::where('volunteer_campaign_id', $campaignId)->with('campaign')->orderBy('created_at', 'desc')->get();
+    // 2. PROSES TERIMA / TOLAK
+    // CODE PERBAIKAN DI CONTROLLER
+public function update(Request $request, $id)
+{
+    // 1. Ambil Data Aplikasi
+    $application = \App\Models\VolunteerApplication::findOrFail($id);
+    
+    // 2. [PENTING] DEFINISIKAN CAMPAIGN DARI RELASI APLIKASI
+    // Pastikan nama relasi di model VolunteerApplication adalah 'campaign' atau 'volunteerCampaign'
+    // Sesuaikan dengan Model Anda (biasanya 'campaign' atau 'volunteer_campaign')
+    $campaign = $application->campaign; 
 
-        // Create the volunteersByCampaign array with only the selected campaign
-        $volunteersByCampaign = [];
-        $volunteersByCampaign[$campaignId] = $volunteers;
+    // ... Logika simpan status (approve/reject) ...
+    $application->status = $request->status;
+    $application->save();
 
-        $allVolunteers = Volunteer::with('campaign')->orderBy('created_at', 'desc')->get();
-
-        return view('admin.volunteers.index', compact('volunteersByCampaign', 'allVolunteers', 'campaigns', 'campaign'));
+    // Logika Kuota (Hanya jika Approved)
+    if ($request->status == 'approved') {
+        $campaign->increment('kuota_terisi');
     }
 
-    /**
-     * Update the specified resource to approved status.
-     */
-    public function verify($id)
-    {
-        $volunteer = Volunteer::findOrFail($id);
-
-        $volunteer->update([
-            'status_verifikasi' => 'disetujui'
-        ]);
-
-        return redirect()->back()
-            ->with('success', 'Relawan berhasil disetujui');
+    // 3. Kirim Notifikasi
+    $user = $application->user;
+    if ($user) {
+        $user->notify(new \App\Notifications\VolunteerStatusChanged(
+            // Ganti 'title' jadi 'judul' jika di database kolomnya 'judul'
+            $campaign->judul, 
+            $request->status,
+            $campaign->slug
+        ));
     }
 
-    /**
-     * Update the specified resource to rejected status.
-     */
-    public function reject($id)
-    {
-        $volunteer = Volunteer::findOrFail($id);
-
-        $volunteer->update([
-            'status_verifikasi' => 'ditolak'
-        ]);
-
-        return redirect()->back()
-            ->with('success', 'Relawan berhasil ditolak');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        $volunteer = Volunteer::findOrFail($id);
-        $volunteer->delete();
-
-        // Redirect back to the referring page
-        return redirect()->back()
-            ->with('success', 'Data relawan berhasil dihapus');
-    }
+    $message = $request->status == 'approved' ? 'Relawan diterima!' : 'Lamaran ditolak.';
+    return redirect()->route('admin.verifikasi-relawan.index')->with('success', $message);
+}
 }

@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | @yield('title')</title>
+    <title>Admin Dashboard | @yield('title', 'DonGiv')</title>
+
+    {{-- Tailwind & FontAwesome --}}
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
                     colors: {
-                        primary: '#1d4ed8', // biru utama
-                        secondary: '#3b82f6', // biru lebih muda
-                        accent: '#f59e0b', // warna aksen
-
-                        softblue: '#f0f9ff', // background lebih soft
-                        softblue: '#f0f5ff', // background lebih soft
-
-                        softblue2: '#e0f2fe',
-                        softblue3: '#bae6fd',
+                        // Palet Biru Modern (Lebih Cerah & Fresh)
+                        sidebar: {
+                            start: '#3b82f6', // Blue 500
+                            end: '#2563eb', // Blue 600
+                        }
                     }
                 }
             }
@@ -28,115 +31,132 @@
     </script>
     <style>
         body {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #dbeafe 100%);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
+            background-color: #f3f6fc;
         }
-        .card {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+
+        /* Modern Sidebar Gradient */
+        .bright-sidebar {
+            background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+            box-shadow: 4px 0 20px rgba(37, 99, 235, 0.15);
         }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.05);
+
+        /* Group Label Styling */
+        .nav-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            padding-left: 1.25rem;
         }
-        .sidebar {
-            background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
-            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
-            min-height: 100vh;
-        }
+
+        /* Menu Item Base Style */
         .nav-item {
-            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1.25rem;
+            margin-bottom: 0.25rem;
+            margin-left: 0.75rem;
+            margin-right: 0.75rem;
             border-radius: 0.75rem;
+            /* Rounded corners modern */
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: white;
+            transition: all 0.2s ease-in-out;
         }
+
+        /* Hover Effect: Transparan Putih */
         .nav-item:hover {
             background-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(4px);
         }
+
+        /* ACTIVE STATE: White Pill Style (Kunci tampilan modern) */
         .nav-item.active {
-            background-color: rgba(255, 255, 255, 0.25);
+            background-color: #ffffff;
+            color: #2563eb;
+            /* Teks jadi biru */
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        .content-wrapper {
-            flex-grow: 1;
-            min-height: 100vh;
-            padding-top: 2rem;
-            padding-bottom: 2rem;
+
+        .nav-item.active i {
+            color: #2563eb;
+            /* Icon juga jadi biru */
         }
     </style>
 </head>
-<body class="min-h-screen flex">
-    <!-- Sidebar -->
-    <div class="sidebar text-white w-64 min-h-screen p-6 sticky top-0">
-        <div class="mb-10">
-            <div class="flex items-center space-x-3 mb-8">
-                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <i class="fas fa-heart text-white text-xl"></i>
-                </div>
-                <h1 class="text-xl font-bold">DonGiv Admin</h1>
-            </div>
 
-            <nav class="space-y-1">
-                <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }} flex items-center space-x-3 py-3 px-4 mb-2">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
+<body class="flex h-screen overflow-hidden">
 
-                <a href="{{ route('admin.donations.index') }}" class="nav-item {{ request()->routeIs('admin.donations.*') ? 'active' : '' }} flex items-center space-x-3 py-3 px-4 mb-2">
-                    <i class="fas fa-money-check-alt"></i>
-                    <span>Verifikasi Donasi</span>
-                </a>
+    <aside class="bright-sidebar w-72 flex-shrink-0 flex flex-col z-20 text-white">
 
-                <a href="{{ route('admin.campaigns.index') }}" class="nav-item {{ request()->routeIs('admin.campaigns.*') ? 'active' : '' }} flex items-center space-x-3 py-3 px-4 mb-2">
-                    <i class="fas fa-donate"></i>
-                    <span>Kampanye Donasi</span>
-                </a>
-
-                <a href="{{ route('admin.relawan.index') }}" class="nav-item {{ request()->routeIs('admin.relawan.*') || request()->routeIs('admin.verifikasi-relawan.*') ? 'active' : '' }} flex items-center space-x-3 py-3 px-4 mb-2">
-                    <i class="fas fa-hands-helping"></i>
-                    <span>Kampanye Relawan</span>
-                </a>
-
-                <a href="{{ route('admin.verifikasi-relawan.index') }}" class="nav-item {{ request()->routeIs('admin.verifikasi-relawan.*') ? 'active' : '' }} flex items-center space-x-3 py-3 px-4 mb-2">
-                    <i class="fas fa-user-check"></i>
-                    <span>Daftar Relawan</span>
-                </a>
-
-                <a href="{{ route('admin.notifications.index') }}" class="nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }} flex items-center space-x-3 py-3 px-4 mb-2">
-                    <i class="fas fa-bell"></i>
-                    <span>Notifikasi</span>
-                </a>
-
-                <a href="#" class="nav-item flex items-center space-x-3 py-3 px-4">
-                    <i class="fas fa-cog"></i>
-                    <span>Pengaturan</span>
-                </a>
-
-                <a href="{{ route('profiles.index') }}" class="nav-item {{ request()->routeIs('profiles.*') ? 'active' : '' }} flex items-center space-x-3 py-3 px-4 mb-2">
-                    <i class="fas fa-user"></i>
-                    <span>Profil Saya</span>
-                </a>
-            </nav>
+        <div class="h-24 flex flex-col justify-center px-8">
+            <h1 class="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+                DonGiv<span class="text-blue-200">.</span>
+            </h1>
+            <p class="text-xs text-blue-100 opacity-80 mt-1 font-medium tracking-wide">Admin Dashboard Panel</p>
         </div>
 
-        <div class="absolute bottom-6 left-6 right-6">
+        <div class="flex-1 overflow-y-auto py-2 pr-2 custom-scrollbar">
+
+            <div class="nav-label">Utama</div>
+            <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                <i class="fas fa-th-large w-6 text-center text-lg mr-2"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <div class="nav-label">Manajemen Donasi</div>
+            <a href="{{ route('admin.donations.index') }}" class="nav-item {{ request()->routeIs('admin.donations.*') ? 'active' : '' }}">
+                <i class="fas fa-file-invoice-dollar w-6 text-center text-lg mr-2"></i>
+                <span>Verifikasi Donasi</span>
+            </a>
+            <a href="{{ route('admin.campaigns.index') }}" class="nav-item {{ request()->routeIs('admin.campaigns.*') ? 'active' : '' }}">
+                <i class="fas fa-hand-holding-heart w-6 text-center text-lg mr-2"></i>
+                <span>Kampanye Donasi</span>
+            </a>
+
+            <div class="nav-label">Manajemen Relawan</div>
+            <a href="{{ route('admin.relawan.index') }}" class="nav-item {{ request()->routeIs('admin.volunteers.*') ? 'active' : '' }}">                <i class="fas fa-hands-helping w-6 text-center text-lg mr-2"></i>
+                <span>Kampanye Relawan</span>
+            </a>
+            <a href="{{ route('admin.verifikasi-relawan.index') }}" class="nav-item {{ request()->routeIs('admin.verifikasi-relawan.*') ? 'active' : '' }}">
+                <i class="fas fa-users w-6 text-center text-lg mr-2"></i>
+                <span>Pendaftar Relawan</span>
+            </a>
+
+            <div class="nav-label">Sistem & Akun</div>
+            <a href="{{ route('admin.profiles.index') }}" class="nav-item {{ request()->routeIs('admin.profiles.*') ? 'active' : '' }}">
+                <i class="fas fa-user-circle w-6 text-center text-lg mr-2"></i>
+                <span>Kelola User</span>
+            </a>
+
+        </div>
+
+        <div class="p-6 border-t border-white/10">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="w-full bg-red-500/80 hover:bg-red-600 text-white py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
+                <button type="submit" class="flex items-center w-full px-4 py-3 bg-blue-800/30 hover:bg-white hover:text-red-600 rounded-xl transition-all duration-300 group">
+                    <i class="fas fa-sign-out-alt w-6 text-lg mr-2 text-blue-200 group-hover:text-red-500 transition-colors"></i>
+                    <span class="font-bold text-sm">Keluar Sistem</span>
                 </button>
             </form>
         </div>
-    </div>
 
-    <!-- Main Content -->
-    <div class="flex-1 p-8 overflow-auto">
-        @yield('content')
-    </div>
+    </aside>
 
+    <main class="flex-1 overflow-x-hidden overflow-y-auto">
+        <div class="p-8">
+            @yield('content')
+        </div>
+    </main>
+
+    {{-- Bootstrap & ChartJS --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

@@ -4,123 +4,117 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Campaign;
+use App\Models\VolunteerCampaign; 
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Support\Str; 
 
 class CampaignController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (!auth()->check() || auth()->user()->role !== 'admin') {
-                abort(403, 'Akses ditolak. Anda bukan admin.');
-            }
-            return $next($request);
-        });
-    }
-
+    // 1. READ (Menampilkan Daftar)
     public function index()
     {
-        $campaigns = Campaign::all();
-        return view('admin.campaigns.daftar-kampanye', compact('campaigns'));
+        $campaigns = VolunteerCampaign::latest()->paginate(10);
+        return view('admin.relawan.index', compact('campaigns'));
     }
 
+    // 2. CREATE (Menampilkan Form Tambah)
     public function create()
     {
-        return view('admin.campaigns.create');
+        return view('admin.relawan.create');
     }
 
+    // 3. STORE (Menyimpan Data Baru)
     public function store(Request $request)
     {
+        // Validasi Input
         $validated = $request->validate([
-            'title' => 'required|max:255',
-            'description' => 'required',
-            'target_amount' => 'required|numeric|min:1000',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // max 5MB
-            'end_date' => 'nullable|date',
+            'judul'           => 'required|max:255', // Pastikan name="judul" di form HTML
+            'kategori'        => 'required',
+            'lokasi'          => 'required',
+            'kuota_total'     => 'required|numeric|min:1',
+            'tanggal_mulai'   => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'deskripsi'       => 'required',
+            'image'           => 'required|image|file|max:2048'
         ]);
 
-        // Handle image upload - store in campaigns directory
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('campaigns', 'public');
-            // $path will be in format 'campaigns/filename.jpg'
-            $imagePath = $path;
-        } else {
-            $imagePath = 'campaigns/default.jpg'; // Default fallback
+        // Upload Gambar
+        if ($request->file('image')) {
+            $validated['image'] = $request->file('image')->store('campaign-images', 'public');
         }
 
-        $campaign = Campaign::create([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'target_amount' => $validated['target_amount'],
-            'end_date' => $validated['end_date'] ?? null,
-            'image' => $imagePath,
-            'status' => 'Active', // Default to active when created
-        ]);
+        // Menggunakan 'judul' sebagai dasar slug + timestamp agar unik
+        $validated['slug'] = Str::slug($request->judul) . '-' . time();
+        
+        // Set nilai default lainnya
+        $validated['kuota_terisi'] = 0;
+        $validated['status'] = 'Aktif';
 
-        return redirect()->route('admin.campaigns.index')->with('success', 'Kampanye berhasil dibuat');
+        // Simpan ke Database
+        VolunteerCampaign::create($validated);
+
+        return redirect()->route('admin.relawan.index')
+            ->with('success', 'Kampanye berhasil diterbitkan! Data kini tampil di halaman publik.');
     }
 
+    // 4. EDIT (Menampilkan Form Edit)
     public function edit($id)
     {
-        $campaign = Campaign::findOrFail($id);
-        return view('admin.campaigns.edit', compact('campaign'));
+        $campaign = VolunteerCampaign::findOrFail($id);
+        return view('admin.relawan.edit', compact('campaign'));
     }
 
+    // 5. UPDATE (Menyimpan Perubahan)
     public function update(Request $request, $id)
     {
+        $campaign = VolunteerCampaign::findOrFail($id);
+
         $validated = $request->validate([
-            'title' => 'required|max:255',
-            'description' => 'required',
-            'target_amount' => 'required|numeric|min:1000',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // max 5MB
-            'end_date' => 'nullable|date',
+            'judul'           => 'required|max:255',
+            'kategori'        => 'required',
+            'lokasi'          => 'required',
+            'kuota_total'     => 'required|numeric|min:1',
+            'tanggal_mulai'   => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'deskripsi'       => 'required',
+            'image'           => 'nullable|image|file|max:2048' // Image nullable saat edit
         ]);
 
-        $campaign = Campaign::findOrFail($id);
-
-        // Handle image upload - store in campaigns directory
-        $imagePath = $campaign->image;
-        if ($request->hasFile('image')) {
-            // Delete old image if it's not the default Unsplash image
-            if ($campaign->image && !str_contains($campaign->image, 'unsplash.com') && $campaign->image !== 'campaigns/default.jpg') {
-                Storage::disk('public')->delete($campaign->image);
+        // Cek jika ada gambar baru yang diupload
+        if ($request->file('image')) {
+            // Hapus gambar lama
+            if ($campaign->image) {
+                Storage::delete('public/' . $campaign->image);
             }
-
-            $path = $request->file('image')->store('campaigns', 'public');
-            // $path will be in format 'campaigns/filename.jpg'
-            $imagePath = $path;
+            // Simpan gambar baru
+            $validated['image'] = $request->file('image')->store('campaign-images', 'public');
         }
 
-        $campaign->update([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'target_amount' => $validated['target_amount'],
-            'end_date' => $validated['end_date'] ?? null,
-            'image' => $imagePath,
-        ]);
+        // --- PERBAIKAN: UPDATE SLUG JIKA JUDUL BERUBAH ---
+        if ($request->judul != $campaign->judul) {
+            $validated['slug'] = Str::slug($request->judul) . '-' . time();
+        }
 
-        return redirect()->route('admin.campaigns.index')->with('success', 'Kampanye berhasil diperbarui.');
+        // Update Database
+        $campaign->update($validated);
+
+        return redirect()->route('admin.relawan.index')
+            ->with('success', 'Kampanye berhasil diperbarui!');
     }
 
+    // 6. DESTROY (Menghapus Data)
     public function destroy($id)
     {
-        $campaign = Campaign::findOrFail($id);
+        $campaign = VolunteerCampaign::findOrFail($id);
 
-        // Delete image file if it exists and is not the default
-        if ($campaign->image && !str_contains($campaign->image, 'unsplash.com')) {
-            // Convert storage path to public path for deletion
-            $cleanPath = str_replace('storage/', 'public/', $campaign->image);
-            // If it starts with public/, just use it directly
-            if (!str_starts_with($cleanPath, 'public/')) {
-                $cleanPath = 'public/' . $cleanPath;
-            }
-            Storage::disk('local')->delete($cleanPath);
+        // Hapus gambar dari storage
+        if ($campaign->image) {
+            Storage::delete('public/' . $campaign->image);
         }
 
         $campaign->delete();
 
-        return redirect()->route('admin.campaigns.index')->with('success', 'Kampanye berhasil dihapus.');
+        return redirect()->route('admin.relawan.index')
+            ->with('success', 'Kampanye telah dihapus.');
     }
 }

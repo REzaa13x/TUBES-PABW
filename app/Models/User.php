@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Donation;
+use App\Models\VolunteerApplication;
 
 class User extends Authenticatable
 {
@@ -28,12 +30,6 @@ class User extends Authenticatable
         'birth_date',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'birth_date' => 'date',
-    ];
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -54,12 +50,10 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birth_date' => 'date', 
         ];
     }
 
-    /**
-     * Get the coin histories for the user.
-     */
     public function coinHistories()
     {
         return $this->hasMany(CoinHistory::class);
@@ -85,5 +79,23 @@ class User extends Authenticatable
             'reason' => $reason,
             'transaction_type' => 'earned',
         ]);
+    }
+    /**
+     * Relasi ke Model Donation (User punya banyak Donasi)
+     */
+    public function donations()
+    {
+        // Pastikan Anda sudah punya model Donation di App\Models\Donation
+        return $this->hasMany(Donation::class);
+    }
+
+    /**
+     * Relasi ke Model VolunteerApplication (User punya banyak Lamaran Relawan)
+     */
+    public function volunteerApplications()
+    {
+        // Pastikan Anda sudah punya model VolunteerApplication
+        // Sesuaikan nama kolom foreign key jika bukan 'user_id'
+        return $this->hasMany(VolunteerApplication::class);
     }
 }

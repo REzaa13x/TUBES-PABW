@@ -1,120 +1,166 @@
 @extends('admin.layouts.master')
 
 @section('content')
-<div class="max-w-4xl mx-auto p-4 sm:p-6">
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-            <div class="flex items-center">
-                <i class="fas fa-plus-circle text-blue-600 text-2xl mr-3"></i>
-                <h1 class="text-2xl font-bold text-gray-800">Buat Kampanye Relawan Baru</h1>
-            </div>
+<div class="container px-6 mx-auto grid mb-20">
+
+    {{-- Header Section --}}
+    <div class="flex flex-col md:flex-row justify-between items-center my-6 gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Buat Kampanye Baru</h2>
+            <p class="text-sm text-gray-500 mt-1">Isi formulir di bawah untuk mempublikasikan kegiatan relawan.</p>
         </div>
-
-        <form action="{{ route('admin.relawan.store') }}" method="POST" class="p-6" enctype="multipart/form-data">
-            @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
-                <div class="md:col-span-2">
-                    <label for="image" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                        <i class="fas fa-image text-purple-500 mr-2"></i> Gambar Kampanye
-                    </label>
-                    <div class="flex items-center justify-center w-full">
-                        <label for="image" class="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
-                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
-                                <p class="mb-2 text-sm text-gray-500">
-                                    <span class="font-semibold">Klik untuk upload</span> atau seret file ke sini
-                                </p>
-                                <p class="text-xs text-gray-500">PNG, JPG, GIF (MAX. 2MB)</p>
-                            </div>
-                            <input id="image" name="image" type="file" class="hidden" accept="image/*" />
-                        </label>
-                    </div>
-                    @error('image')
-                        <p class="mt-2 text-sm text-red-600 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <div class="md:col-span-2">
-                    <label for="judul" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                        <i class="fas fa-heading text-blue-500 mr-2"></i> Judul Kampanye
-                    </label>
-                    <input type="text" name="judul" id="judul" value="{{ old('judul') }}" required
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
-                    @error('judul')
-                        <p class="mt-2 text-sm text-red-600 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                        <i class="fas fa-map-marker-alt text-green-500 mr-2"></i> Lokasi
-                    </label>
-                    <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi') }}" required
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
-                    @error('lokasi')
-                        <p class="mt-2 text-sm text-red-600 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                        <i class="fas fa-toggle-on text-yellow-500 mr-2"></i> Status
-                    </label>
-                    <select name="status" id="status" required
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
-                        <option value="">Pilih Status</option>
-                        <option value="Aktif" {{ old('status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                        <option value="Nonaktif" {{ old('status') == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
-                    </select>
-                    @error('status')
-                        <p class="mt-2 text-sm text-red-600 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="tanggal_mulai" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                        <i class="fas fa-calendar-alt text-purple-500 mr-2"></i> Tanggal Mulai
-                    </label>
-                    <input type="date" name="tanggal_mulai" id="tanggal_mulai" value="{{ old('tanggal_mulai') }}" required
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
-                    @error('tanggal_mulai')
-                        <p class="mt-2 text-sm text-red-600 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="tanggal_selesai" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                        <i class="fas fa-calendar-check text-indigo-500 mr-2"></i> Tanggal Selesai
-                    </label>
-                    <input type="date" name="tanggal_selesai" id="tanggal_selesai" value="{{ old('tanggal_selesai') }}" required
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
-                    @error('tanggal_selesai')
-                        <p class="mt-2 text-sm text-red-600 flex items-center">
-                            <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0 pt-6 border-t border-gray-200">
-                <button type="submit" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 px-6 rounded-lg flex items-center justify-center transition-all duration-200 shadow-md hover:shadow-lg">
-                    <i class="fas fa-save mr-2"></i> Simpan Kampanye Relawan
-                </button>
-                <a href="{{ route('admin.relawan.index') }}" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white py-3 px-6 rounded-lg flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md">
-                    <i class="fas fa-times mr-2"></i> Batal
-                </a>
-            </div>
-        </form>
+        <a href="{{ route('admin.relawan.index') }}" class="px-5 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+            <i class="fas fa-arrow-left mr-2"></i> Kembali
+        </a>
     </div>
+
+    {{-- Main Form Card --}}
+    <form action="{{ route('admin.relawan.store') }}" method="POST" enctype="multipart/form-data" class="w-full">
+        @csrf
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            {{-- KOLOM KIRI: Informasi Utama (2/3 lebar) --}}
+            <div class="lg:col-span-2 space-y-6">
+
+                {{-- Card Judul & Deskripsi --}}
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="font-semibold text-gray-800 border-b pb-3 mb-4">Detail Utama</h3>
+
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Judul Kegiatan <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <input name="judul" type="text"
+                                class="w-full pl-4 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-gray-800 placeholder-gray-400"
+                                placeholder="Contoh: Aksi Bersih Pantai & Daur Ulang"
+                                value="{{ old('judul') }}" required />
+                        </div>
+                        @error('judul') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Lengkap <span class="text-red-500">*</span></label>
+                        <textarea name="deskripsi" rows="8"
+                            class="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-gray-800 placeholder-gray-400"
+                            placeholder="Jelaskan tujuan kegiatan, tugas relawan, dan persyaratan yang dibutuhkan..." required>{{ old('deskripsi') }}</textarea>
+                        <p class="text-xs text-gray-500 mt-2 text-right">Minimal 50 karakter agar relawan paham.</p>
+                        @error('deskripsi') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                {{-- Card Lokasi & Waktu --}}
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="font-semibold text-gray-800 border-b pb-3 mb-4">Lokasi & Waktu Pelaksanaan</h3>
+
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi Kegiatan</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-map-marker-alt text-gray-400"></i>
+                            </span>
+                            <input name="lokasi" type="text"
+                                class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                placeholder="Nama Gedung / Jalan / Kota"
+                                value="{{ old('lokasi') }}" required />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
+                            <input type="date" name="tanggal_mulai"
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                value="{{ old('tanggal_mulai') }}" required />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Selesai</label>
+                            <input type="date" name="tanggal_selesai"
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                value="{{ old('tanggal_selesai') }}" required />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- KOLOM KANAN: Sidebar --}}
+            <div class="lg:col-span-1 space-y-6">
+
+                {{-- Card Upload Gambar (VERSI STABIL) --}}
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="font-semibold text-gray-800 mb-4">Banner Kampanye</h3>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">Pilih Gambar</label>
+                        {{-- Input File Standar dengan Styling Tailwind --}}
+                        <input type="file" name="image"
+                            class="block w-full text-sm text-slate-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-indigo-50 file:text-indigo-700
+                hover:file:bg-indigo-100
+                border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+                            accept="image/*"
+                            required />
+                        <p class="text-xs text-gray-500 mt-2">Format: JPG, PNG. Maks: 2MB.</p>
+                    </div>
+                    @error('image') <p class="text-xs text-red-600 mt-2">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Card Kategori & Kuota --}}
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="font-semibold text-gray-800 mb-4">Pengaturan</h3>
+
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kategori Isu</label>
+                        <select name="kategori" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                            <option value="" disabled selected>Pilih Kategori...</option>
+                            <option value="Lingkungan">Lingkungan</option>
+                            <option value="Pendidikan">Pendidikan</option>
+                            <option value="Kesehatan">Kesehatan</option>
+                            <option value="Sosial">Sosial Kemanusiaan</option>
+                            <option value="Bencana">Bencana Alam</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Target Relawan</label>
+                        <div class="flex items-center">
+                            <input type="number" name="kuota_total"
+                                class="w-full px-4 py-2.5 rounded-l-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="0" value="{{ old('kuota_total') }}" required min="1" />
+                            <span class="inline-flex items-center px-4 py-2.5 rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                Orang
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Submit Button --}}
+                <button type="submit" class="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transform hover:-translate-y-0.5 transition-all duration-200 flex justify-center items-center gap-2">
+                    <i class="fas fa-paper-plane"></i> Terbitkan Kampanye
+                </button>
+            </div>
+    </form>
 </div>
+
+{{-- Script Sederhana untuk Preview Nama File (Opsional) --}}
+<script>
+    const fileInput = document.getElementById('dropzone-file');
+    const dropzoneLabel = document.querySelector('label[for="dropzone-file"]');
+
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            dropzoneLabel.innerHTML = `
+                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                    <i class="fas fa-check-circle text-3xl text-green-500 mb-3"></i>
+                    <p class="mb-2 text-sm text-gray-700 font-semibold">${this.files[0].name}</p>
+                    <p class="text-xs text-gray-500">Siap untuk diupload</p>
+                </div>
+            `;
+            dropzoneLabel.classList.remove('bg-indigo-50');
+            dropzoneLabel.classList.add('bg-green-50', 'border-green-300');
+        }
+    });
+</script>
 @endsection

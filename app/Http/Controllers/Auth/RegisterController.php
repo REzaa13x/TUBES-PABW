@@ -10,25 +10,19 @@ use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
 {
-    /**
-     * Show the registration form.
-     */
     public function showRegistrationForm()
     {
         return view('auth.register');
     }
-
-    /**
-     * Handle a registration request.
-     */
     public function register(Request $request)
     {
+        // 1. VALIDASI: Hapus 'role' dan 'terms' dari aturan validasi input
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:donatur', // Changed to only allow donatur role
-            'terms' => 'required',
+            // 'role' => 'required|in:donatur',  <-- HAPUS INI (Input tidak ada di form)
+            // 'terms' => 'required',            <-- HAPUS INI (Input tidak ada di form)
         ], [
             'name.required' => 'Nama wajib diisi.',
             'email.required' => 'Email wajib diisi.',
@@ -37,33 +31,26 @@ class RegisterController extends Controller
             'password.required' => 'Kata sandi wajib diisi.',
             'password.min' => 'Kata sandi minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
-            'role.required' => 'Silakan pilih peran Anda.',
-            'role.in' => 'Peran tidak valid. Hanya peran donatur yang diperbolehkan untuk pendaftaran.', // Updated error message
-            'terms.required' => 'Anda harus menyetujui syarat dan ketentuan.',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput();
+                ->withInput(); // Agar input nama/email tidak hilang saat error
         }
 
-        // Create the user
+        // 2. CREATE USER: Set role manual sebagai 'donatur'
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'role' => 'donatur', // <--- SET MANUAL DISINI (Hardcoded)
         ]);
 
-        // Log the user in after registration
+        // 3. AUTO LOGIN
         auth()->login($user);
 
-        // Redirect based on user role
-        if ($user->role === 'admin') {
-            return redirect('/admin/dashboard')->with('success', 'Pendaftaran berhasil! Selamat datang sebagai admin.');
-        } else {
-            return redirect('/')->with('success', 'Pendaftaran berhasil! Selamat datang di DonGiv.');
-        }
+        // 4. REDIRECT
+        return redirect('/')->with('success', 'Pendaftaran berhasil! Selamat datang di DonGiv.');
     }
 }

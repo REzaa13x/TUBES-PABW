@@ -434,12 +434,10 @@
                 Bergabunglah menjadi relawan dan rasakan pengalaman turun langsung ke lapangan. Tenagamu sangat berarti
                 bagi mereka.
             </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="{{ route('volunteer.index') }}"
-                    class="px-8 py-4 bg-white text-blue-900 font-bold rounded-full shadow-lg hover:bg-blue-50 transition transform hover:scale-105">
-                    Daftar Relawan
+            <a href="{{ route('volunteer.campaigns.index') }}"
+                class="px-8 py-4 bg-white text-blue-900 font-bold rounded-full shadow-lg hover:bg-blue-50 transition transform hover:scale-105">
+                Daftar Relawan
                 </a>
-            </div>
         </div>
     </section>
 
