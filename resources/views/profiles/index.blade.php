@@ -45,9 +45,9 @@
                     </div>
 
                     {{-- STATS WIDGETS (Floating Style) --}}
-                    <div class="w-full lg:w-auto grid grid-cols-2 gap-4">
+                    <div class="w-full lg:w-auto grid grid-cols-2 md:grid-cols-4 gap-4">
                         {{-- Poin Kebaikan --}}
-                        <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-2xl border border-amber-100/50 shadow-sm flex items-center gap-3 min-w-[160px]">
+                        <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-2xl border border-amber-100/50 shadow-sm flex items-center gap-3 min-w-[140px]">
                             <div class="w-10 h-10 rounded-xl bg-white shadow-sm text-amber-500 flex items-center justify-center text-lg">
                                 <i class="fas fa-star"></i>
                             </div>
@@ -58,13 +58,35 @@
                         </div>
 
                         {{-- Total Donasi --}}
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl border border-blue-100/50 shadow-sm flex items-center gap-3 min-w-[160px]">
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl border border-blue-100/50 shadow-sm flex items-center gap-3 min-w-[140px]">
                             <div class="w-10 h-10 rounded-xl bg-white shadow-sm text-blue-600 flex items-center justify-center text-lg">
                                 <i class="fas fa-wallet"></i>
                             </div>
                             <div>
                                 <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total Donasi</p>
                                 <p class="text-lg font-black text-slate-800">Rp {{ number_format($totalDonationAmount, 0, ',', '.') }}</p>
+                            </div>
+                        </div>
+
+                        {{-- Jumlah Kampanye Didonasi --}}
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl border border-green-100/50 shadow-sm flex items-center gap-3 min-w-[140px]">
+                            <div class="w-10 h-10 rounded-xl bg-white shadow-sm text-green-600 flex items-center justify-center text-lg">
+                                <i class="fas fa-hand-holding-heart"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Kampanye Didonasi</p>
+                                <p class="text-lg font-black text-slate-800">{{ $countDonatedCampaigns }}</p>
+                            </div>
+                        </div>
+
+                        {{-- Jumlah Kampanye Relawan --}}
+                        <div class="bg-gradient-to-br from-purple-50 to-fuchsia-50 p-4 rounded-2xl border border-purple-100/50 shadow-sm flex items-center gap-3 min-w-[140px]">
+                            <div class="w-10 h-10 rounded-xl bg-white shadow-sm text-purple-600 flex items-center justify-center text-lg">
+                                <i class="fas fa-hands-helping"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-purple-600 uppercase tracking-wider">Relawan Ikut</p>
+                                <p class="text-lg font-black text-slate-800">{{ $countVolunteerCampaigns }}</p>
                             </div>
                         </div>
                     </div>
@@ -94,9 +116,16 @@
 
                         <button onclick="switchTab('history-donation')" id="btn-history-donation" class="tab-btn w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold text-slate-500 hover:bg-white hover:shadow-sm transition-all duration-300 group">
                             <span class="flex items-center gap-3">
-                                <i class="fas fa-receipt w-5 text-center group-hover:text-blue-500 transition-colors"></i> Riwayat Donasi
+                                <i class="fas fa-receipt w-5 text-center group-hover:text-blue-500 transition-colors"></i> Riwayat Donasi (Card)
                             </span>
                             <span class="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-md font-bold">{{ $donations->total() }}</span>
+                        </button>
+
+                        <button onclick="switchTab('transaction-history')" id="btn-transaction-history" class="tab-btn w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold text-slate-500 hover:bg-white hover:shadow-sm transition-all duration-300 group">
+                            <span class="flex items-center gap-3">
+                                <i class="fas fa-table w-5 text-center group-hover:text-blue-500 transition-colors"></i> Riwayat Transaksi
+                            </span>
+                            <span class="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-md font-bold">{{ $donationTransactions->total() + $legacyDonations->total() }}</span>
                         </button>
 
                         <button onclick="switchTab('history-volunteer')" id="btn-history-volunteer" class="tab-btn w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold text-slate-500 hover:bg-white hover:shadow-sm transition-all duration-300 group">
@@ -210,13 +239,13 @@
                         </div>
                     </div>
 
-                    {{-- TAB C: RIWAYAT DONASI --}}
+                    {{-- TAB C: RIWAYAT DONASI (CARD VIEW) --}}
                     <div id="tab-history-donation" class="tab-content hidden animate-fade-in">
                         <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8">
-                            <h2 class="text-xl font-bold text-slate-800 mb-6">Riwayat Donasi</h2>
-                            
+                            <h2 class="text-xl font-bold text-slate-800 mb-6">Riwayat Donasi (Card View)</h2>
+
                             <div class="space-y-4">
-                                @forelse($donations as $donation)
+                                @forelse($allDonations as $item)
                                     <div class="group flex flex-col md:flex-row items-center justify-between p-5 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
                                         <div class="flex items-center gap-5 w-full md:w-auto">
                                             <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 text-xl group-hover:scale-110 transition-transform duration-300">
@@ -224,28 +253,48 @@
                                             </div>
                                             <div>
                                                 <div class="flex items-center gap-2 mb-1">
-                                                    <span class="text-sm font-bold text-slate-800">Donasi #{{ $donation->order_id }}</span>
+                                                    <span class="text-sm font-bold text-slate-800">Donasi #{{ $item['order_id'] }}</span>
                                                     <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                                                    <span class="text-xs text-slate-500">{{ $donation->created_at->format('d M Y') }}</span>
+                                                    <span class="text-xs text-slate-500">{{ $item['created_at']->format('d M Y') }}</span>
                                                 </div>
                                                 <p class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg inline-block">
-                                                    {{ $donation->campaign->judul ?? 'Kampanye Umum' }}
+                                                    {{ $item['campaign']->title ?? $item['campaign']->judul ?? 'Kampanye Umum' }}
                                                 </p>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="text-right w-full md:w-auto flex flex-row md:flex-col justify-between items-center md:items-end mt-4 md:mt-0">
-                                            <p class="text-lg font-black text-slate-800">Rp {{ number_format($donation->amount, 0, ',', '.') }}</p>
-                                            
-                                            @if($donation->status == 'paid')
+                                            <p class="text-lg font-black text-slate-800">Rp {{ number_format($item['amount'], 0, ',', '.') }}</p>
+
+                                            @if($item['status'] == 'paid' || $item['status'] == 'VERIFIED')
                                                 <div class="flex items-center gap-1.5 mt-1 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
                                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                                     <span class="text-[10px] font-bold uppercase tracking-wider">Berhasil</span>
                                                 </div>
-                                            @elseif($donation->status == 'pending')
+                                            @elseif($item['status'] == 'pending' || $item['status'] == 'PENDING')
                                                 <div class="flex items-center gap-1.5 mt-1 text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
                                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                                     <span class="text-[10px] font-bold uppercase tracking-wider">Menunggu</span>
+                                                </div>
+                                            @elseif($item['status'] == 'AWAITING_TRANSFER')
+                                                <div class="flex items-center gap-1.5 mt-1 text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                                    <span class="text-[10px] font-bold uppercase tracking-wider">Menunggu Transfer</span>
+                                                </div>
+                                                <!-- Upload proof button for AWAITING_TRANSFER status -->
+                                                <div class="mt-2 w-full md:w-auto">
+                                                    <form action="{{ route('profiles.upload.proof', $item['order_id']) }}" method="POST" enctype="multipart/form-data" class="inline">
+                                                        @csrf
+                                                        <label class="text-blue-600 hover:text-blue-800 cursor-pointer text-xs font-medium">
+                                                            <i class="fas fa-upload mr-1"></i>Upload Bukti
+                                                            <input type="file" name="proof" accept="image/*" class="hidden" onchange="this.form.submit()" required>
+                                                        </label>
+                                                    </form>
+                                                </div>
+                                            @elseif($item['status'] == 'PENDING_VERIFICATION')
+                                                <div class="flex items-center gap-1.5 mt-1 text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                                                    <span class="text-[10px] font-bold uppercase tracking-wider">Verifikasi</span>
                                                 </div>
                                             @else
                                                 <div class="flex items-center gap-1.5 mt-1 text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">
@@ -265,13 +314,139 @@
                                 @endforelse
 
                                 <div class="mt-6">
-                                    {{ $donations->appends(['volunteer_page' => $volunteerApps->currentPage()])->links() }}
+                                    {{-- Note: For unified view, we're not using pagination here since we merged collections --}}
+                                    {{-- If needed, we can implement custom pagination or show a message --}}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- TAB D: RIWAYAT RELAWAN --}}
+                    {{-- TAB D: RIWAYAT TRANSAKSI DONASI (TABLE VIEW) --}}
+                    <div id="tab-transaction-history" class="tab-content hidden animate-fade-in">
+                        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8">
+                            <h2 class="text-xl font-bold text-slate-800 mb-6">Riwayat Transaksi Donasi</h2>
+
+                            <!-- Donation Transactions Tab -->
+                            <div class="mb-8">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4"><i class="fas fa-receipt mr-2 text-blue-600"></i>Donasi Melalui Midtrans</h3>
+
+                                @if($donationTransactions->count() > 0)
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Transaksi</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Donasi</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kampanye</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                @foreach($donationTransactions as $transaction)
+                                                <tr>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $transaction->order_id }}</td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $transaction->campaign ? $transaction->campaign->title : 'Donasi Umum' }}</td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                                            {{ $transaction->status === 'VERIFIED' ? 'bg-green-100 text-green-800' :
+                                                               ($transaction->status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                                               ($transaction->status === 'AWAITING_TRANSFER' ? 'bg-blue-100 text-blue-800' :
+                                                               ($transaction->status === 'PENDING_VERIFICATION' ? 'bg-yellow-100 text-yellow-800' :
+                                                               'bg-red-100 text-red-800'))) }}">
+                                                            {{ $transaction->status_label }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $transaction->created_at->format('d M Y H:i') }}</td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                        @if($transaction->status === 'AWAITING_TRANSFER')
+                                                            <!-- Upload proof form for pending transfers -->
+                                                            <form action="{{ route('profiles.upload.proof', $transaction->order_id) }}" method="POST" enctype="multipart/form-data" class="inline">
+                                                                @csrf
+                                                                <div class="flex items-center space-x-2">
+                                                                    <label class="text-blue-600 hover:text-blue-900 cursor-pointer">
+                                                                        <i class="fas fa-upload mr-1"></i>Upload Bukti
+                                                                        <input type="file" name="proof" accept="image/*" class="hidden" onchange="this.form.submit()" required>
+                                                                    </label>
+                                                                </div>
+                                                            </form>
+                                                        @else
+                                                            <a href="{{ route('profiles.invoice', ['id' => $transaction->id]) }}" class="text-blue-600 hover:text-blue-900">
+                                                                <i class="fas fa-file-invoice mr-1"></i>Lihat
+                                                            </a>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        {{ $donationTransactions->links() }}
+                                    </div>
+                                @else
+                                    <div class="text-center py-8">
+                                        <i class="fas fa-receipt text-5xl text-gray-300 mb-4"></i>
+                                        <p class="text-gray-600">Belum ada riwayat donasi melalui Midtrans</p>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <!-- Legacy Donations Tab (if using the old donations table) -->
+                            @if($legacyDonations->count() > 0)
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4"><i class="fas fa-gift mr-2 text-green-600"></i>Donasi Lainnya</h3>
+
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Transaksi</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Donasi</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kampanye</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            @foreach($legacyDonations as $donation)
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $donation->order_id }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rp {{ number_format($donation->amount, 0, ',', '.') }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $donation->campaign ? $donation->campaign->title : 'Donasi Umum' }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                                        {{ $donation->status === 'paid' ? 'bg-green-100 text-green-800' :
+                                                           ($donation->status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                           'bg-red-100 text-red-800') }}">
+                                                        {{ ucfirst($donation->status) }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $donation->created_at->format('d M Y H:i') }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                    <a href="{{ route('profiles.invoice', ['id' => $donation->id]) }}" class="text-blue-600 hover:text-blue-900">
+                                                        <i class="fas fa-file-invoice mr-1"></i>Lihat
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="mt-4">
+                                    {{ $legacyDonations->links() }}
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- TAB E: RIWAYAT RELAWAN --}}
                     <div id="tab-history-volunteer" class="tab-content hidden animate-fade-in">
                         <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8">
                             <h2 class="text-xl font-bold text-slate-800 mb-6">Jejak Relawan</h2>

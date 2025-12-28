@@ -129,3 +129,54 @@ User::create([
     'role' => 'admin',
 ]);
 ```
+
+## API untuk Flutter
+
+Aplikasi ini menyediakan endpoint API untuk digunakan dengan aplikasi Flutter. Endpoint utama untuk mengambil data kampanye donasi adalah:
+
+### Endpoint Campaign
+- URL: `http://127.0.0.1:8000/api/campaigns`
+- Method: GET
+- Response: JSON dengan format:
+```json
+{
+  "message": "Campaigns retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "title": "Judul Kampanye",
+      "description": "Deskripsi kampanye",
+      "image": "URL gambar",
+      "target_amount": "50000000.00",
+      "current_amount": "15000000.00",
+      "end_date": "2026-06-30T00:00:00.000000Z",
+      "status": "active",
+      "created_at": "2025-12-25T08:51:03.000000Z"
+    }
+  ]
+}
+```
+
+### Konfigurasi CORS
+Aplikasi ini telah dikonfigurasi untuk mengizinkan permintaan dari semua origin (`'*'`) untuk keperluan development. Untuk produksi, sesuaikan konfigurasi di `config/cors.php`.
+
+### Contoh Penggunaan di Flutter
+Gunakan package `http` untuk melakukan permintaan ke endpoint API:
+```dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+Future<List<Map<String, dynamic>>> fetchCampaigns() async {
+  final response = await http.get(
+    Uri.parse('http://127.0.0.1:8000/api/campaigns'),
+    headers: {'Content-Type': 'application/json'},
+  );
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    return List<Map<String, dynamic>>.from(data['data']);
+  } else {
+    throw Exception('Gagal memuat data kampanye');
+  }
+}
+```

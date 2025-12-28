@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\File;
+use Illuminate\Http\Response;
 
 // --- 1. CONTROLLERS FRONTEND ---
 use App\Http\Controllers\Auth\LoginController;
@@ -23,63 +25,85 @@ use App\Http\Controllers\Admin\VolunteerAdminController;
 // Halaman Utama
 Route::get('/', [Controller::class, 'home'])->name('home');
 
-// Autentikasi
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login'])->name('login.process');
+// Autentikasi - Updated to use new auth views
+Route::get('/login', function() {
+    return view('auth.login');
+})->name('login')->middleware('guest');
+
+Route::post('/login', [LoginController::class, 'login'])->name('login.post')->middleware('guest');
+
+Route::get('/register', function() {
+    return view('auth.register');
+})->name('register')->middleware('guest');
+
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'register'])->name('register.process');
 
 // Donasi (Frontend Public)
 Route::get('/donation-details/{campaign?}', [DonationController::class, 'index'])->name('donation.details');
-Route::get('/donation-checkout/{campaign?}', [DonationController::class, 'checkout'])->name('donation.checkout');
-Route::get('/transaction/download/{order_id}', [DonationController::class, 'downloadTransactionPDF'])->name('transaction.download.pdf');
+
+// NEW: Donasi Detail dengan slug - menggunakan CampaignController@showDonation
+Route::get('/donasi/{slug}', [FrontendCampaignController::class, 'showDonation'])->name('donations.details');
+
+// Donation checkout and processing routes (require authentication to link to user account)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/donation-checkout/{campaign?}', [DonationController::class, 'checkout'])->name('donation.checkout');
+    Route::post('/donation-process-midtrans', [DonationController::class, 'processWithMidtrans'])->name('donation.process.midtrans');
+    Route::post('/donation-process', [DonationController::class, 'process'])->name('donation.process');
+});
+
+// Donation success and finish routes
+Route::get('/donation-success', function () {
+    return view('donation-success');
+})->name('donation.success');
+
+Route::get('/donation-success/{order_id}', function ($order_id) {
+    return view('donation-success', ['order_id' => $order_id]);
+})->name('donation.success.with.order');
 
 // Relawan (Frontend Public)
 // 1. Landing Page Relawan
-Route::get('/relawan', [FrontendCampaignController::class, 'landing'])->name('volunteer.landing'); 
-// 2. List Semua Kampanye (Pencarian)
-Route::get('/volunteer/campaigns', [FrontendCampaignController::class, 'index'])->name('volunteer.campaigns.index');
+Route::get('/relawan', [FrontendCampaignController::class, 'landing'])->name('volunteer.landing');
+// 2. List Semua Kampanye Relawan (Pencarian)
+Route::get('/volunteer/campaigns', [FrontendCampaignController::class, 'volunteerIndex'])->name('volunteer.campaigns.index');
 Route::get('/campaigns', [FrontendCampaignController::class, 'index'])->name('campaigns.all');
 // 3. Detail Kampanye
 Route::get('/volunteer/campaigns/{slug}', [FrontendCampaignController::class, 'show'])->name('volunteer.campaigns.show');
 
+// Midtrans webhook (non-authenticated - called by Midtrans server)
+Route::post('/midtrans/webhook', [DonationController::class, 'handleMidtransNotification'])->name('midtrans.webhook');
 
 Route::middleware(['auth'])->group(function () {
 
-    // Profil & Riwayat User (Frontend)
+    // Profil & Riwayat User (Frontend) - Allow all authenticated users (including admins)
     Route::prefix('profiles')->name('profiles.')->group(function() {
         Route::get('/', [ProfileController::class, 'index'])->name('index');
         Route::put('/update', [ProfileController::class, 'update'])->name('update');
         Route::get('/invoice/{id}', [ProfileController::class, 'invoice'])->name('invoice');
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
+        Route::post('/upload-proof/{order_id}', [ProfileController::class, 'uploadProof'])->name('upload.proof');
     });
 
-    // Fitur Notifikasi (PENTING: Untuk fitur notifikasi kita tadi)
-    Route::post('/notifications/mark-all-read', function () {
-        auth()->user()->unreadNotifications->markAsRead();
-        return back();
-    })->name('notifications.markAllRead');
+    // Authenticated donation routes (require login) - Prevent admin access
+    Route::group(['middleware' => ['prevent.admin.user.pages']], function () {
+        Route::get('/donation/manual-transfer/{order_id}', [DonationController::class, 'manualTransfer'])->name('donation.manual.transfer');
+        Route::post('/donation/upload-proof/{order_id}', [DonationController::class, 'uploadProof'])->name('donation.upload.proof');
+        Route::get('/transaction/download/{order_id}', [DonationController::class, 'downloadTransactionPDF'])->name('transaction.download.pdf');
 
-    // Route untuk melihat status lamaran (Halaman "Surat")
-    Route::get('/volunteer/status/{slug}', [VolunteerApplicationController::class, 'checkStatus'])
-        ->name('volunteer.application.status');
+        // Fitur Notifikasi (PENTING: Untuk fitur notifikasi kita tadi)
+        Route::post('/notifications/mark-all-read', function () {
+            auth()->user()->unreadNotifications->markAsRead();
+            return back();
+        })->name('notifications.markAllRead');
 
-    // Proses Pendaftaran Relawan
+        // Route untuk melihat status lamaran (Halaman "Surat")
+        Route::get('/volunteer/status/{slug}', [VolunteerApplicationController::class, 'checkStatus'])
+            ->name('volunteer.application.status');
+    });
+
+    // Proses Pendaftaran Relawan - tidak menggunakan middleware prevent.admin.user.pages untuk sementara
     Route::get('/volunteer/{slug}/register', [VolunteerApplicationController::class, 'create'])->name('volunteer.register.create');
     Route::post('/volunteer/{slug}/register', [VolunteerApplicationController::class, 'store'])->name('volunteer.register.store');
 
-    // Proses Donasi
-    Route::post('/donation-process', [DonationController::class, 'process'])->name('donation.process');
-    Route::get('/donation/manual-transfer/{order_id}', [DonationController::class, 'manualTransfer'])->name('donation.manual.transfer');
-    Route::post('/donation/upload-proof/{order_id}', [DonationController::class, 'uploadProof'])->name('donation.upload.proof');
-
-    // Profil User
-    Route::prefix('profiles')->name('profiles.')->group(function() {
-        Route::get('/', [ProfileController::class, 'index'])->name('index');
-        Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
-        Route::put('/', [ProfileController::class, 'update'])->name('update');
-        Route::get('/transactions', [ProfileController::class, 'showTransactionHistory'])->name('transactions');
-    });
 
     // --- ROUTE ADMIN ---
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
@@ -91,8 +115,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('relawan', AdminCampaignController::class);
 
-        // Manajemen Kampanye (Resource)
-        Route::resource('campaigns', AdminCampaignController::class);
+        // Manajemen Kampanye Donasi (Resource)
+        Route::resource('campaigns', \App\Http\Controllers\Admin\DonationCampaignController::class);
 
         // Manajemen Notifikasi & Relawan (Master Data)
         Route::resource('notifications', NotifikasiController::class);
@@ -100,8 +124,21 @@ Route::middleware(['auth'])->group(function () {
 
         // Manajemen Transaksi Donasi
         Route::get('donation-transactions', [DonationController::class, 'adminIndex'])->name('donations.index');
+        Route::get('donation-transactions/{order_id}', [DonationController::class, 'showForAdmin'])->name('donations.show');
+        Route::get('donation-transactions/{order_id}/invoice', [DonationController::class, 'showInvoiceForAdmin'])->name('donations.invoice');
         Route::put('donation-transactions/{order_id}/status', [DonationController::class, 'updateStatus'])->name('donations.updateStatus');
         Route::delete('donation-transactions/{order_id}', [DonationController::class, 'destroy'])->name('donations.destroy');
+
+        // API Verifikasi Donasi untuk Admin
+        Route::prefix('api')->name('api.')->group(function () {
+            Route::get('donation-transactions/{order_id}', [App\Http\Controllers\API\DonationVerificationController::class, 'getTransactionWithProof'])->name('donations.get');
+            Route::put('donation-transactions/{order_id}/verify', [App\Http\Controllers\API\DonationVerificationController::class, 'verifyTransaction'])->name('donations.verify');
+            Route::get('donation-transactions/pending', [App\Http\Controllers\API\DonationVerificationController::class, 'getPendingVerifications'])->name('donations.pending');
+            Route::delete('donation-transactions/{order_id}/proof', [App\Http\Controllers\API\DonationVerificationController::class, 'deleteProof'])->name('donations.proof.delete');
+        });
+
+        // Halaman API Verifikasi Donasi
+        Route::get('donation-verifications', [App\Http\Controllers\Admin\DonationVerificationController::class, 'index'])->name('donations.api.index');
 
         // === VERIFIKASI PENDAFTAR RELAWAN ===
         // Route ini disesuaikan dengan Controller yang baru kita buat
@@ -120,3 +157,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/daftar-pendaftar', [VolunteerAdminController::class, 'pendaftarIndex'])->name('pendaftar.list');
     });
 });
+
+// Route untuk testing gambar
+Route::get('/test-image/{folder}/{filename}', [App\Http\Controllers\TestImageController::class, 'testImage']);
+

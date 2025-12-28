@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'null'),
+    'default' => 'mysql',
 
     /*
     |--------------------------------------------------------------------------
@@ -31,11 +31,13 @@ return [
 
     'connections' => [
 
-       'sqlite' => [
-    'driver' => 'sqlite',
-    'database' => database_path('fake.sqlite'), // biar gak error
-    'prefix' => '',
-     ],
+        'sqlite' => [
+            'driver' => 'sqlite',
+            'url' => env('DATABASE_URL'),
+            'database' => database_path('database.sqlite'),
+            'prefix' => '',
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+        ],
 
         'mysql' => [
             'driver' => 'mysql',

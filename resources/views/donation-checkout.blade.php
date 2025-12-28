@@ -46,6 +46,23 @@
                 <!-- Left Column - Form -->
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100">
+
+                        <!-- Login Required Banner -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg mb-6 border border-blue-100">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 mr-3">
+                                    <i class="fas fa-exclamation-circle text-blue-800 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-blue-800 mb-1">Login Diperlukan</h3>
+                                    <p class="text-blue-900 text-sm">
+                                        Anda harus login terlebih dahulu untuk membuat donasi. Donasi Anda akan tercatat dalam riwayat Anda dan koin kebaikan akan ditambahkan ke akun Anda.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    @auth
                         <!-- Campaign Info -->
                         @if($campaign)
                         <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-xl mb-8 border border-blue-100">
@@ -73,11 +90,13 @@
                         @endif
 
                         <!-- Donation Form -->
-                        <form id="donationForm" action="{{ route('donation.process') }}" method="POST" class="space-y-6">
+                        <form id="donationForm" action="{{ route('donation.process.midtrans') }}" method="POST" class="space-y-6">
                             @csrf
                             @if($campaign)
                                 <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
                             @endif
+                            <!-- Hidden input to always specify Midtrans as payment method -->
+                            <input type="hidden" name="payment_method" value="midtrans">
 
                             <!-- Amount Selection -->
                             <div>
@@ -139,120 +158,56 @@
 
                             <!-- Payment Method Selection -->
                             <div class="pt-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-3">Metode Pembayaran</label>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                                    <label class="relative flex flex-col items-center p-4 border border-gray-300 rounded-xl cursor-pointer transition-all peer-checked:border-blue-500 peer-checked:bg-blue-50">
-                                        <input type="radio" name="payment_method" value="bank_transfer" class="sr-only peer" checked>
-                                        <i class="fas fa-university text-2xl mb-2 text-blue-600"></i>
-                                        <span class="font-medium">Bank Transfer</span>
-                                        <span class="text-xs text-gray-500 mt-1">via ATM/M-banking</span>
-                                        <div class="absolute top-2 right-2 w-5 h-5 rounded-full border border-gray-300 peer-checked:border-blue-500 peer-checked:bg-blue-500 flex items-center justify-center">
-                                            <div class="w-2 h-2 rounded-full bg-white hidden peer-checked:block"></div>
+                                <div class="bg-gradient-to-r from-green-50 to-blue-50 p-5 rounded-xl mb-6 border border-green-100">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 mr-4">
+                                            <div class="bg-green-100 w-10 h-10 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-badge-check text-green-800 text-lg"></i>
+                                            </div>
                                         </div>
-                                    </label>
-
-                                    <label class="relative flex flex-col items-center p-4 border border-gray-300 rounded-xl cursor-pointer transition-all peer-checked:border-green-500 peer-checked:bg-green-50">
-                                        <input type="radio" name="payment_method" value="e_wallet" class="sr-only peer">
-                                        <i class="fab fa-google-pay text-2xl mb-2 text-green-600"></i>
-                                        <span class="font-medium">e-Wallet</span>
-                                        <span class="text-xs text-gray-500 mt-1">OVO, GoPay, DANA</span>
-                                        <div class="absolute top-2 right-2 w-5 h-5 rounded-full border border-gray-300 peer-checked:border-green-500 peer-checked:bg-green-500 flex items-center justify-center">
-                                            <div class="w-2 h-2 rounded-full bg-white hidden peer-checked:block"></div>
+                                        <div>
+                                            <h3 class="font-bold text-green-800 mb-1">Metode Pembayaran Aman & Terpercaya</h3>
+                                            <p class="text-green-900 text-sm">
+                                                Pembayaran dikelola secara aman oleh Midtrans - payment gateway terpercaya di Indonesia
+                                            </p>
                                         </div>
-                                    </label>
-
-                                    <label class="relative flex flex-col items-center p-4 border border-gray-300 rounded-xl cursor-pointer transition-all peer-checked:border-purple-500 peer-checked:bg-purple-50">
-                                        <input type="radio" name="payment_method" value="qris" class="sr-only peer">
-                                        <i class="fas fa-qrcode text-2xl mb-2 text-purple-600"></i>
-                                        <span class="font-medium">QRIS</span>
-                                        <span class="text-xs text-gray-500 mt-1">Scan QR code</span>
-                                        <div class="absolute top-2 right-2 w-5 h-5 rounded-full border border-gray-300 peer-checked:border-purple-500 peer-checked:bg-purple-500 flex items-center justify-center">
-                                            <div class="w-2 h-2 rounded-full bg-white hidden peer-checked:block"></div>
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <!-- Bank Transfer Options -->
-                                <div id="bankTransferOptions" class="payment-options active">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Bank:</label>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50">
-                                            <input type="radio" name="selected_bank" value="BCA" class="mr-2" checked>
-                                            <span>BCA</span>
-                                        </label>
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50">
-                                            <input type="radio" name="selected_bank" value="BNI" class="mr-2">
-                                            <span>BNI</span>
-                                        </label>
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50">
-                                            <input type="radio" name="selected_bank" value="Mandiri" class="mr-2">
-                                            <span>Mandiri</span>
-                                        </label>
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50">
-                                            <input type="radio" name="selected_bank" value="BRI" class="mr-2">
-                                            <span>BRI</span>
-                                        </label>
                                     </div>
                                 </div>
 
-                                <!-- e-Wallet Options -->
-                                <div id="eWalletOptions" class="payment-options mt-4 hidden">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih e-Wallet:</label>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-green-50">
-                                            <input type="radio" name="selected_ewallet" value="OVO" class="mr-2">
-                                            <span>OVO</span>
-                                        </label>
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-green-50">
-                                            <input type="radio" name="selected_ewallet" value="GoPay" class="mr-2" checked>
-                                            <span>GoPay</span>
-                                        </label>
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-green-50">
-                                            <input type="radio" name="selected_ewallet" value="DANA" class="mr-2">
-                                            <span>DANA</span>
-                                        </label>
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-green-50">
-                                            <input type="radio" name="selected_ewallet" value="ShopeePay" class="mr-2">
-                                            <span>ShopeePay</span>
-                                        </label>
-                                    </div>
-                                </div>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div class="bg-white border-2 border-blue-200 rounded-xl p-5 text-center">
+                                        <div class="flex justify-center mb-3">
+                                            <i class="fas fa-credit-card text-3xl text-blue-600"></i>
+                                        </div>
 
-                                <!-- QRIS Options -->
-                                <div id="qrisOptions" class="payment-options mt-4 hidden">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih QRIS:</label>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-purple-50">
-                                            <input type="radio" name="selected_qris" value="DANA" class="mr-2">
-                                            <span>DANA</span>
-                                        </label>
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-purple-50">
-                                            <input type="radio" name="selected_qris" value="ShopeePay" class="mr-2">
-                                            <span>ShopeePay</span>
-                                        </label>
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-purple-50">
-                                            <input type="radio" name="selected_qris" value="GoPay" class="mr-2" checked>
-                                            <span>GoPay</span>
-                                        </label>
-                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-purple-50">
-                                            <input type="radio" name="selected_qris" value="LinkAja" class="mr-2">
-                                            <span>LinkAja</span>
-                                        </label>
+                                        <h4 class="font-bold text-gray-800 mb-2">Midtrans Payment Gateway</h4>
+                                        <p class="text-gray-600 text-sm mb-3">
+                                            Bayar dengan kartu kredit, debit, e-Wallet, atau QRIS melalui sistem pembayaran terpercaya
+                                        </p>
+
+                                        <div class="flex flex-wrap justify-center gap-2 mt-3">
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Kartu Kredit</span>
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">OVO</span>
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">GoPay</span>
+                                            <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">ShopeePay</span>
+                                            <span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">QRIS</span>
+                                        </div>
+
+                                        <input type="hidden" name="payment_method" value="midtrans">
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Info Section -->
-                            <div class="bg-amber-50 p-5 rounded-xl border border-amber-200">
+                            <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0 mr-3">
-                                        <i class="fas fa-info-circle text-amber-600 text-xl"></i>
+                                        <i class="fas fa-shield-alt text-blue-800 text-xl"></i>
                                     </div>
                                     <div>
-                                        <h3 class="font-bold text-amber-800 mb-1">Proses Donasi</h3>
-                                        <p class="text-amber-700 text-sm">
-                                            Setelah mengisi formulir, Anda akan diarahkan ke halaman instruksi transfer.
-                                            Lakukan pembayaran ke rekening yang tertera dan upload bukti transfer.
+                                        <h3 class="font-bold text-blue-800 mb-1">Bayar Aman & Cepat</h3>
+                                        <p class="text-blue-900 text-sm">
+                                            Anda akan diarahkan ke halaman pembayaran aman Midtrans. Proses pembayaran hanya membutuhkan beberapa detik.
                                         </p>
                                     </div>
                                 </div>
@@ -260,11 +215,22 @@
 
                             <!-- Submit Button -->
                             <div class="pt-4">
-                                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg">
-                                    <i class="fas fa-donate mr-2"></i>Buat Donasi
+                                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg">
+                                    <i class="fas fa-credit-card mr-2"></i>Bayar Melalui Midtrans
                                 </button>
                             </div>
                         </form>
+                    @else
+                        <!-- Login Required Message -->
+                        <div class="text-center py-12">
+                            <i class="fas fa-user-lock text-5xl text-gray-400 mb-4"></i>
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Login Diperlukan untuk Berdonasi</h3>
+                            <p class="text-gray-600 mb-6">Anda harus login terlebih dahulu untuk membuat donasi. Donasi Anda akan tercatat dalam riwayat Anda dan koin kebaikan akan ditambahkan ke akun Anda.</p>
+                            <a href="{{ route('login') }}" class="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Login untuk Berdonasi
+                            </a>
+                        </div>
+                    @endauth
                     </div>
                 </div>
 
@@ -312,25 +278,25 @@
                         </div>
 
                         <div class="mt-8 pt-6 border-t border-gray-200">
-                            <h4 class="font-bold text-gray-800 mb-4 text-center">Metode Pembayaran</h4>
+                            <h4 class="font-bold text-gray-800 mb-4 text-center">Didukung Oleh</h4>
                             <div class="flex justify-center space-x-4">
                                 <div class="text-center">
-                                    <div class="bg-gray-100 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                        <i class="fab fa-cc-visa text-blue-600"></i>
+                                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                        <i class="fas fa-globe text-white text-lg"></i>
                                     </div>
-                                    <span class="text-xs text-gray-600">Bank</span>
+                                    <span class="text-xs text-gray-600">Midtrans</span>
                                 </div>
                                 <div class="text-center">
-                                    <div class="bg-gray-100 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                        <i class="fab fa-cc-mastercard text-red-600"></i>
+                                    <div class="bg-gradient-to-br from-green-500 to-green-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                        <i class="fab fa-cc-visa text-white"></i>
+                                    </div>
+                                    <span class="text-xs text-gray-600">Credit Card</span>
+                                </div>
+                                <div class="text-center">
+                                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                        <i class="fab fa-google-pay text-white"></i>
                                     </div>
                                     <span class="text-xs text-gray-600">e-Wallet</span>
-                                </div>
-                                <div class="text-center">
-                                    <div class="bg-gray-100 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                        <i class="fab fa-paypal text-blue-500"></i>
-                                    </div>
-                                    <span class="text-xs text-gray-600">QRIS</span>
                                 </div>
                             </div>
                         </div>
@@ -342,10 +308,10 @@
                         <div class="flex items-start">
                             <div class="flex-shrink-0 mr-3">
                                 <div class="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-quote-left"></i>
+                                    <i class="fas fa-quote-left text-white"></i>
                                 </div>
                             </div>
-                            <p class="text-sm italic">"Setiap donasi membawa harapan dan perubahan nyata untuk masyarakat yang membutuhkan."</p>
+                            <p class="text-sm italic text-white">"Setiap donasi membawa harapan dan perubahan nyata untuk masyarakat yang membutuhkan."</p>
                         </div>
                     </div>
                 </div>
@@ -420,28 +386,14 @@
                 amountButtons.forEach(btn => btn.classList.remove('border-blue-500', 'bg-blue-50'));
             });
 
-            // Payment method selection
-            const paymentMethodRadios = document.querySelectorAll('input[name="payment_method"]');
-            const bankOptions = document.getElementById('bankTransferOptions');
-            const ewalletOptions = document.getElementById('eWalletOptions');
-            const qrisOptions = document.getElementById('qrisOptions');
+            // Optional: Add loading indicator when submitting
+            const donationForm = document.getElementById('donationForm');
+            const submitBtn = document.getElementById('submitBtn');
 
-            paymentMethodRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    // Hide all options
-                    bankOptions.classList.add('hidden');
-                    ewalletOptions.classList.add('hidden');
-                    qrisOptions.classList.add('hidden');
-
-                    // Show selected option
-                    if (this.value === 'bank_transfer') {
-                        bankOptions.classList.remove('hidden');
-                    } else if (this.value === 'e_wallet') {
-                        ewalletOptions.classList.remove('hidden');
-                    } else if (this.value === 'qris') {
-                        qrisOptions.classList.remove('hidden');
-                    }
-                });
+            donationForm.addEventListener('submit', function() {
+                // Disable button and show loading state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses Pembayaran...';
             });
         });
     </script>

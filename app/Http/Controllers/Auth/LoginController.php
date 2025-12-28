@@ -50,15 +50,20 @@ class LoginController extends Controller
             // Debug: Show user role after authentication
             \Log::info('Session regenerated. User role after authentication: ' . $user->role . ' and email: ' . $user->email);
 
-            // Redirect based on user role
+            // Determine redirect path based on user role
+            // Admin users should always go to admin dashboard after login
             if ($user->role === 'admin') {
-                // Direct redirect to admin dashboard
-                \Log::info('Redirecting admin user to /admin/dashboard');
-                return redirect()->to('/admin/dashboard');
-            } else {
-                \Log::info('Redirecting regular user to /');
-                return redirect()->to('/');
+                return redirect('/admin/dashboard');
             }
+
+            // For non-admin users, check if there's an intended URL
+            $intended = redirect()->intended(null);
+            if ($intended && $intended !== url('/login')) {
+                return $intended;
+            }
+
+            // Default redirect for non-admin users
+            return redirect('/');
         }
 
         // If login fails due to incorrect password
@@ -78,5 +83,17 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    /**
+     * Get the post-login redirect path.
+     *
+     * @return string
+     */
+    protected function redirectTo()
+    {
+        // Redirect based on user role - we'll determine this in the login method after authentication
+        // For now, return a default value that will be overridden in the login method
+        return property_exists($this, 'redirectTo') ? $this->redirectTo : '/';
     }
 }

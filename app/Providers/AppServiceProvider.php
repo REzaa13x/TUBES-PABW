@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Config;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,14 +20,16 @@ class AppServiceProvider extends ServiceProvider
      * Bootstrap any application services.
      */
     public function boot(): void
-    {
-        // Define gate for role-based access
-        Gate::define('admin', function ($user) {
-            return $user->role === 'admin';
-        });
+{
+    // HAPUS SEMUA LOGIKA FORCE SQLITE YANG TADI
 
-        Gate::define('donatur', function ($user) {
-            return $user->role === 'donatur';
-        });
-    }
+    // Biarkan Gate tetap ada untuk keamanan DonGiv kamu
+    Gate::define('admin', function ($user) {
+        return $user->role === 'admin';
+    });
+
+    Gate::define('donatur', function ($user) {
+        return $user->role === 'donatur';
+    });
+}
 }

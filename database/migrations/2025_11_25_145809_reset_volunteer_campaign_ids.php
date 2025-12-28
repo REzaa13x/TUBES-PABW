@@ -47,10 +47,15 @@ return new class extends Migration
             DB::table('volunteer_campaigns')->insert([
                 'id' => $newId,
                 'judul' => $campaign->judul,
+                'slug' => \Illuminate\Support\Str::slug($campaign->judul),
                 'lokasi' => $campaign->lokasi,
                 'tanggal_mulai' => $campaign->tanggal_mulai,
                 'tanggal_selesai' => $campaign->tanggal_selesai,
                 'status' => $campaign->status,
+                'deskripsi' => $campaign->deskripsi ?? 'Deskripsi kampanye sukarelawan',
+                'kategori' => $campaign->kategori ?? 'Sosial',
+                'kuota_total' => $campaign->kuota_total ?? 50,
+                'kuota_terisi' => $campaign->kuota_terisi ?? 0,
                 'created_at' => $campaign->created_at,
                 'updated_at' => $campaign->updated_at,
             ]);

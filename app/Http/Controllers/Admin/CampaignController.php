@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\VolunteerCampaign; 
+use App\Models\VolunteerCampaign;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str; 
+use Illuminate\Support\Str;
 
 class CampaignController extends Controller
 {
@@ -45,7 +45,7 @@ class CampaignController extends Controller
 
         // Menggunakan 'judul' sebagai dasar slug + timestamp agar unik
         $validated['slug'] = Str::slug($request->judul) . '-' . time();
-        
+
         // Set nilai default lainnya
         $validated['kuota_terisi'] = 0;
         $validated['status'] = 'Aktif';

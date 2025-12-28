@@ -14,33 +14,117 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         // 1. Ambil Data Pagination (Untuk Tab Riwayat)
+        // Old donations from the donations table
         $donations = $user->donations()
             ->latest()
             ->paginate(5, ['*'], 'donations_page');
 
+        // New donation transactions (including manual transfers that need proof upload)
+        $donationTransactions = \App\Models\DonationTransaction::where('user_id', $user->id)
+            ->with(['campaign'])
+            ->latest()
+            ->paginate(5, ['*'], 'donation_transactions_page');
+
+        // Combined history for unified view - merge both collections and sort by date
+        $allDonations = collect();
+
+        // Add old donations
+        foreach($donations as $donation) {
+            $allDonations->push([
+                'id' => $donation->id,
+                'order_id' => $donation->order_id,
+                'amount' => $donation->amount,
+                'campaign' => $donation->campaign ?? null,
+                'status' => $donation->status,
+                'created_at' => $donation->created_at,
+                'type' => 'legacy',
+                'model' => $donation
+            ]);
+        }
+
+        // Add new donation transactions
+        foreach($donationTransactions as $transaction) {
+            $allDonations->push([
+                'id' => $transaction->id,
+                'order_id' => $transaction->order_id,
+                'amount' => $transaction->amount,
+                'campaign' => $transaction->campaign ?? null,
+                'status' => $transaction->status,
+                'created_at' => $transaction->created_at,
+                'type' => 'transaction',
+                'model' => $transaction
+            ]);
+        }
+
+        // Sort by created_at descending
+        $allDonations = $allDonations->sortByDesc('created_at')->values();
+
         $volunteerApps = $user->volunteerApplications()
-            ->with('campaign') 
+            ->with('campaign')
             ->latest()
             ->paginate(5, ['*'], 'volunteer_page');
 
-        // 2. HITUNG TOTAL UANG DONASI (Hanya yang statusnya 'paid')
+        // 2. HITUNG TOTAL UANG DONASI (Hanya yang statusnya 'paid' atau 'VERIFIED')
         $totalDonationAmount = $user->donations()
             ->where('status', 'paid')
+            ->sum('amount');
+
+        // Also include verified donation transactions
+        $totalDonationAmount += \App\Models\DonationTransaction::where('user_id', $user->id)
+            ->where('status', 'VERIFIED')
             ->sum('amount');
 
         // 3. HITUNG POIN KEBAIKAN
         // Logika: (Jumlah Donasi Sukses + Jumlah Relawan Diterima) * 10
         $countPaidDonations = $user->donations()->where('status', 'paid')->count();
+        $countVerifiedDonationTransactions = \App\Models\DonationTransaction::where('user_id', $user->id)
+            ->where('status', 'VERIFIED')
+            ->count();
         $countApprovedVolunteer = $user->volunteerApplications()->where('status', 'approved')->count();
-        
-        $totalPoints = ($countPaidDonations + $countApprovedVolunteer) * 10;
+
+        $totalPoints = ($countPaidDonations + $countVerifiedDonationTransactions + $countApprovedVolunteer) * 10;
+
+        // 4. HITUNG JUMLAH KAMPANYE YANG DIDONASI
+        $countDonatedCampaigns = $user->donations()
+            ->where('status', 'paid')
+            ->distinct('campaign_id')
+            ->count('campaign_id');
+
+        $countDonatedCampaigns += \App\Models\DonationTransaction::where('user_id', $user->id)
+            ->where('status', 'VERIFIED')
+            ->whereNotNull('campaign_id')
+            ->distinct('campaign_id')
+            ->count('campaign_id');
+
+        // 5. HITUNG JUMLAH KAMPANYE RELAWAN YANG DI IKUTI
+        $countVolunteerCampaigns = $user->volunteerApplications()
+            ->where('status', 'approved')
+            ->distinct('volunteer_campaign_id')
+            ->count('volunteer_campaign_id');
+
+        // Get donation transactions for detailed history (same as showTransactionHistory method)
+        $donationTransactions = \App\Models\DonationTransaction::where('user_id', $user->id)
+            ->with(['campaign']) // Load campaign relationship
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Also get any donations from the old donations table if they exist
+        $legacyDonations = \App\Models\Donation::where('user_id', $user->id)
+            ->with(['campaign'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return view('profiles.index', compact(
-            'user', 
-            'donations', 
-            'volunteerApps', 
-            'totalDonationAmount', 
-            'totalPoints'
+            'user',
+            'donations',
+            'volunteerApps',
+            'totalDonationAmount',
+            'totalPoints',
+            'countDonatedCampaigns',
+            'countVolunteerCampaigns',
+            'donationTransactions',
+            'legacyDonations',
+            'allDonations'
         ));
     }
 
@@ -85,14 +169,107 @@ class ProfileController extends Controller
         if ($request->hasFile('photo')) {
             if ($user->photo && Storage::exists('public/' . $user->photo)) {
                 Storage::delete('public/' . $user->photo);
-            }
+            }  // End of nested if to delete old photo
             $path = $request->file('photo')->store('profile-photos', 'public');
             $user->photo = $path;
-        }
+        }  // End of if to upload photo
 
         $user->save();
 
         return back()->with('success', 'Informasi profil berhasil diperbarui!');
+    }  // Closes the else block
+}  // Closes the update method
+
+    public function showTransactionHistory()
+    {
+        $user = Auth::user();
+
+        // Get donation transactions for the user, including both old donations table and new donation_transactions table
+        $donationTransactions = \App\Models\DonationTransaction::where('user_id', $user->id)
+            ->with(['campaign']) // Load campaign relationship
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Also get any donations from the old donations table if they exist
+        $donations = \App\Models\Donation::where('user_id', $user->id)
+            ->with(['campaign'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('profiles.transactions', compact('donationTransactions', 'donations'));
     }
-}
+
+    /**
+     * Upload proof of payment for a donation transaction
+     */
+    public function uploadProof(Request $request, $order_id)
+    {
+        $user = Auth::user();
+
+        // Find the transaction that belongs to the user
+        $transaction = \App\Models\DonationTransaction::where('user_id', $user->id)
+            ->where('order_id', $order_id)
+            ->first();
+
+        if (!$transaction) {
+            return redirect()->back()->with('error', 'Transaksi tidak ditemukan atau tidak milik Anda');
+        }
+
+        // Only allow uploading proof for transactions with status AWAITING_TRANSFER
+        if ($transaction->status !== 'AWAITING_TRANSFER') {
+            return redirect()->back()->with('error', 'Bukti transfer hanya bisa diupload untuk transaksi yang menunggu transfer');
+        }
+
+        $request->validate([
+            'proof' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        if ($request->hasFile('proof')) {
+            $file = $request->file('proof');
+            $filename = 'transfer-proof-' . $order_id . '-' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('transfer-proofs', $filename, 'public');
+
+            $transaction->update([
+                'proof_of_transfer_path' => $path,
+                'status' => 'PENDING_VERIFICATION'  // Update status to pending verification
+            ]);
+
+            return redirect()->back()->with('success', 'Bukti transfer berhasil diupload. Status donasi Anda saat ini: PENDING_VERIFICATION');
+        }
+
+        return redirect()->back()->with('error', 'Gagal mengupload bukti transfer');
+    }
+
+    public function invoice($id)
+    {
+        $user = Auth::user();
+
+        // Try to find the transaction in DonationTransaction table first
+        $transaction = \App\Models\DonationTransaction::where('user_id', $user->id)
+            ->where('id', $id)
+            ->with('campaign')
+            ->first();
+
+        if ($transaction) {
+            // If found in donation transactions, return the donation transaction invoice view
+            return view('profiles.invoice', compact('transaction'));
+        }
+
+        // If not found, try the old donation table
+        $donation = \App\Models\Donation::where('user_id', $user->id)
+            ->where('id', $id)
+            ->with('campaign')
+            ->first();
+
+        if ($donation) {
+            // If found in old donations, return the donation invoice view
+            return view('profiles.invoice', [
+                'transaction' => $donation,
+                'isOldDonation' => true
+            ]);
+        }
+
+        // If not found in either table, return error
+        abort(404, 'Invoice not found');
+    }
 }

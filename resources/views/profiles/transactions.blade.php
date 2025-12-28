@@ -1,22 +1,5 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Riwayat Transaksi - DonGiv</title>
-
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700&display=swap" rel="stylesheet" />
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-</head>
-<body class="bg-gradient-to-br from-blue-50 to-cyan-50 text-gray-800">
+<x-app title="Riwayat Donasi - DonGiv">
+<body class="bg-gradient-to-br from-blue-50 to-cyan-50 text-gray-800 min-h-screen">
     <!-- Header -->
     <header class="bg-white shadow-sm py-4">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,134 +15,170 @@
         </div>
     </header>
 
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-8">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-10">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Riwayat Transaksi</h1>
-                <p class="text-gray-600">Lihat semua transaksi donasi Anda</p>
-            </div>
-			<!-- Search and Filter -->
-            <div class="mb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-               
-                <
-				
-				
-				
-				
-				
-				
-            </div>
-		
-
-            <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-                @if($transactions->count() > 0)
-                    <div class="overflow-x-auto rounded-lg border border-gray-200/50">
-                        <table class="min-w-full bg-white rounded-lg overflow-hidden">
-                            <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
-                                <tr>
-                                    <th class="py-4 px-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Tanggal</th>
-                                    <th class="py-4 px-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Nomor Order</th>
-                                    <th class="py-4 px-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Nominal</th>
-                                    <th class="py-4 px-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Metode Pembayaran</th>
-                                    <th class="py-4 px-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Status</th>
-                                <th class="py-4 px-6 text-right text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-200">Bukti Transfer</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200/30">
-                                @foreach($transactions as $transaction)
-                                    <tr class="hover:bg-gray-50/50 transition-all duration-200 border-b border-gray-100/50">
-                                        <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                            <div class="flex items-center">
-                                                <i class="fas fa-calendar mr-2 text-blue-500"></i>
-                                                <span>{{ $transaction->created_at->format('d M Y H:i') }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="py-4 px-6 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <div class="flex items-center">
-                                                <i class="fas fa-hashtag mr-2 text-gray-500"></i>
-                                                <span class="font-mono">{{ $transaction->order_id }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="py-4 px-6 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <div class="flex items-center">
-                                                <i class="fas fa-money-bill-wave mr-2 text-green-500"></i>
-                                                <span class="font-bold text-green-600">Rp{{ number_format($transaction->amount, 0, ',', '.') }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="py-4 px-6 whitespace-nowrap text-sm">
-                                            <div class="flex items-center">
-                                                @if($transaction->payment_method == 'bank_transfer')
-                                                    <div class="flex items-center px-3 py-1 rounded-full bg-blue-100/80 text-blue-800 text-xs font-medium">
-                                                        <i class="fas fa-university mr-2"></i> Bank Transfer
-                                                    </div>
-                                                @elseif($transaction->payment_method == 'e_wallet')
-                                                    <div class="flex items-center px-3 py-1 rounded-full bg-green-100/80 text-green-800 text-xs font-medium">
-                                                        <i class="fab fa-google-pay mr-2"></i> e-Wallet
-                                                    </div>
-                                                @elseif($transaction->payment_method == 'qris')
-                                                    <div class="flex items-center px-3 py-1 rounded-full bg-purple-100/80 text-purple-800 text-xs font-medium">
-                                                        <i class="fas fa-qrcode mr-2"></i> QRIS
-                                                    </div>
-                                                @else
-                                                    <div class="flex items-center px-3 py-1 rounded-full bg-gray-100/80 text-gray-800 text-xs font-medium">
-                                                        <i class="fas fa-wallet mr-2"></i> {{ ucfirst(str_replace('_', ' ', $transaction->payment_method)) }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td class="py-4 px-6 whitespace-nowrap text-sm">
-                                            @if($transaction->status === 'VERIFIED')
-                                                <div class="flex items-center px-3 py-1 rounded-full bg-green-100/80 text-green-800 text-xs font-medium">
-                                                    <i class="fas fa-check-circle mr-2"></i> Paid
-                                                </div>
-                                            @elseif($transaction->status === 'PENDING_VERIFICATION')
-                                                <div class="flex items-center px-3 py-1 rounded-full bg-yellow-100/80 text-yellow-800 text-xs font-medium">
-                                                    <i class="fas fa-clock mr-2"></i> Waiting
-                                                </div>
-                                            @elseif($transaction->status === 'AWAITING_TRANSFER')
-                                                <div class="flex items-center px-3 py-1 rounded-full bg-blue-100/80 text-blue-800 text-xs font-medium">
-                                                    <i class="fas fa-hourglass-half mr-2"></i> Pending
-                                                </div>
-                                            @else
-                                                <div class="flex items-center px-3 py-1 rounded-full bg-red-100/80 text-red-800 text-xs font-medium">
-                                                    <i class="fas fa-times-circle mr-2"></i> Rejected
-                                                </div>
-                                            @endif
-                                        </td>
-                                        <td class="py-4 px-6 whitespace-nowrap text-right text-sm font-medium">
-                                            @if($transaction->proof_of_transfer_path)
-                                                <a href="{{ asset('storage/' . $transaction->proof_of_transfer_path) }}" target="_blank" class="inline-flex items-center px-3 py-1 border border-blue-300 text-blue-700 rounded-md hover:bg-blue-50 transition-colors">
-                                                    <i class="fas fa-image mr-1"></i> Lihat Bukti
-                                                </a>
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="mt-8 flex justify-center">
-                        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                            {{ $transactions->links() }}
+    <!-- Main Content -->
+    <main class="py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Profile Header -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-2xl font-bold text-blue-700">{{ Auth::user()->name[0] ?? 'U' }}</span>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">{{ Auth::user()->name }}</h1>
+                            <p class="text-gray-600">Total Koin Keamanan: <span class="font-semibold text-green-600">{{ Auth::user()->coins ?? 0 }}</span></p>
                         </div>
                     </div>
-                @else
-                    <div class="text-center py-12">
-                        <i class="fas fa-receipt text-6xl text-gray-300 mb-4"></i>
-                        <h3 class="text-xl font-medium text-gray-900 mb-2">Belum ada transaksi</h3>
-                        <p class="text-gray-500 mb-6">Anda belum memiliki riwayat transaksi donasi</p>
-                        <a href="{{ route('home') }}" class="inline-flex items-center bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                            <i class="fas fa-list mr-2"></i>Lihat Semua Kampanye
+                    <div class="flex space-x-3">
+                        <a href="{{ route('profiles.edit') }}" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition">
+                            <i class="fas fa-edit mr-2"></i>Edit Profil
+                        </a>
+                        <a href="{{ route('profiles.index') }}" class="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-medium py-2 px-4 rounded-lg transition">
+                            <i class="fas fa-user mr-2"></i>Profil Saya
                         </a>
                     </div>
-                @endif
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="bg-white rounded-2xl shadow-lg mb-8 border border-gray-100">
+                <div class="border-b border-gray-200">
+                    <nav class="flex -mb-px">
+                        <a href="{{ route('profiles.index') }}" class="w-1/2 py-4 px-1 text-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent">
+                            <i class="fas fa-user mr-2"></i>Profil
+                        </a>
+                        <a href="{{ route('profiles.index') }}#transaction-history" class="w-1/2 py-4 px-1 text-center text-sm font-medium text-blue-600 border-b-2 border-blue-600">
+                            <i class="fas fa-history mr-2"></i>Riwayat Donasi
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6">Riwayat Donasi</h2>
+
+                    <!-- Donation Transactions Tab -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4"><i class="fas fa-receipt mr-2 text-blue-600"></i>Donasi Melalui Midtrans</h3>
+                        
+                        @if($donationTransactions->count() > 0)
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Transaksi</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Donasi</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kampanye</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach($donationTransactions as $transaction)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $transaction->order_id }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $transaction->campaign ? $transaction->campaign->title : 'Donasi Umum' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                    {{ $transaction->status === 'VERIFIED' ? 'bg-green-100 text-green-800' : 
+                                                       ($transaction->status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
+                                                       'bg-red-100 text-red-800') }}">
+                                                    {{ $transaction->status_label }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $transaction->created_at->format('d M Y H:i') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                @if($transaction->status === 'AWAITING_TRANSFER')
+                                                    <!-- Upload proof form for pending transfers -->
+                                                    <form action="{{ route('profiles.upload.proof', $transaction->order_id) }}" method="POST" enctype="multipart/form-data" class="inline">
+                                                        @csrf
+                                                        <div class="flex flex-col space-y-2">
+                                                            <label class="text-blue-600 hover:text-blue-900 cursor-pointer text-sm">
+                                                                <i class="fas fa-upload mr-1"></i>Upload Bukti
+                                                                <input type="file" name="proof" accept="image/*" class="hidden" onchange="this.form.submit()" required>
+                                                            </label>
+                                                            <a href="{{ route('profiles.invoice', ['id' => $transaction->id]) }}" class="text-blue-600 hover:text-blue-900 text-sm">
+                                                                <i class="fas fa-file-invoice mr-1"></i>Lihat
+                                                            </a>
+                                                        </div>
+                                                    </form>
+                                                @else
+                                                    <a href="{{ route('profiles.invoice', ['id' => $transaction->id]) }}" class="text-blue-600 hover:text-blue-900">
+                                                        <i class="fas fa-file-invoice mr-1"></i>Lihat
+                                                    </a>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="mt-4">
+                                {{ $donationTransactions->links() }}
+                            </div>
+                        @else
+                            <div class="text-center py-8">
+                                <i class="fas fa-receipt text-5xl text-gray-300 mb-4"></i>
+                                <p class="text-gray-600">Belum ada riwayat donasi melalui Midtrans</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Legacy Donations Tab (if using the old donations table) -->
+                    @if($donations->count() > 0)
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4"><i class="fas fa-gift mr-2 text-green-600"></i>Donasi Lainnya</h3>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Transaksi</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Donasi</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kampanye</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($donations as $donation)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $donation->order_id }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rp {{ number_format($donation->amount, 0, ',', '.') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $donation->campaign ? $donation->campaign->title : 'Donasi Umum' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                {{ $donation->status === 'paid' ? 'bg-green-100 text-green-800' : 
+                                                   ($donation->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                                   'bg-red-100 text-red-800') }}">
+                                                {{ ucfirst($donation->status) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $donation->created_at->format('d M Y H:i') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <a href="{{ route('profiles.invoice', ['id' => $donation->id]) }}" class="text-blue-600 hover:text-blue-900">
+                                                <i class="fas fa-file-invoice mr-1"></i>Lihat
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-4">
+                            {{ $donations->links() }}
+                        </div>
+                    </div>
+                    @endif
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-gray-300 py-12 mt-16">
@@ -200,5 +219,4 @@
             </div>
         </div>
     </footer>
-</body>
-</html>
+</x-app>

@@ -75,10 +75,15 @@ class VolunteerCampaignSeeder extends Seeder
         foreach ($campaigns as $campaign) {
             VolunteerCampaign::create([
                 'judul' => $campaign['judul'],
+                'slug' => \Illuminate\Support\Str::slug($campaign['judul']),
                 'lokasi' => $campaign['lokasi'],
                 'tanggal_mulai' => $campaign['tanggal_mulai'],
                 'tanggal_selesai' => $campaign['tanggal_selesai'],
                 'status' => $campaign['status'],
+                'deskripsi' => $faker->paragraph,
+                'kategori' => $faker->randomElement(['Pendidikan', 'Bencana', 'Kesehatan', 'Lingkungan', 'Sosial']),
+                'kuota_total' => $faker->numberBetween(10, 100),
+                'kuota_terisi' => $faker->numberBetween(0, 10),
             ]);
         }
     }

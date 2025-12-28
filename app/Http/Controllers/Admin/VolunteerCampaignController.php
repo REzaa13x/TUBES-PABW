@@ -1,11 +1,11 @@
 <?php
 
-// app/Http/Controllers/Admin/VolunteerCampaignController.php
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\VolunteerCampaign;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str; // PENTING: Import library Str untuk membuat slug
 
 class VolunteerCampaignController extends Controller
 {
@@ -30,6 +30,11 @@ class VolunteerCampaignController extends Controller
             'status' => 'required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
         ]);
+
+        // --- PERBAIKAN: Generate Slug ---
+        // Membuat slug dari judul agar kolom 'slug' di database tidak kosong
+        $validated['slug'] = Str::slug($request->judul);
+        // --------------------------------
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -74,6 +79,11 @@ class VolunteerCampaignController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
         ]);
 
+        // --- PERBAIKAN: Update Slug ---
+        // Jika judul berubah, slug juga ikut berubah
+        $validated['slug'] = Str::slug($request->judul);
+        // ------------------------------
+
         if ($request->hasFile('image')) {
             // Delete old image if exists
             if ($campaign->image && file_exists(public_path($campaign->image))) {
@@ -93,7 +103,7 @@ class VolunteerCampaignController extends Controller
     }
 
     public function toggleStatus(Request $request, $id)
-    {
+    {   
         $request->validate([
             'status' => 'required|in:Aktif,Nonaktif'
         ]);

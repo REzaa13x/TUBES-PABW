@@ -75,7 +75,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
                 <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Kampanye Tujuan</h3>
                 <div class="flex gap-4">
-                    <img src="{{ asset('storage/' . $volunteer->campaign->image) }}" class="w-20 h-20 rounded-lg object-cover shadow-sm">
+                    <img src="{{ $volunteer->campaign->image }}" class="w-20 h-20 rounded-lg object-cover shadow-sm" onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'">
                     <div>
                         <p class="text-sm font-bold text-gray-900 line-clamp-2 leading-tight mb-1">{{ $volunteer->campaign->judul }}</p>
                         <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">

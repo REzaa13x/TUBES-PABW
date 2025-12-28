@@ -172,52 +172,72 @@
                 <h2 class="text-2xl font-bold text-gray-800">Kampanye Mendesak</h2>
             </div>
 
-            <div
-                class="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-blue-100">
-                <div class="md:w-1/2 h-64 md:h-auto relative">
-                    <img src="https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=2000&auto=format&fit=crop"
-                        class="w-full h-full object-cover" alt="Urgent">
-                    <span
-                        class="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
-                        <i class="fas fa-clock mr-1"></i> Sisa 2 Hari
-                    </span>
-                </div>
-                <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class="px-3 py-1 bg-blue-100 text-blue-600 text-xs font-bold rounded-full">Bencana
-                            Alam</span>
-                        <span class="text-gray-400 text-xs"><i class="fas fa-map-marker-alt"></i> Cianjur, Jawa
-                            Barat</span>
-                    </div>
-                    <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Bantu 500 Kepala Keluarga Kehilangan
-                        Rumah Akibat Gempa</h3>
-                    <p class="text-gray-600 mb-6 line-clamp-3">
-                        Ribuan warga kini tidur di tenda pengungsian dengan logistik yang menipis. Mari kirimkan bantuan
-                        selimut, makanan, dan obat-obatan segera.
-                    </p>
-
-                    {{-- Progress --}}
-                    <div class="mb-6">
-                        <div class="flex justify-between text-sm font-semibold mb-2">
-                            <span class="text-blue-600">Rp 450.000.000</span>
-                            <span class="text-gray-500">dari Rp 500.000.000</span>
+            @if($urgentCampaigns->count() > 0)
+                @foreach($urgentCampaigns as $urgentCampaign)
+                    <div
+                        class="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-blue-100 mb-6 last:mb-0">
+                        <div class="md:w-1/2 h-64 md:h-auto relative">
+                            @if($urgentCampaign->image && !filter_var($urgentCampaign->image, FILTER_VALIDATE_URL))
+                                <img src="{{ asset('storage/' . ltrim($urgentCampaign->image, '/')) }}"
+                                    class="w-full h-full object-cover" alt="{{ $urgentCampaign->title }}">
+                            @else
+                                <img src="{{ $urgentCampaign->image ?? 'https://placehold.co/600x400?text=Campaign+Image' }}"
+                                    class="w-full h-full object-cover" alt="{{ $urgentCampaign->title }}">
+                            @endif
+                            <span
+                                class="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
+                                <i class="fas fa-clock mr-1"></i> Sisa <span class="days-remaining" data-end-date="{{ \Carbon\Carbon::parse($urgentCampaign->end_date)->format('Y-m-d') }}">{{ \Carbon\Carbon::parse($urgentCampaign->end_date)->diffInDays() > 0 ? \Carbon\Carbon::parse($urgentCampaign->end_date)->diffInDays() : 0 }}</span> Hari
+                            </span>
                         </div>
-                        <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                            <div class="bg-blue-600 h-3 rounded-full" style="width: 90%"></div>
+                        <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="px-3 py-1 bg-blue-100 text-blue-600 text-xs font-bold rounded-full">{{ $urgentCampaign->kategori ?? 'Umum' }}</span>
+                                <span class="text-gray-400 text-xs"><i class="fas fa-map-marker-alt"></i> Indonesia</span>
+                            </div>
+                            <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">{{ $urgentCampaign->title }}</h3>
+                            <p class="text-gray-600 mb-6 line-clamp-3">
+                                {{ \Illuminate\Support\Str::limit($urgentCampaign->description, 150) }}
+                            </p>
+
+                            {{-- Progress --}}
+                            <div class="mb-6">
+                                <div class="flex justify-between text-sm font-semibold mb-2">
+                                    <span class="text-blue-600">Rp {{ number_format($urgentCampaign->current_amount, 0, ',', '.') }}</span>
+                                    <span class="text-gray-500">dari Rp {{ number_format($urgentCampaign->target_amount, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                                    <div class="bg-blue-600 h-3 rounded-full" style="width: {{ min(100, ($urgentCampaign->current_amount / $urgentCampaign->target_amount) * 100) }}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4">
+                                <a href="{{ route('donations.details', ['slug' => $urgentCampaign->slug]) }}"
+                                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-blue-200 text-center">
+                                    Donasi Sekarang
+                                </a>
+                                <a href="{{ route('donations.details', ['slug' => $urgentCampaign->slug]) }}"
+                                    class="px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 transition">
+                                    <i class="fas fa-share-alt"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex gap-4">
-                        <button
-                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-blue-200">
-                            Donasi Sekarang
-                        </button>
-                        <button
-                            class="px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 transition">
-                            <i class="fas fa-share-alt"></i>
-                        </button>
-                    </div>
+                    @if(!$loop->last)
+                        <div class="border-t border-gray-100 my-6"></div>
+                    @endif
+                @endforeach
+            @else
+                <div class="bg-white rounded-3xl shadow-xl p-12 text-center border border-blue-100">
+                    <i class="fas fa-exclamation-triangle text-5xl text-yellow-400 mb-4"></i>
+                    <h3 class="text-2xl font-bold text-gray-700 mb-2">Tidak Ada Kampanye Mendesak</h3>
+                    <p class="text-gray-500 mb-6">Saat ini tidak ada kampanye yang tergolong mendesak. Silakan cek kembali nanti.</p>
+                    <a href="{{ route('campaigns.all') }}"
+                        class="inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all">
+                        Lihat Semua Kampanye
+                    </a>
                 </div>
+            @endif
             </div>
         </div>
     </section>
@@ -258,13 +278,14 @@
 
                             {{-- Content Area --}}
                             <div class="p-6 flex flex-col flex-grow">
-                                {{-- Category (Static for now, can be dynamic) --}}
-                                <div class="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Sosial
+                                {{-- Category (Now dynamic based on campaign data) --}}
+                                <div class="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">
+                                    {{ $campaign->kategori ?? 'Umum' }}
                                 </div>
 
                                 <h3
                                     class="font-bold text-lg text-gray-900 mb-3 line-clamp-2 hover:text-blue-600 transition-colors">
-                                    <a href="{{ route('donation.details', ['campaign' => $campaign->id]) }}">
+                                    <a href="{{ route('donations.details', ['slug' => $campaign->slug]) }}">
                                         {{ $campaign->title }}
                                     </a>
                                 </h3>
@@ -273,7 +294,7 @@
                                 <div class="mt-auto">
                                     <div class="w-full bg-blue-50 rounded-full h-2 mb-2 overflow-hidden">
                                         <div class="bg-blue-500 h-2 rounded-full"
-                                            style="width: {{ min(100, ($campaign->current_amount / $campaign->target_amount) * 100) }}%">
+                                            style="width: {{ $campaign->target_amount > 0 ? min(100, ($campaign->current_amount / $campaign->target_amount) * 100) : 0 }}%">
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center text-sm">
@@ -284,8 +305,12 @@
                                         </div>
                                         <div class="text-right">
                                             <p class="text-gray-400 text-xs">Sisa Hari</p>
-                                            <p class="font-bold text-gray-700">∞ <span
-                                                    class="text-xs font-normal">Hari</span></p>
+                                            <p class="font-bold text-gray-700">
+                                                <span class="days-remaining" data-end-date="{{ \Carbon\Carbon::parse($campaign->end_date)->format('Y-m-d') }}">
+                                                    {{ \Carbon\Carbon::parse($campaign->end_date)->diffInDays() > 0 ? \Carbon\Carbon::parse($campaign->end_date)->diffInDays() : 0 }}
+                                                </span>
+                                                <span class="text-xs font-normal">Hari</span>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -293,7 +318,7 @@
 
                             {{-- Footer Button --}}
                             <div class="p-4 border-t border-gray-50">
-                                <a href="{{ route('donation.details', ['campaign' => $campaign->id]) }}"
+                                <a href="{{ route('donations.details', ['slug' => $campaign->slug]) }}"
                                     class="block w-full text-center py-2 rounded-xl text-blue-600 font-bold border border-blue-100 hover:bg-blue-600 hover:text-white transition-all duration-300">
                                     Donasi Sekarang
                                 </a>

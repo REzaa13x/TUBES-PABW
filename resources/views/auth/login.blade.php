@@ -1,256 +1,297 @@
+@props(['title' => 'Login - DonasiKita'])
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - DonGiv</title>
+    <title>{{ $title }}</title>
+
+    {{-- CDN Tailwind & FontAwesome --}}
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    {{-- Google Fonts: Plus Jakarta Sans --}}
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
                     colors: {
-                        primary: '#1d4ed8', // biru utama
-                        secondary: '#3b82f6', // biru lebih muda
-                        accent: '#f59e0b', // warna aksen, misal: oranye
-                        softblue: '#f0f5ff', // background lebih soft
-                        softblue2: '#e0f2fe',
-                        softblue3: '#bae6fd',
+                        primary: '#2563EB', // Blue 600
+                        secondary: '#3B82F6', // Blue 500
+                        accent: '#F59E0B', // Amber 500
+                        dark: '#0F172A', // Slate 900
+                        softblue: '#EFF6FF', // Blue 50
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 15px rgba(37, 99, 235, 0.3)',
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                        'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { opacity: 0, transform: 'translateY(20px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        body {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #dbeafe 100%);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-        }
-        .card {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.05);
-        }
-        .input-field {
-            transition: all 0.3s ease;
-        }
-        .input-field:focus {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-            border-color: #3b82f6;
-        }
-        .btn-primary {
-            transition: all 0.3s ease;
-            background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
-        }
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-        .gradient-text {
-            background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .feature-icon {
-            width: 3rem;
-            height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        .feature-icon:hover {
-            transform: scale(1.1);
-            background: rgba(255, 255, 255, 0.3);
-        }
-        .input-group {
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        .input-group:focus-within {
-            transform: translateY(-2px);
-        }
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Staggered Animation Delays */
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
         }
     </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center px-4 py-12">
-    <div class="max-w-4xl w-full grid lg:grid-cols-2 gap-0 rounded-3xl overflow-hidden shadow-2xl">
-        <!-- Left Side - Branding -->
-        <div class="bg-gradient-to-br from-indigo-600 to-blue-500 p-12 text-white hidden lg:flex flex-col justify-center relative overflow-hidden">
-            <!-- Decorative elements -->
-            <div class="absolute -top-20 -right-20 w-48 h-48 bg-white/10 rounded-full"></div>
-            <div class="absolute -bottom-20 -left-20 w-48 h-48 bg-white/10 rounded-full"></div>
+<body class="bg-slate-50 text-slate-600 font-sans antialiased flex flex-col min-h-screen selection:bg-blue-100 selection:text-blue-900">
 
-            <div class="text-center z-10">
-                <div class="text-6xl mb-6 fade-in">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 100 100">
-                        <path
-                            d="M50 75l-25-25c-10-10-15-20-5-30 10-10 25-10 35 0 10-10 25-10 35 0 10 10 5 20-5 30z"
-                            fill="white" opacity="0.9"/>
-                        <text x="50" y="85" text-anchor="middle" font-family="Arial, sans-serif"
-                              font-size="14" fill="white" font-weight="bold" opacity="0.9">DonGiv</text>
-                    </svg>
+    {{-- NAVBAR --}}
+    <nav class="fixed top-0 w-full z-40 transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-white/50" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            {{-- Logo --}}
+            <a href="{{ url('/') }}" class="flex items-center gap-2 transition transform hover:scale-105 active:scale-95">
+                <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonasiKita" class="h-10">
+            </a>
+
+            {{-- Desktop Menu --}}
+            <div class="hidden md:flex items-center space-x-1">
+                <a href="{{ url('/') }}" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Beranda</a>
+                <a href="{{ url('/') }}#donasi" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Donasi</a>
+                <a href="{{ route('volunteer.landing') }}" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Relawan</a>
+                <a href="{{ url('/') }}#cara-kerja" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Cara Kerja</a>
+
+                <div class="h-6 w-px bg-slate-200 mx-2"></div>
+
+                {{-- Guest Buttons --}}
+                <div class="flex items-center gap-3 ml-4">
+                    <a href="{{ route('register') }}" class="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-primary transition-colors">
+                        Daftar
+                    </a>
+                    <a href="{{ route('login') }}" class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-full shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                        Masuk
+                    </a>
                 </div>
-                <h1 class="text-4xl font-bold mb-4 fade-in">DonGiv</h1>
-                <p class="text-xl opacity-90 mb-8 max-w-md mx-auto fade-in" style="animation-delay: 0.1s;">Platform Donasi Terpercaya untuk Membantu Sesama</p>
-                <div class="space-y-4 text-left max-w-md mx-auto fade-in" style="animation-delay: 0.2s;">
-                    <div class="flex items-center space-x-4">
-                        <div class="feature-icon">
-                            <i class="fas fa-check text-white"></i>
+            </div>
+
+            {{-- Mobile Button --}}
+            <button id="mobileMenuBtn" class="md:hidden p-2 text-slate-600 hover:text-primary transition-colors">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        {{-- Mobile Menu --}}
+        <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-slate-100 absolute w-full shadow-lg">
+            <div class="flex flex-col p-4 space-y-3">
+                <a href="{{ url('/') }}" class="px-4 py-3 rounded-xl hover:bg-blue-50 font-medium text-slate-700">Beranda</a>
+                <a href="{{ url('/') }}#donasi" class="px-4 py-3 rounded-xl hover:bg-blue-50 font-medium text-slate-700">Donasi</a>
+                <a href="{{ route('volunteer.campaigns.index') }}" class="px-4 py-3 rounded-xl hover:bg-blue-50 font-medium text-slate-700">Relawan</a>
+
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                    <a href="{{ route('register') }}" class="text-center py-3 rounded-xl border border-slate-200 font-bold text-slate-600">Daftar</a>
+                    <a href="{{ route('login') }}" class="text-center py-3 rounded-xl bg-primary text-white font-bold">Masuk</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {{-- MAIN CONTENT --}}
+    <main class="flex-grow pt-20">
+        <div class="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
+            <div class="w-full max-w-md">
+                <div class="bg-white rounded-3xl shadow-2xl shadow-blue-900/10 border border-white/50 p-8 animate-slide-up">
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 text-primary mb-4 shadow-inner ring-1 ring-blue-100">
+                            <i class="fas fa-sign-in-alt text-2xl"></i>
                         </div>
-                        <div>
-                            <h3 class="font-semibold">Donasi Mudah dan Aman</h3>
-                            <p class="text-sm opacity-80">Proses donasi yang cepat dan aman</p>
-                        </div>
+                        <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Selamat Datang Kembali</h2>
+                        <p class="text-slate-500 mt-2">Masuk untuk melanjutkan kebaikan Anda.</p>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="feature-icon">
-                            <i class="fas fa-check text-white"></i>
-                        </div>
+
+                    <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                        @csrf
                         <div>
-                            <h3 class="font-semibold">Transparansi Penggunaan Dana</h3>
-                            <p class="text-sm opacity-80">Laporan penggunaan dana yang jelas</p>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Email Address</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    required
+                                    value="{{ old('email') }}"
+                                    class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 placeholder:text-slate-400 font-medium"
+                                    placeholder="nama@email.com"
+                                >
+                                @error('email')
+                                    <div id="email-error" class="error-message">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="feature-icon">
-                            <i class="fas fa-check text-white"></i>
-                        </div>
+
                         <div>
-                            <h3 class="font-semibold">Dampak Nyata untuk Penerima Bantuan</h3>
-                            <p class="text-sm opacity-80">Bantuan langsung ke penerima</p>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Password</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    required
+                                    class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 placeholder:text-slate-400 font-medium"
+                                    placeholder="••••••••"
+                                >
+                                @error('password')
+                                    <div id="password-error" class="error-message">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
+
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center cursor-pointer group">
+                                <input type="checkbox" name="remember" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary transition-colors">
+                                <span class="ml-2 text-sm text-slate-600 font-medium group-hover:text-primary transition-colors">Ingat Saya</span>
+                            </label>
+                            <a href="#" class="text-sm text-slate-500 hover:text-primary font-bold transition-colors">Lupa Password?</a>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2"
+                        >
+                            <span>Masuk Sekarang</span>
+                            <i class="fas fa-arrow-right text-sm opacity-70"></i>
+                        </button>
+                    </form>
+
+                    <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+                        <p class="text-sm text-slate-600">
+                            Belum memiliki akun?
+                            <a href="{{ route('register') }}" class="text-primary font-bold hover:text-indigo-600 hover:underline focus:outline-none transition-colors">
+                                Daftar disini
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
+    </main>
 
-        <!-- Right Side - Login Form -->
-        <div class="bg-white/90 backdrop-blur-sm p-8 lg:p-12">
-            <div class="text-center mb-8 fade-in">
-                <div class="mx-auto w-20 h-20 bg-blue-100/80 rounded-full flex items-center justify-center mb-4 lg:hidden">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 100 100">
-                        <path
-                            d="M50 75l-25-25c-10-10-15-20-5-30 10-10 25-10 35 0 10-10 25-10 35 0 10 10 5 20-5 30z"
-                            fill="#1d4ed8" opacity="0.8"/>
-                        <text x="50" y="75" text-anchor="middle" font-family="Arial, sans-serif"
-                              font-size="12" fill="#1d4ed8" font-weight="bold" opacity="0.8">D</text>
-                    </svg>
+    {{-- FOOTER --}}
+    <footer class="bg-[#0B1120] text-gray-300 pt-20 pb-10 border-t border-slate-800/50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                <div class="space-y-6">
+                    <a href="{{ url('/') }}" class="flex items-center gap-2">
+                        <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonasiKita" class="h-9 brightness-0 invert opacity-90">
+                    </a>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Platform crowdfunding terpercaya yang menghubungkan kebaikan hati para donatur dengan ribuan cerita yang membutuhkan bantuan nyata.
+                    </p>
+                    <div class="flex gap-4 pt-2">
+                        <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white hover:-translate-y-1 transition-all duration-300 ring-1 ring-slate-700 hover:ring-primary"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white hover:-translate-y-1 transition-all duration-300 ring-1 ring-slate-700 hover:ring-primary"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white hover:-translate-y-1 transition-all duration-300 ring-1 ring-slate-700 hover:ring-primary"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
                 </div>
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">
-                    <span class="gradient-text">Masuk ke DonGiv</span>
-                </h2>
-                <p class="text-gray-600">Akses akun Anda untuk melanjutkan</p>
-            </div>
 
-            @if (session('error'))
-                <div class="bg-red-50/80 border border-red-200 text-red-600 p-4 rounded-xl mb-6 flex items-center fade-in">
-                    <i class="fas fa-exclamation-circle mr-3"></i>
-                    <span>{{ session('error') }}</span>
-                </div>
-            @endif
-
-            <!-- Display form errors -->
-            @if ($errors->any())
-                <div class="bg-red-50/80 border border-red-200 text-red-600 p-4 rounded-xl mb-6 fade-in">
-                    <ul class="list-disc pl-5 space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <li class="flex items-center"><i class="fas fa-exclamation-circle mr-2"></i>{{ $error }}</li>
-                        @endforeach
+                <div>
+                    <h3 class="font-bold text-white text-lg mb-6">Jelajahi</h3>
+                    <ul class="space-y-4 text-sm text-slate-400">
+                        <li><a href="{{ url('/') }}" class="hover:text-primary hover:pl-2 transition-all duration-300 flex items-center gap-2"><i class="fas fa-chevron-right text-xs opacity-50"></i> Beranda</a></li>
+                        <li><a href="#donasi" class="hover:text-primary hover:pl-2 transition-all duration-300 flex items-center gap-2"><i class="fas fa-chevron-right text-xs opacity-50"></i> Donasi Sekarang</a></li>
+                        <li><a href="{{ route('volunteer.campaigns.index') }}" class="hover:text-primary hover:pl-2 transition-all duration-300 flex items-center gap-2"><i class="fas fa-chevron-right text-xs opacity-50"></i> Jadi Relawan</a></li>
                     </ul>
                 </div>
-            @endif
 
-            <form action="{{ route('login.process') }}" method="POST" class="fade-in">
-                @csrf
-                <div class="mb-6 input-group">
-                    <label class="block text-gray-700 font-semibold mb-2" for="email">
-                        <i class="fas fa-envelope mr-2"></i>Email
-                    </label>
-                    <div class="relative">
-                        <input type="email" id="email" name="email"
-                               class="input-field w-full border @error('email') border-red-500 @else border-gray-200 @enderror p-4 rounded-xl focus:outline-none focus:border-blue-300 pl-12 bg-gray-50/50"
-                               placeholder="masukkan email Anda" value="{{ old('email') }}" required>
-                        <i class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-400"></i>
-                    </div>
-                    @error('email')
-                        <p class="mt-2 text-sm text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
-                    @enderror
+                <div>
+                    <h3 class="font-bold text-white text-lg mb-6">Dukungan</h3>
+                    <ul class="space-y-4 text-sm text-slate-400">
+                        <li><a href="#" class="hover:text-primary hover:pl-2 transition-all duration-300 flex items-center gap-2"><i class="fas fa-chevron-right text-xs opacity-50"></i> Tentang Kami</a></li>
+                        <li><a href="#" class="hover:text-primary hover:pl-2 transition-all duration-300 flex items-center gap-2"><i class="fas fa-chevron-right text-xs opacity-50"></i> Pusat Bantuan</a></li>
+                        <li><a href="#" class="hover:text-primary hover:pl-2 transition-all duration-300 flex items-center gap-2"><i class="fas fa-chevron-right text-xs opacity-50"></i> Kebijakan Privasi</a></li>
+                    </ul>
                 </div>
 
-                <div class="mb-6 input-group">
-                    <label class="block text-gray-700 font-semibold mb-2" for="password">
-                        <i class="fas fa-lock mr-2"></i>Kata Sandi
-                    </label>
-                    <div class="relative">
-                        <input type="password" id="password" name="password"
-                               class="input-field w-full border @error('password') border-red-500 @else border-gray-200 @enderror p-4 rounded-xl focus:outline-none focus:border-blue-300 pl-12 bg-gray-50/50"
-                               placeholder="masukkan kata sandi" required>
-                        <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-400"></i>
-                    </div>
-                    @error('password')
-                        <p class="mt-2 text-sm text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
-                    @enderror
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50">
+                    <h3 class="font-bold text-white mb-2">Kabar Kebaikan</h3>
+                    <p class="text-xs text-slate-400 mb-4">Dapatkan update penyaluran donasi setiap minggunya.</p>
+                    <form action="#" class="space-y-2">
+                        <div class="relative">
+                            <i class="fas fa-envelope absolute left-3 top-3 text-slate-500"></i>
+                            <input type="email" placeholder="Alamat email..." class="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-600">
+                        </div>
+                        <button class="w-full py-2.5 bg-primary hover:bg-blue-600 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-blue-900/20">Berlangganan</button>
+                    </form>
                 </div>
-
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center">
-                        <input type="checkbox" id="remember" name="remember"
-                               class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded">
-                        <label for="remember" class="ml-2 block text-sm text-gray-700">
-                            Ingat Saya
-                        </label>
-                    </div>
-                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
-                        Lupa Kata Sandi?
-                    </a>
-                </div>
-
-                <button type="submit" class="btn-primary w-full py-4 px-4 rounded-xl text-white font-semibold text-lg mb-6 relative overflow-hidden">
-                    <span class="relative z-10"><i class="fas fa-sign-in-alt mr-2"></i>Masuk</span>
-                    <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
-            </form>
-
-            <div class="text-center fade-in">
-                <p class="text-gray-600">
-                    Belum punya akun?
-                    <a href="{{ route('register') }}" class="text-blue-600 font-semibold hover:text-blue-800 transition">
-                        Daftar Sekarang
-                    </a>
-                </p>
             </div>
 
-            <div class="mt-8 pt-6 border-t border-gray-100 fade-in">
-                <div class="text-center">
-                    <p class="text-sm text-gray-500">
-                        <i class="fas fa-shield-alt mr-1"></i>Platform donasi yang aman dan terpercaya
-                    </p>
+            <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} DonasiKita. Hak Cipta Dilindungi.</p>
+                <div class="flex gap-6 text-sm text-slate-500 font-medium">
+                    <a href="#" class="hover:text-white transition-colors">Syarat & Ketentuan</a>
+                    <a href="#" class="hover:text-white transition-colors">Privasi</a>
                 </div>
             </div>
         </div>
-    </div>
+    </footer>
+
+    {{-- MAIN SCRIPT --}}
+    <script>
+        // Mobile Menu Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (mobileBtn && mobileMenu) {
+                mobileBtn.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+
+            // Navbar Scroll Effect
+            const navbar = document.getElementById('navbar');
+            if (navbar) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 10) {
+                        navbar.classList.add('shadow-soft');
+                    } else {
+                        navbar.classList.remove('shadow-soft');
+                    }
+                });
+            }
+        });
+
+    </script>
 </body>
 </html>

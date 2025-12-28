@@ -1,81 +1,16 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $campaign->title ?? 'Donation Detail' }} - DonGiv</title>
-
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700&display=swap" rel="stylesheet" />
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-</head>
-<body class="bg-gray-50 text-gray-800">
-    <!-- Navbar -->
-    <nav class="bg-white shadow-sm py-4 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonGiv Logo" class="h-8">
-                        <span class="text-xl font-bold text-primary">DonGiv</span>
-                    </div>
-
-                    <nav class="hidden md:flex items-center space-x-6">
-                        <a href="{{ route('home') }}" class="text-gray-700 hover:text-primary font-medium transition">Beranda</a>
-                        <a href="{{ route('donation.details') }}" class="text-gray-700 hover:text-primary font-medium transition">Donasi</a>
-                        <a href="{{ route('volunteer') }}" class="text-gray-700 hover:text-primary font-medium transition">Relawan</a>
-                        <a href="#" class="text-gray-700 hover:text-primary font-medium transition">Tentang Kami</a>
-                        <a href="#" class="text-gray-700 hover:text-primary font-medium transition">Kontak</a>
-                    </nav>
-
-                    <div class="flex items-center space-x-3">
-                        @auth
-                        <!-- Profile dropdown when user is logged in -->
-                        <div class="relative">
-                            <button id="profileButton" class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-semibold hover:bg-blue-200 transition-colors" type="button">
-                                <span class="font-bold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
-                            </button>
-                            <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                                <a href="{{ route('profiles.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                                    <i class="fas fa-user mr-2"></i>Profil Saya
-                                </a>
-                                <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
-                                    @csrf
-                                </form>
-                                <a href="{{ route('logout') }}"
-                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
-                                    <i class="fas fa-sign-out-alt mr-2"></i>Keluar
-                                </a>
-                            </div>
-                        </div>
-                        @else
-                        <!-- Login and Register buttons when user is not logged in -->
-                        <a href="{{ route('login') }}" class="px-4 py-2 rounded-full font-medium border border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300">Masuk</a>
-                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-full font-medium bg-primary text-white hover:bg-blue-800 transition-all duration-300">Daftar</a>
-                        @endauth
-                    </div>
-                </div>
-            </div>
-        </nav>
+<x-app title="{{ $campaign->title ?? 'Donation Detail' }} - DonGiv">
 
         <!-- Hero Banner -->
         <section class="relative h-96 md:h-[500px] overflow-hidden">
             @if($campaign)
             <div class="absolute inset-0">
-                @if($campaign->image && !filter_var($campaign->image, FILTER_VALIDATE_URL))
-                    <img src="{{ asset('storage/' . ltrim($campaign->image, '/')) }}"
+                @if($campaign->image)
+                    <img src="{{ $campaign->image }}"
                          alt="{{ $campaign->title }}"
                          class="w-full h-full object-cover"
                          onerror="this.onerror=null; this.src='https://placehold.co/1200x500/1CABE2/FFFFFF?text=Donation+Campaign';">
                 @else
-                    <img src="{{ $campaign->image ?? 'https://placehold.co/1200x500/1CABE2/FFFFFF?text=Donation+Campaign' }}"
+                    <img src="https://placehold.co/1200x500/1CABE2/FFFFFF?text=Donation+Campaign"
                          alt="{{ $campaign->title }}"
                          class="w-full h-full object-cover">
                 @endif
@@ -129,9 +64,15 @@
                             @endif
                         </p>
 
-                        <a href="{{ $campaign ? route('donation.checkout', ['campaign' => $campaign->id]) : route('donation.checkout') }}" class="bg-primary hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg mx-auto inline-block">
-                            <i class="fas fa-hand-holding-heart mr-2"></i>Donate Now
-                        </a>
+                        @auth
+                            <a href="{{ $campaign ? route('donation.checkout', ['campaign' => $campaign->id]) : route('donation.checkout') }}" class="bg-primary hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg mx-auto inline-block">
+                                <i class="fas fa-hand-holding-heart mr-2"></i>Donate Now
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" class="bg-primary hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg mx-auto inline-block">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Login to Donate
+                            </a>
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -170,11 +111,16 @@
 
                             <!-- Animated Progress Bar -->
                             <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                                <?php
+                                    $currentAmount = $campaign->current_amount ?? 0;
+                                    $targetAmount = $campaign->target_amount ?? 1;
+                                    $percentage = $targetAmount > 0 ? min(100, ($currentAmount / $targetAmount) * 100) : 0;
+                                ?>
                                 <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2"
-                                     style="width: {{ min(100, (($campaign->current_amount ?? 0) / ($campaign->target_amount ?? 1)) * 100) }}%;">
+                                     style="width: {{ $percentage }}%;">
                                     <span class="text-white text-xs font-bold"
                                           style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-                                        {{ number_format(($campaign->current_amount ?? 0) / ($campaign->target_amount ?? 1) * 100, 1) }}%
+                                        {{ number_format($percentage, 1) }}%
                                     </span>
                                 </div>
                             </div>
@@ -182,11 +128,22 @@
 
                         <div class="grid grid-cols-2 gap-4 text-center max-w-xs mx-auto">
                             <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 transition-all duration-300 hover:scale-105">
-                                <div class="text-xl font-bold text-gray-800">{{ rand(50, 200) }}</div>
+                                <div class="text-xl font-bold text-gray-800">{{ $donaturCount ?? 0 }}</div>
                                 <div class="text-gray-600">Donatur</div>
                             </div>
                             <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 transition-all duration-300 hover:scale-105">
-                                <div class="text-xl font-bold text-gray-800">{{ rand(15, 60) }} Hari</div>
+                                <div class="text-xl font-bold text-gray-800">
+                                    <?php
+                                        $endDate = isset($campaign->end_date) ? \Carbon\Carbon::parse($campaign->end_date) : null;
+                                        $daysLeft = 0;
+                                        if ($endDate) {
+                                            $today = \Carbon\Carbon::today();
+                                            $daysLeft = max(0, $today->diffInDays($endDate, false));
+                                            $daysLeft = $daysLeft >= 0 ? $daysLeft : 0;
+                                        }
+                                    ?>
+                                    <span class="days-remaining" data-end-date="{{ $endDate ? $endDate->format('Y-m-d') : '' }}">{{ $daysLeft }}</span> Hari
+                                </div>
                                 <div class="text-gray-600">Tersisa</div>
                             </div>
                         </div>
@@ -434,52 +391,6 @@
                                 <i class="fas fa-globe mr-2 text-blue-600"></i>
                                 <span>www.dongiv.org</span>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Footer -->
-        <footer class="bg-gray-800 text-gray-300 py-12 mt-16">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <div class="text-center md:text-left">
-                        <h4 class="text-xl font-bold text-white mb-4">DonGiv</h4>
-                        <p class="text-sm">Creating positive change through transparent and effective charitable giving.</p>
-                    </div>
-                    <div class="text-center md:text-left">
-                        <h5 class="font-semibold text-white mb-4">Explore</h5>
-                        <ul class="space-y-2 text-sm">
-                            <li><a href="{{ route('home') }}" class="hover:text-white transition">Home</a></li>
-                            <li><a href="{{ route('donation.details') }}" class="hover:text-white transition">Donations</a></li>
-                            <li><a href="#" class="hover:text-white transition">Volunteer</a></li>
-                            <li><a href="#" class="hover:text-white transition">About Us</a></li>
-                        </ul>
-                    </div>
-                    <div class="text-center md:text-left">
-                        <h5 class="font-semibold text-white mb-4">Legal</h5>
-                        <ul class="space-y-2 text-sm">
-                            <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
-                            <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
-                            <li><a href="#" class="hover:text-white transition">Charity Registration</a></li>
-                        </ul>
-                    </div>
-                    <div class="text-center md:text-left">
-                        <h5 class="font-semibold text-white mb-4">Contact Us</h5>
-                        <ul class="space-y-2 text-sm">
-                            <li><a href="#" class="hover:text-white transition">Support Center</a></li>
-                            <li><a href="#" class="hover:text-white transition">Partnership Inquiry</a></li>
-                            <li><a href="#" class="hover:text-white transition">Media Contact</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="mt-8 pt-8 border-t border-gray-700 text-center text-sm">
-                    <p>&copy; {{ date('Y') }} DonGiv — Making a Difference Together ❤️</p>
-                </div>
-            </div>
-        </footer>
-    </form>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -487,7 +398,7 @@
             const amountButtons = document.querySelectorAll('.amount-btn');
             const customAmountInput = document.getElementById('customAmount');
             const amountHiddenInput = document.getElementById('amount');
-            
+
             amountButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     // Remove selected class from all buttons
@@ -495,22 +406,22 @@
                         btn.classList.remove('bg-blue-50', 'border-blue-500');
                         btn.classList.add('bg-white', 'border-gray-300');
                     });
-                    
+
                     // Add selected class to clicked button
                     this.classList.add('bg-blue-50', 'border-blue-500');
                     this.classList.remove('bg-white', 'border-gray-300');
-                    
+
                     // Set amount to hidden input
                     const amount = this.textContent.replace(/[Rp,.\s]/g, '');
                     amountHiddenInput.value = amount;
-                    
+
                     // Clear custom amount input
                     if (customAmountInput.value) {
                         customAmountInput.value = '';
                     }
                 });
             });
-            
+
             // Custom amount input
             customAmountInput.addEventListener('input', function() {
                 if (this.value) {
@@ -538,5 +449,4 @@
             window.location.href = url;
         }
     </script>
-</body>
-</html>
+</x-app>

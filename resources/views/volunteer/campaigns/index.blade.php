@@ -106,7 +106,7 @@
                                 {{ $campaign->kategori }}
                             </span>
                         </div>
-                        <img src="{{ asset('storage/' . $campaign->image) }}"
+                        <img src="{{ $campaign->image }}"
                             alt="{{ $campaign->judul }}"
                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                             onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
@@ -143,7 +143,7 @@
                         data-slug="{{ $campaign->slug }}"
                         data-title="{{ htmlspecialchars($campaign->judul, ENT_QUOTES) }}"
                         data-desc="{{ htmlspecialchars($campaign->deskripsi, ENT_QUOTES) }}"
-                        data-image="{{ asset('storage/' . $campaign->image) }}"
+                        data-image="{{ $campaign->image }}"
                         data-location="{{ htmlspecialchars($campaign->lokasi, ENT_QUOTES) }}"
                         data-date="{{ $formattedDate }}"
                         data-category="{{ $campaign->kategori }}"
@@ -202,7 +202,7 @@
 
                 {{-- GAMBAR UTAMA (Full Width tapi pendek agar rapi) --}}
                 <div class="relative h-56 w-full bg-slate-100">
-                    <img id="modalImage" src="" alt="Campaign Cover" class="h-full w-full object-cover">
+                    <img id="modalImage" src="" alt="Campaign Cover" class="h-full w-full object-cover" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
                     <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-30"></div>
                 </div>
 

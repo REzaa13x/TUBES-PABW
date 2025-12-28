@@ -127,76 +127,75 @@
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        @if($transaction->status === 'PENDING_VERIFICATION')
-                            <!-- Verification buttons for Pending Verification -->
-                            <div class="space-y-2">
-                                <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="status" value="VERIFIED">
-                                    <button type="submit" class="w-full inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700" onclick="return confirm('Yakin ingin memverifikasi pembayaran ini?')">
-                                        <i class="fas fa-check mr-1"></i> Verifikasi
-                                    </button>
-                                </form>
-                                <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="status" value="CANCELLED">
-                                    <button type="submit" class="w-full inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700" onclick="return confirm('Yakin ingin menolak pembayaran ini?')">
-                                        <i class="fas fa-times mr-1"></i> Tolak
-                                    </button>
-                                </form>
-                                <!-- Delete button for pending verification -->
-                                <form action="{{ route('admin.donations.destroy', $transaction->order_id) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="w-full inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-800 hover:bg-red-900" onclick="return confirm('Yakin ingin menghapus transaksi ini? Data yang dihapus tidak dapat dikembalikan.')">
-                                        <i class="fas fa-trash mr-1"></i> Hapus
-                                    </button>
-                                </form>
-                            </div>
-                        @else
-                            <div class="relative">
-                                <button class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" type="button" id="statusDropdown{{ $transaction->id }}" onclick="toggleDropdown('{{ $transaction->id }}')">
-                                    <i class="fas fa-ellipsis-v mr-1"></i> Aksi
-                                </button>
-                                <div id="dropdownMenu{{ $transaction->id }}" class="hidden absolute right-0 mt-1 w-48 bg-white shadow-lg rounded-md py-1 z-10">
-                                    <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                        <div class="space-y-1">
+                            <!-- Invoice button -->
+                            <a href="{{ route('admin.donations.invoice', $transaction->order_id) }}" class="inline-flex items-center px-3 py-1 border border-blue-300 text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 block">
+                                <i class="fas fa-file-invoice mr-1"></i> Invoice
+                            </a>
+
+                            @if($transaction->status === 'PENDING_VERIFICATION')
+                                <!-- Verification buttons for Pending Verification -->
+                                <div class="space-y-1 mt-2">
+                                    <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('PUT')
                                         <input type="hidden" name="status" value="VERIFIED">
-                                        <button type="submit" class="w-full text-left" onclick="return confirm('Yakin ingin mengubah status menjadi Paid?')">Paid</button>
+                                        <button type="submit" class="w-full inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700" onclick="return confirm('Yakin ingin memverifikasi pembayaran ini?')">
+                                            <i class="fas fa-check mr-1"></i> Verifikasi
+                                        </button>
                                     </form>
-                                    <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                                    <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('PUT')
                                         <input type="hidden" name="status" value="CANCELLED">
-                                        <button type="submit" class="w-full text-left" onclick="return confirm('Yakin ingin menolak pembayaran ini?')">Rejected</button>
-                                    </form>
-                                    <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="status" value="PENDING_VERIFICATION">
-                                        <button type="submit" class="w-full text-left" onclick="return confirm('Yakin ingin mengubah status menjadi Waiting?')">Waiting</button>
-                                    </form>
-                                    <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="status" value="AWAITING_TRANSFER">
-                                        <button type="submit" class="w-full text-left" onclick="return confirm('Yakin ingin mengubah status menjadi Pending?')">Pending</button>
-                                    </form>
-
-                                    <!-- Delete button -->
-                                    <form action="{{ route('admin.donations.destroy', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 w-full text-left border-t border-gray-100 mt-1">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="w-full text-left text-red-700 hover:text-red-900" onclick="return confirm('Yakin ingin menghapus transaksi ini? Data yang dihapus tidak dapat dikembalikan.')">
-                                            <i class="fas fa-trash mr-2 text-red-600"></i>Hapus
+                                        <button type="submit" class="w-full inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700" onclick="return confirm('Yakin ingin menolak pembayaran ini?')">
+                                            <i class="fas fa-times mr-1"></i> Tolak
                                         </button>
                                     </form>
                                 </div>
-                            </div>
-                        @endif
+                            @else
+                                <div class="relative mt-2">
+                                    <button class="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 w-full" type="button" id="statusDropdown{{ $transaction->id }}" onclick="toggleDropdown('{{ $transaction->id }}')">
+                                        <i class="fas fa-ellipsis-v mr-1"></i> Ubah Status
+                                    </button>
+                                    <div id="dropdownMenu{{ $transaction->id }}" class="hidden absolute right-0 mt-1 w-48 bg-white shadow-lg rounded-md py-1 z-10">
+                                        <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="status" value="VERIFIED">
+                                            <button type="submit" class="w-full text-left" onclick="return confirm('Yakin ingin mengubah status menjadi Paid?')">Paid</button>
+                                        </form>
+                                        <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="status" value="CANCELLED">
+                                            <button type="submit" class="w-full text-left" onclick="return confirm('Yakin ingin menolak pembayaran ini?')">Rejected</button>
+                                        </form>
+                                        <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="status" value="PENDING_VERIFICATION">
+                                            <button type="submit" class="w-full text-left" onclick="return confirm('Yakin ingin mengubah status menjadi Waiting?')">Waiting</button>
+                                        </form>
+                                        <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="status" value="AWAITING_TRANSFER">
+                                            <button type="submit" class="w-full text-left" onclick="return confirm('Yakin ingin mengubah status menjadi Pending?')">Pending</button>
+                                        </form>
+
+                                        <!-- Delete button -->
+                                        <form action="{{ route('admin.donations.destroy', $transaction->order_id) }}" method="POST" class="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 w-full text-left border-t border-gray-100 mt-1">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-full text-left text-red-700 hover:text-red-900" onclick="return confirm('Yakin ingin menghapus transaksi ini? Data yang dihapus tidak dapat dikembalikan.')">
+                                                <i class="fas fa-trash mr-2 text-red-600"></i>Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

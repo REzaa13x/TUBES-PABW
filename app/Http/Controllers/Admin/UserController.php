@@ -45,7 +45,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
-            'role' => 'required|in:user,admin', // Sesuaikan role yang ada
+            'role' => 'required|in:donatur,admin', // Sesuaikan role yang ada (matches database enum)
             'password' => 'nullable|min:8', // Password opsional
         ]);
 

@@ -78,7 +78,7 @@
             {{-- Desktop Menu --}}
             <div class="hidden md:flex items-center space-x-1">
                 <a href="{{ url('/') }}#donasi" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Donasi</a>
-                <a href="{{ route('volunteer.campaigns.index') }}" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Relawan</a>
+                <a href="{{ route('volunteer.landing') }}" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Relawan</a>
                 <a href="{{ url('/') }}#cara-kerja" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Cara Kerja</a>
 
                 <div class="h-6 w-px bg-slate-200 mx-2"></div>
@@ -143,56 +143,113 @@
                     </div>
                 @endauth
 
-                @auth
-                    {{-- Profile Dropdown --}}
-                    <div class="relative ml-2">
-                        <button id="profileButton" class="flex items-center gap-2 px-1 py-1 pr-3 rounded-full border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all focus:outline-none focus:ring-2 focus:ring-blue-100">
-                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                            </div>
-                            <span class="text-sm font-semibold text-slate-700 max-w-[100px] truncate">{{ auth()->user()->name }}</span>
-                            <i class="fas fa-chevron-down text-xs text-slate-400"></i>
-                        </button>
-                        {{-- Dropdown Content --}}
-                        <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 transform origin-top-right transition-all">
-                            <div class="px-5 py-3 border-b border-slate-50 mb-2">
-                                <p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Akun Masuk</p>
-                                <p class="text-sm font-bold text-slate-800 truncate">{{ auth()->user()->name }}</p>
-                                <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
-                            </div>
-                           {{-- PERBAIKAN DI SINI: href="#" diganti route('profiles.index') --}}
-                            <a href="{{ route('profiles.index') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
-                                <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-primary flex items-center justify-center mr-3 transition-colors">
-                                    <i class="fas fa-user-circle"></i>
+                    {{-- This section works for both server-side auth and API auth --}}
+                    {{-- This section will be controlled by JavaScript based on auth state --}}
+                    {{-- Server-side auth elements (will be shown if Laravel auth is active) --}}
+                    @auth
+                        <div id="serverAuthElements" class="relative ml-2">
+                            <button id="profileButton" class="flex items-center gap-2 px-1 py-1 pr-3 rounded-full border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all focus:outline-none focus:ring-2 focus:ring-blue-100">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white">
+                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                 </div>
-                                Profil & Riwayat
+                                <span class="text-sm font-semibold text-slate-700 max-w-[100px] truncate">{{ auth()->user()->name }}</span>
+                                <i class="fas fa-chevron-down text-xs text-slate-400"></i>
+                            </button>
+                            <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 transform origin-top-right transition-all">
+                                <div class="px-5 py-3 border-b border-slate-50 mb-2">
+                                    <p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Akun Masuk</p>
+                                    <p class="text-sm font-bold text-slate-800 truncate">{{ auth()->user()->name }}</p>
+                                    <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
+                                </div>
+                               {{-- PERBAIKAN DI SINI: href="#" diganti route('profiles.index') --}}
+                                <a href="{{ route('profiles.index') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
+                                    <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-primary flex items-center justify-center mr-3 transition-colors">
+                                        <i class="fas fa-user-circle"></i>
+                                    </div>
+                                    Profil & Riwayat
+                                </a>
+                                <div class="border-t border-slate-50 mt-2 pt-2 mx-2">
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="group flex w-full items-center px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-colors">
+                                            <div class="w-8 h-8 rounded-lg bg-red-50 text-red-500 group-hover:bg-red-100 flex items-center justify-center mr-3 transition-colors">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                            </div>
+                                            Keluar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    @else
+                        {{-- Guest elements (login/register buttons) --}}
+                        <div id="guestElements" class="flex items-center gap-3 ml-4">
+                            <a href="{{ route('login') }}" class="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-primary transition-colors" id="loginLink">
+                                Masuk
                             </a>
-                            <div class="border-t border-slate-50 mt-2 pt-2 mx-2">
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="group flex w-full items-center px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-colors">
+                            <a href="{{ route('register') }}" class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-full shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0" id="registerLink">
+                                Daftar Sekarang
+                            </a>
+                        </div>
+                    @endauth
+
+                    {{-- Elements for API authentication (will be managed by JavaScript) --}}
+                    <div id="apiAuthElements" class="hidden">
+                        <div id="profileDropdownContainer" class="relative ml-2">
+                            <button id="apiProfileButton" class="flex items-center gap-2 px-1 py-1 pr-3 rounded-full border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all focus:outline-none focus:ring-2 focus:ring-blue-100">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white" id="profileInitial">
+                                    U
+                                </div>
+                                <span class="text-sm font-semibold text-slate-700 max-w-[100px] truncate" id="profileName">User</span>
+                                <i class="fas fa-chevron-down text-xs text-slate-400"></i>
+                            </button>
+                            <div id="apiProfileDropdown" class="hidden absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 transform origin-top-right transition-all">
+                                <div class="px-5 py-3 border-b border-slate-50 mb-2">
+                                    <p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Akun Masuk</p>
+                                    <p class="text-sm font-bold text-slate-800 truncate" id="dropdownName">User</p>
+                                    <p class="text-xs text-slate-500 truncate" id="dropdownEmail">user@example.com</p>
+                                </div>
+                                <a href="{{ route('profiles.index') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
+                                    <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-primary flex items-center justify-center mr-3 transition-colors">
+                                        <i class="fas fa-user-circle"></i>
+                                    </div>
+                                    Profil & Riwayat
+                                </a>
+                                <div class="border-t border-slate-50 mt-2 pt-2 mx-2">
+                                    <button id="apiLogoutBtn" class="group flex w-full items-center px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-colors">
                                         <div class="w-8 h-8 rounded-lg bg-red-50 text-red-500 group-hover:bg-red-100 flex items-center justify-center mr-3 transition-colors">
                                             <i class="fas fa-sign-out-alt"></i>
                                         </div>
                                         Keluar
                                     </button>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-                @else
-                    {{-- Guest Buttons --}}
-                    <div class="flex items-center gap-3 ml-4">
-                        <button onclick="openModal('login')" class="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-primary transition-colors cursor-pointer">
-                            Masuk
+
+                    <div id="apiNotificationContainer" class="relative mr-5 hidden">
+                        <button id="apiNotifButton" class="relative p-2 text-slate-600 hover:text-primary transition-colors focus:outline-none">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span id="apiNotifBadge" class="absolute top-1 right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse hidden"></span>
                         </button>
-                        <button onclick="openModal('register')" class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-full shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
-                            Daftar Sekarang
-                        </button>
+                        <div id="apiNotifDropdown" class="hidden absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 overflow-hidden transform origin-top-right transition-all">
+                            <div class="px-4 py-3 border-b border-slate-50 flex justify-between items-center">
+                                <p class="text-sm font-bold text-slate-800">Notifikasi</p>
+                                <span id="apiNotifCount" class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold"></span>
+                            </div>
+                            <div id="apiNotifList" class="max-h-[300px] overflow-y-auto no-scrollbar">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                            <div class="border-t border-slate-50 p-2 text-center bg-slate-50/50">
+                                <button id="markAllReadBtn" class="text-xs font-bold text-primary hover:text-blue-700 transition-colors">
+                                    Tandai semua dibaca
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                @endauth
             </div>
-            
+
             {{-- Mobile Button --}}
             <button id="mobileMenuBtn" class="md:hidden p-2 text-slate-600 hover:text-primary transition-colors">
                 <i class="fas fa-bars text-2xl"></i>
@@ -210,15 +267,26 @@
                                 <i class="fas fa-user-circle"></i>
                             </div>
                             Profil & Riwayat
-                        </a>                    
+                        </a>
                         <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="w-full text-left px-4 py-3 rounded-xl text-red-500 font-bold hover:bg-red-50">Keluar</button>
                     </form>
                 @else
-                    <div class="grid grid-cols-2 gap-3 mt-2">
-                        <button onclick="openModal('login')" class="text-center py-3 rounded-xl border border-slate-200 font-bold text-slate-600">Masuk</button>
-                        <button onclick="openModal('register')" class="text-center py-3 rounded-xl bg-primary text-white font-bold">Daftar</button>
+                    <div id="mobileAuthButtons" class="grid grid-cols-2 gap-3 mt-2">
+                        <a href="{{ route('login') }}" class="text-center py-3 rounded-xl border border-slate-200 font-bold text-slate-600" id="mobileLoginLink">Masuk</a>
+                        <a href="{{ route('register') }}" class="text-center py-3 rounded-xl bg-primary text-white font-bold" id="mobileRegisterLink">Daftar</a>
+                    </div>
+
+                    {{-- Mobile Profile Menu for API Auth --}}
+                    <div id="mobileProfileContainer" class="hidden">
+                        <a id="mobileProfileLink" href="{{ route('profiles.index') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
+                            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-primary flex items-center justify-center mr-3 transition-colors">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <span id="mobileProfileName">Profil & Riwayat</span>
+                        </a>
+                        <button id="mobileApiLogoutBtn" class="w-full text-left px-4 py-3 rounded-xl text-red-500 font-bold hover:bg-red-50 mt-2">Keluar</button>
                     </div>
                 @endauth
             </div>
@@ -294,329 +362,169 @@
         </div>
     </footer>
     
-    {{-- Backdrop Shared --}}
-    <div id="authBackdrop" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md hidden opacity-0 transition-opacity duration-300"></div>
-
-    {{-- 1. LOGIN MODAL --}}
-    <div id="loginModal" class="fixed inset-0 z-[101] hidden overflow-y-auto" role="dialog" aria-modal="true">
-        <div class="flex min-h-full items-center justify-center p-4">
-            <div id="loginPanel" class="relative w-full max-w-md transform rounded-3xl bg-white p-8 text-left shadow-2xl shadow-blue-900/20 transition-all opacity-0 scale-95 border border-white/50 ring-1 ring-slate-900/5">
-                
-                {{-- Decorative Blob Background --}}
-                <div class="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
-
-                <button onclick="closeAllModals()" class="absolute top-5 right-5 text-slate-300 hover:text-slate-500 transition-colors z-10">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-
-                <div class="text-center mb-8 relative z-10 animate-slide-up">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 text-primary mb-4 shadow-inner ring-1 ring-blue-100">
-                        <i class="fas fa-sign-in-alt text-2xl"></i>
-                    </div>
-                    <h3 class="text-2xl font-extrabold text-slate-800 tracking-tight">Selamat Datang Kembali</h3>
-                    <p class="text-slate-500 text-sm mt-2">Masuk untuk melanjutkan kebaikan Anda.</p>
-                </div>
-
-                <form method="POST" action="{{ route('login') }}" class="space-y-5 relative z-10 animate-slide-up delay-100">
-                    @csrf
-                    
-                    {{-- Email Input with Icon --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Email Address</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                                class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 placeholder:text-slate-400 font-medium @error('email') border-red-300 bg-red-50 focus:ring-red-100 animate-shake @enderror"
-                                placeholder="nama@email.com">
-                        </div>
-                        @error('email')
-                            <span class="text-red-500 text-xs mt-1.5 ml-1 flex items-center gap-1 font-bold"><i class="fas fa-exclamation-circle"></i> {{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    {{-- Password Input with Icon --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Password</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                <i class="fas fa-lock"></i>
-                            </div>
-                            <input type="password" name="password" required
-                                class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 placeholder:text-slate-400 font-medium @error('password') border-red-300 bg-red-50 animate-shake @enderror"
-                                placeholder="••••••••">
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <label class="flex items-center cursor-pointer group">
-                            <input type="checkbox" name="remember" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary transition-colors">
-                            <span class="ml-2 text-sm text-slate-600 font-medium group-hover:text-primary transition-colors">Ingat Saya</span>
-                        </label>
-                        @if (Route::has('password.request'))
-                            <a href="{{ route('password.request') }}" class="text-sm text-slate-500 hover:text-primary font-bold transition-colors">Lupa Password?</a>
-                        @endif
-                    </div>
-
-                    <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2">
-                        <span>Masuk Sekarang</span>
-                        <i class="fas fa-arrow-right text-sm opacity-70"></i>
-                    </button>
-                </form>
-
-                <div class="mt-8 pt-6 border-t border-slate-100 text-center animate-slide-up delay-200">
-                    <p class="text-sm text-slate-600">
-                        Belum memiliki akun? 
-                        <button onclick="switchModal('login', 'register')" class="text-primary font-bold hover:text-indigo-600 hover:underline focus:outline-none transition-colors">
-                            Daftar disini
-                        </button>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- 2. REGISTER MODAL --}}
-    <div id="registerModal" class="fixed inset-0 z-[101] hidden overflow-y-auto" role="dialog" aria-modal="true">
-        <div class="flex min-h-full items-center justify-center p-4">
-            <div id="registerPanel" class="relative w-full max-w-md transform rounded-3xl bg-white p-8 text-left shadow-2xl shadow-indigo-900/20 transition-all opacity-0 scale-95 border border-white/50 ring-1 ring-slate-900/5">
-                
-                <div class="absolute top-0 left-0 -mt-8 -ml-8 w-32 h-32 bg-indigo-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
-
-                <button onclick="closeAllModals()" class="absolute top-5 right-5 text-slate-300 hover:text-slate-500 transition-colors z-10">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-
-                <div class="text-center mb-8 relative z-10 animate-slide-up">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600 mb-4 shadow-inner ring-1 ring-indigo-100">
-                        <i class="fas fa-user-plus text-2xl"></i>
-                    </div>
-                    <h3 class="text-2xl font-extrabold text-slate-800 tracking-tight">Buat Akun Baru</h3>
-                    <p class="text-slate-500 text-sm mt-2">Bergabunglah dengan komunitas kebaikan kami.</p>
-                </div>
-
-                <form method="POST" action="{{ route('register') }}" class="space-y-4 relative z-10 animate-slide-up delay-100">
-                    @csrf
-                    {{-- Nama --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Nama Lengkap</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <input type="text" name="name" value="{{ old('name') }}" required
-                                class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 placeholder:text-slate-400 font-medium @error('name') border-red-300 bg-red-50 animate-shake @enderror"
-                                placeholder="Nama Lengkap">
-                        </div>
-                        @error('name')
-                            <span class="text-red-500 text-xs mt-1.5 ml-1 font-bold">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    {{-- Email --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Email Address</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <input type="email" name="email" value="{{ old('email') }}" required
-                                class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 placeholder:text-slate-400 font-medium @error('email') border-red-300 bg-red-50 animate-shake @enderror"
-                                placeholder="nama@email.com">
-                        </div>
-                        @error('email')
-                            <span class="text-red-500 text-xs mt-1.5 ml-1 font-bold">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    {{-- Password --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Password</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                <i class="fas fa-lock"></i>
-                            </div>
-                            <input type="password" name="password" required
-                                class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 placeholder:text-slate-400 font-medium @error('password') border-red-300 bg-red-50 animate-shake @enderror"
-                                placeholder="Min. 8 karakter">
-                        </div>
-                        @error('password')
-                            <span class="text-red-500 text-xs mt-1.5 ml-1 font-bold">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    {{-- Confirm --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Konfirmasi Password</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                <i class="fas fa-lock-open"></i>
-                            </div>
-                            <input type="password" name="password_confirmation" required
-                                class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 placeholder:text-slate-400 font-medium"
-                                placeholder="Ulangi password">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 mt-2">
-                        Daftar Akun
-                    </button>
-                </form>
-
-                <div class="mt-8 pt-6 border-t border-slate-100 text-center animate-slide-up delay-200">
-                    <p class="text-sm text-slate-600">
-                        Sudah punya akun? 
-                        <button onclick="switchModal('register', 'login')" class="text-indigo-600 font-bold hover:text-purple-600 hover:underline focus:outline-none transition-colors">
-                            Masuk disini
-                        </button>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-{{-- 1. CDN SweetAlert2 (WAJIB ADA UNTUK POPUP) --}}
+    {{-- 1. CDN SweetAlert2 (WAJIB ADA UNTUK POPUP) --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     {{-- 2. MAIN SCRIPT --}}
     <script>
-        // --- A. HELPER FUNCTIONS & MODAL LOGIC (Global Scope) ---
-        
-        function getAuthElements() {
-            return {
-                backdrop: document.getElementById('authBackdrop'),
-                loginModal: document.getElementById('loginModal'),
-                loginPanel: document.getElementById('loginPanel'),
-                registerModal: document.getElementById('registerModal'),
-                registerPanel: document.getElementById('registerPanel')
-            };
-        }
+        // Function to check authentication state (both server-side and API)
+        function updateAuthUI() {
+            // Check for API token in localStorage
+            const token = localStorage.getItem('auth_token');
+            const userData = localStorage.getItem('user');
 
-        function showElement(el) { if(el) el.classList.remove('hidden'); }
-        function hideElement(el) { if(el) el.classList.add('hidden'); }
-        
-        // Versi Debug Tanpa Animasi
-        function animateIn(backdrop, panel) {
-            if(backdrop) backdrop.classList.remove('hidden');
-            if(panel) panel.classList.remove('hidden');
-            // Hapus kelas animasi sementara
-            if(backdrop) backdrop.classList.remove('opacity-0'); 
-            if(panel) {
-                panel.classList.remove('opacity-0', 'scale-95');
-                panel.classList.add('opacity-100', 'scale-100');
-            }
-        }
+            // Get all UI containers
+            const serverAuthElements = document.getElementById('serverAuthElements');
+            const serverNotifContainer = document.getElementById('serverNotifContainer');
+            const guestElements = document.getElementById('guestElements');
+            const apiAuthElements = document.getElementById('apiAuthElements');
+            const apiNotificationContainer = document.getElementById('apiNotificationContainer');
+            const mobileAuthButtons = document.getElementById('mobileAuthButtons');
+            const mobileProfileContainer = document.getElementById('mobileProfileContainer');
 
-        function animateOut(backdrop, panel, callback) {
-            if(backdrop) backdrop.classList.add('hidden');
-            if(panel) panel.classList.add('hidden');
-            if(callback) callback();
-        }
+            if (token && userData) {
+                try {
+                    const user = JSON.parse(userData);
 
-        // Fungsi Global untuk dipanggil via HTML onclick="..."
-        window.openModal = function(type) {
-            const els = getAuthElements();
-            showElement(els.backdrop);
-            
-            if (type === 'login') {
-                showElement(els.loginModal);
-                animateIn(els.backdrop, els.loginPanel);
-            } else if (type === 'register') {
-                showElement(els.registerModal);
-                animateIn(els.backdrop, els.registerPanel);
-            }
-        };
+                    // Hide server-side auth elements (if they exist) since we're using API auth
+                    if (serverAuthElements) serverAuthElements.classList.add('hidden');
+                    if (serverNotifContainer) serverNotifContainer.classList.add('hidden');
+                    if (guestElements) guestElements.classList.add('hidden');
 
-        window.closeAllModals = function() {
-            const els = getAuthElements();
-            
-            if (els.loginModal && !els.loginModal.classList.contains('hidden')) {
-                animateOut(els.backdrop, els.loginPanel, () => {
-                    hideElement(els.loginModal);
-                    hideElement(els.backdrop);
-                });
-            } else if (els.registerModal && !els.registerModal.classList.contains('hidden')) {
-                animateOut(els.backdrop, els.registerPanel, () => {
-                    hideElement(els.registerModal);
-                    hideElement(els.backdrop);
-                });
-            }
-        };
+                    // Show API authenticated UI
+                    if (apiAuthElements) {
+                        apiAuthElements.classList.remove('hidden');
 
-        window.switchModal = function(from, to) {
-            const els = getAuthElements();
+                        // Update profile info in API elements
+                        const profileInitial = document.getElementById('profileInitial');
+                        const profileName = document.getElementById('profileName');
+                        const dropdownName = document.getElementById('dropdownName');
+                        const dropdownEmail = document.getElementById('dropdownEmail');
 
-            if (from === 'login') {
-                hideElement(els.loginModal);
-                if(els.loginPanel) {
-                    els.loginPanel.classList.add('opacity-0', 'scale-95');
-                    els.loginPanel.classList.remove('opacity-100', 'scale-100');
-                }
-                
-                showElement(els.registerModal);
-                setTimeout(() => {
-                    if(els.registerPanel) {
-                        els.registerPanel.classList.remove('opacity-0', 'scale-95');
-                        els.registerPanel.classList.add('opacity-100', 'scale-100');
+                        if (profileInitial) profileInitial.textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+                        if (profileName) profileName.textContent = user.name || 'User';
+                        if (dropdownName) dropdownName.textContent = user.name || 'User';
+                        if (dropdownEmail) dropdownEmail.textContent = user.email || 'user@example.com';
                     }
-                }, 50);
+
+                    if (apiNotificationContainer) apiNotificationContainer.classList.remove('hidden');
+
+                    // Update mobile menu
+                    if (mobileAuthButtons) mobileAuthButtons.classList.add('hidden');
+                    if (mobileProfileContainer) {
+                        mobileProfileContainer.classList.remove('hidden');
+
+                        // Update mobile profile name
+                        const mobileProfileName = document.getElementById('mobileProfileName');
+                        if (mobileProfileName) mobileProfileName.textContent = (user.name || 'User') + ' - Profil & Riwayat';
+                    }
+
+                    return user;
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                    // If there's an error, clear the stored data
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user');
+                    return null;
+                }
             } else {
-                hideElement(els.registerModal);
-                if(els.registerPanel) {
-                    els.registerPanel.classList.add('opacity-0', 'scale-95');
-                    els.registerPanel.classList.remove('opacity-100', 'scale-100');
+                // Default behavior based on Laravel's server-side auth
+                // If serverAuthElements exists (user is logged in via Laravel), show it
+                // Otherwise, show guest elements
+                if (serverAuthElements && !serverAuthElements.classList.contains('hidden')) {
+                    // Server-side auth is active, hide API elements
+                    if (apiAuthElements) apiAuthElements.classList.add('hidden');
+                    if (apiNotificationContainer) apiNotificationContainer.classList.add('hidden');
+                    if (mobileAuthButtons) mobileAuthButtons.classList.add('hidden');
+                    if (mobileProfileContainer) mobileProfileContainer.classList.add('hidden');
+                } else {
+                    // No server-side auth, and no API token, show guest UI
+                    if (serverAuthElements) serverAuthElements.classList.add('hidden');
+                    if (serverNotifContainer) serverNotifContainer.classList.add('hidden');
+                    if (guestElements) {
+                        guestElements.classList.remove('hidden');
+                    }
+                    if (apiAuthElements) apiAuthElements.classList.add('hidden');
+                    if (apiNotificationContainer) apiNotificationContainer.classList.add('hidden');
+                    if (mobileAuthButtons) {
+                        mobileAuthButtons.classList.remove('hidden');
+                    }
+                    if (mobileProfileContainer) mobileProfileContainer.classList.add('hidden');
                 }
-
-                showElement(els.loginModal);
-                setTimeout(() => {
-                    if(els.loginPanel) {
-                        els.loginPanel.classList.remove('opacity-0', 'scale-95');
-                        els.loginPanel.classList.add('opacity-100', 'scale-100');
-                    }
-                }, 50);
             }
-        };
+        }
 
-        // --- B. EVENT LISTENERS (Dijalankan setelah halaman siap) ---
+        // API Logout function
+        async function apiLogout() {
+            const token = localStorage.getItem('auth_token');
+
+            if (token) {
+                try {
+                    await fetch('/api/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    });
+                } catch (e) {
+                    console.error('Logout error:', e);
+                    // Continue with local cleanup even if API call fails
+                }
+            }
+
+            // Clear local storage
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+
+            // Refresh page to update UI
+            window.location.reload();
+        }
+
+        // Run check immediately and also after DOM loads
         document.addEventListener('DOMContentLoaded', function() {
-            
-            // 1. Setup Modal Backdrop Click (Tutup modal saat klik background gelap)
-            const backdrop = document.getElementById('authBackdrop');
-            if (backdrop) {
-                backdrop.addEventListener('click', window.closeAllModals);
+            // Update authentication UI on page load
+            updateAuthUI();
+
+            // Set up API logout buttons
+            const apiLogoutBtn = document.getElementById('apiLogoutBtn');
+            const mobileApiLogoutBtn = document.getElementById('mobileApiLogoutBtn');
+
+            if (apiLogoutBtn) {
+                apiLogoutBtn.addEventListener('click', apiLogout);
             }
 
-            // 2. Auto Open Modal on Error (Jika ada error validasi Laravel)
-            @if ($errors->any())
-                @if(old('name')) 
-                    window.openModal('register');
-                @else
-                    window.openModal('login');
-                @endif
-            @endif
+            if (mobileApiLogoutBtn) {
+                mobileApiLogoutBtn.addEventListener('click', apiLogout);
+            }
 
-            // 3. Notification Dropdown Logic
-            const notifBtn = document.getElementById('notifButton');
-            const notifMenu = document.getElementById('notifDropdown');
-            const notifBadge = document.getElementById('notifBadge');
+            // 1. Notification Dropdown Logic (API version)
+            const apiNotifBtn = document.getElementById('apiNotifButton');
+            const apiNotifMenu = document.getElementById('apiNotifDropdown');
 
-            if (notifBtn && notifMenu) {
-                notifBtn.addEventListener('click', (e) => {
+            if (apiNotifBtn && apiNotifMenu) {
+                apiNotifBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    notifMenu.classList.toggle('hidden');
-                    
-                    // UX: Sembunyikan titik merah saat dibuka
-                    if (!notifMenu.classList.contains('hidden') && notifBadge) {
-                        notifBadge.style.display = 'none';
-                    }
+                    apiNotifMenu.classList.toggle('hidden');
                 });
             }
 
-            // 4. Profile Dropdown Logic
+            // 2. Profile Dropdown Logic (API version) - for API profile button
+            const apiProfileBtn = document.getElementById('apiProfileButton');
+            const apiProfileMenu = document.getElementById('apiProfileDropdown');
+
+            if (apiProfileBtn && apiProfileMenu) {
+                apiProfileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    apiProfileMenu.classList.toggle('hidden');
+                });
+            }
+
+            // 2.5. Profile Dropdown Logic (Server-side version) - for server-side profile button
             const profileBtn = document.getElementById('profileButton');
             const profileMenu = document.getElementById('profileDropdown');
-            
+
             if (profileBtn && profileMenu) {
                 profileBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -624,17 +532,38 @@
                 });
             }
 
-            // 5. Global Click Handler (Tutup dropdown saat klik di luar area)
+            // 2.6. Notification Dropdown Logic (Server-side version) - for server-side notification button
+            const notifBtn = document.getElementById('notifButton');
+            const notifMenu = document.getElementById('notifDropdown');
+
+            if (notifBtn && notifMenu) {
+                notifBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    notifMenu.classList.toggle('hidden');
+                });
+            }
+
+            // 3. Global Click Handler (Tutup dropdown saat klik di luar area)
             document.addEventListener('click', (e) => {
-                if (notifBtn && notifMenu && !notifBtn.contains(e.target) && !notifMenu.contains(e.target)) {
-                    notifMenu.classList.add('hidden');
+                if (apiNotifBtn && apiNotifMenu && !apiNotifBtn.contains(e.target) && !apiNotifMenu.contains(e.target)) {
+                    apiNotifMenu.classList.add('hidden');
                 }
+                if (apiProfileBtn && apiProfileMenu && !apiProfileBtn.contains(e.target) && !apiProfileMenu.contains(e.target)) {
+                    apiProfileMenu.classList.add('hidden');
+                }
+                // Tutup juga dropdown server-side jika ada
                 if (profileBtn && profileMenu && !profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
                     profileMenu.classList.add('hidden');
                 }
+                // Tutup juga dropdown notifikasi server-side jika ada
+                const notifBtn = document.getElementById('notifButton');
+                const notifMenu = document.getElementById('notifDropdown');
+                if (notifBtn && notifMenu && !notifBtn.contains(e.target) && !notifMenu.contains(e.target)) {
+                    notifMenu.classList.add('hidden');
+                }
             });
 
-            // 6. Mobile Menu Logic
+            // 4. Mobile Menu Logic
             const mobileBtn = document.getElementById('mobileMenuBtn');
             const mobileMenu = document.getElementById('mobileMenu');
             if (mobileBtn && mobileMenu) {
@@ -643,7 +572,7 @@
                 });
             }
 
-            // 7. Navbar Scroll Effect
+            // 5. Navbar Scroll Effect
             const navbar = document.getElementById('navbar');
             if (navbar) {
                 window.addEventListener('scroll', () => {
@@ -656,7 +585,7 @@
             }
 
             // --- C. SWEETALERT POPUP LOGIC ---
-            
+
             // Popup Sukses
             @if(session('success'))
                 Swal.fire({
@@ -705,6 +634,41 @@
                 });
             @endif
         });
+
+        // Also check on window load in case DOM is ready before script executes
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                updateAuthUI();
+            });
+        } else {
+            // DOM is already loaded
+            updateAuthUI();
+        }
+
+        // Function to calculate and update remaining days in real-time
+        function updateRemainingDays() {
+            const dayElements = document.querySelectorAll('.days-remaining');
+            const now = new Date();
+
+            dayElements.forEach(element => {
+                const endDateStr = element.getAttribute('data-end-date');
+                if (!endDateStr) return;
+
+                // Parse the end date from the data attribute
+                const endDate = new Date(endDateStr + ' 23:59:59'); // Set to end of the day
+                const diffTime = endDate - now;
+                const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+                // Update the display
+                element.textContent = diffDays;
+            });
+        }
+
+        // Initial update
+        updateRemainingDays();
+
+        // Update every minute
+        setInterval(updateRemainingDays, 60000);
     </script>
 </body>
 </html>
