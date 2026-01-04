@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\VolunteerCampaign;
-use App\Models\Campaign; // Import the donation campaign model
-
+use App\Models\Campaign; 
 class CampaignController extends Controller
 {
     // FUNGSI 1: Untuk Landing Page (Halaman Utama /relawan)

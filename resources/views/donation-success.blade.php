@@ -4,192 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Donasi Berhasil - DonGiv</title>
+    <title>Donasi Berhasil | Terima Kasih atas Kebaikan Anda</title>
 
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700&display=swap" rel="stylesheet" />
-
-    <!-- Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top right, #eff6ff, #f8fafc);
+        }
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            background: #dcfce7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .receipt-dashed {
+            background-image: linear-gradient(to right, #e2e8f0 50%, rgba(255,255,255,0) 0%);
+            background-position: bottom;
+            background-size: 15px 1px;
+            background-repeat: repeat-x;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-cyan-50 text-gray-800 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-sm py-4">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonGiv Logo" class="h-8">
-                    <span class="text-xl font-bold text-primary">DonGiv</span>
-                </div>
-                <a href="{{ route('home') }}" class="text-gray-700 hover:text-primary font-medium transition">
-                    <i class="fas fa-home mr-1"></i>Beranda
-                </a>
-            </div>
-        </div>
-    </header>
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <!-- Main Content -->
-    <main class="py-8 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 text-center">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-check text-green-600 text-2xl"></i>
-                </div>
-                
-                <h1 class="text-3xl font-bold text-gray-800 mb-4">Terima Kasih!</h1>
-                <p class="text-lg text-gray-600 mb-6">
-                    Donasi Anda telah berhasil diproses. Kami sangat menghargai kontribusi Anda untuk membantu mewujudkan perubahan positif di masyarakat.
-                </p>
+    <div class="max-w-xl w-full">
+        <!-- MAIN SUCCESS CARD -->
+        <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-blue-100/50 border border-slate-100 overflow-hidden relative">
+            
+            <!-- Top Banner Accent -->
+            <div class="h-2 bg-gradient-to-r from-blue-600 to-cyan-400"></div>
 
-                <div class="bg-blue-50 p-4 rounded-lg mb-6">
-                    <p class="text-blue-800 font-medium">Status Pembayaran: <span class="text-green-600">Berhasil</span></p>
-                    @if(request()->query('order_id'))
-                    <p class="text-blue-800 text-sm mt-1">ID Transaksi: {{ request()->query('order_id') }}</p>
-                    @endif
+            <div class="p-8 md:p-12">
+                <!-- Icon & Greeting -->
+                <div class="text-center mb-10">
+                    <div class="success-checkmark mb-6">
+                        <i class="fas fa-check text-green-600 text-3xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-3">Transaksi Berhasil!</h1>
+                    <p class="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">
+                        Terima kasih atas kontribusi Anda. Kebaikan ini akan sangat berarti bagi mereka yang membutuhkan.
+                    </p>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{{ route('home') }}" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                        <i class="fas fa-home mr-2"></i>Beranda
+                <!-- TRANSACTION DETAILS (RECEIPT STYLE) -->
+                <div class="bg-slate-50 rounded-3xl p-6 mb-8 border border-slate-100">
+                    <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200 border-dashed">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Pembayaran</span>
+                        <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase">Paid / Success</span>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400 font-medium">Order ID</span>
+                            <span class="text-slate-900 font-bold uppercase tracking-tight">#{{ request()->query('order_id') ?? 'N/A' }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400 font-medium">Metode</span>
+                            <span class="text-slate-900 font-bold">Midtrans Secure Gateway</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400 font-medium">Waktu</span>
+                            <span class="text-slate-900 font-bold">{{ now()->format('d M Y, H:i') }} WIB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <a href="{{ route('home') }}" class="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-200 active:scale-95">
+                        <i class="fas fa-home text-sm"></i>
+                        <span class="text-sm">Kembali ke Beranda</span>
                     </a>
                     @auth
-                    <a href="{{ route('profiles.index') }}" class="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                        <i class="fas fa-history mr-2"></i>Riwayat Donasi
+                    <a href="{{ route('profiles.index') }}" class="flex items-center justify-center gap-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-4 rounded-2xl transition-all active:scale-95">
+                        <i class="fas fa-history text-sm"></i>
+                        <span class="text-sm">Riwayat Donasi</span>
                     </a>
                     @endauth
                 </div>
 
-                <!-- Upload Proof Section for Manual Transfers -->
+                <!-- MANUAL TRANSFER / UPLOAD PROOF (IF NEEDED) -->
                 @auth
                     @php
                         $orderId = request()->route('order_id') ?? request()->query('order_id');
+                        $transaction = $orderId ? \App\Models\DonationTransaction::where('order_id', $orderId)->where('user_id', auth()->id())->first() : null;
                     @endphp
-                    @if($orderId)
-                        <?php
-                        $transaction = \App\Models\DonationTransaction::where('order_id', $orderId)->where('user_id', auth()->id())->first();
-                        ?>
-                        @if($transaction)
-                            @if($transaction->status === 'AWAITING_TRANSFER')
-                            <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-xl p-6">
-                                <h3 class="text-lg font-bold text-yellow-800 mb-4 flex items-center">
-                                    <i class="fas fa-exclamation-triangle mr-2"></i> Upload Bukti Transfer
+
+                    @if($transaction)
+                        @if($transaction->status === 'AWAITING_TRANSFER')
+                        <div class="mt-8 pt-8 border-t border-slate-100">
+                            <div class="bg-amber-50 border border-amber-100 rounded-3xl p-6">
+                                <h3 class="text-sm font-bold text-amber-800 mb-2 flex items-center gap-2">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    Konfirmasi Transfer Manual
                                 </h3>
-                                <p class="text-yellow-700 mb-4">
-                                    Pembayaran Anda masih menunggu konfirmasi. Silakan upload bukti transfer untuk menyelesaikan proses donasi.
+                                <p class="text-[11px] text-amber-700 mb-5 leading-relaxed">
+                                    Pembayaran Anda sedang menunggu transfer. Mohon unggah bukti pembayaran agar tim kami dapat segera memverifikasi donasi Anda.
                                 </p>
 
-                                <form action="{{ route('donation.upload.proof', $transaction->order_id) }}" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-4 items-center">
+                                <form action="{{ route('donation.upload.proof', $transaction->order_id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                                     @csrf
-                                    <div class="flex-1 w-full">
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Bukti Transfer</label>
-                                        <input type="file" name="proof" accept="image/*" required
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <div class="relative group">
+                                        <input type="file" name="proof" id="proof_upload" accept="image/*" required class="hidden">
+                                        <label for="proof_upload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-amber-200 rounded-2xl bg-white hover:bg-amber-100/30 cursor-pointer transition-all">
+                                            <i class="fas fa-image text-amber-300 text-2xl mb-2"></i>
+                                            <span class="text-[11px] font-bold text-amber-600 uppercase tracking-widest" id="file_label">Pilih Foto Bukti</span>
+                                        </label>
                                     </div>
-                                    <button type="submit" class="mt-2 sm:mt-0 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg whitespace-nowrap">
-                                        <i class="fas fa-upload mr-2"></i>Upload Bukti
+                                    <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-widest shadow-md transition-all">
+                                        Kirim Bukti Sekarang
                                     </button>
                                 </form>
                             </div>
-                            @elseif($transaction->proof_of_transfer_path)
-                            <!-- Show uploaded proof if exists -->
-                            <div class="mt-8 bg-green-50 border border-green-200 rounded-xl p-6">
-                                <div class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 text-xl mr-3"></i>
-                                    <div>
-                                        <p class="font-medium text-green-800">Bukti Transfer Telah Diupload</p>
-                                        @if($transaction->status === 'VERIFIED')
-                                            <p class="text-sm text-green-600 flex items-center"><i class="fas fa-badge-check mr-1 text-green-500"></i> Pembayaran Berhasil - Ditambahkan ke Riwayat Transaksi</p>
-                                        @elseif($transaction->status === 'PENDING_VERIFICATION')
-                                            <p class="text-sm text-amber-600 flex items-center"><i class="fas fa-clock mr-1 text-amber-500"></i> Menunggu Verifikasi Admin - Ditambahkan ke Riwayat Transaksi</p>
-                                        @else
-                                            <p class="text-sm text-blue-600 flex items-center"><i class="fas fa-history mr-1 text-blue-500"></i> Ditambahkan ke Riwayat Transaksi</p>
-                                        @endif
-                                    </div>
-                                </div>
-                                <div class="mt-4">
-                                    <p class="text-sm font-medium text-gray-700 mb-2">Pratinjau Bukti Transfer:</p>
-                                    <div class="flex justify-center">
-                                        <img src="{{ asset('storage/' . $transaction->proof_of_transfer_path) }}"
-                                             alt="Bukti Transfer"
-                                             class="max-w-xs max-h-48 rounded-lg border shadow-sm">
-                                    </div>
-                                </div>
+                        </div>
+                        @elseif($transaction->proof_of_transfer_path)
+                        <div class="mt-8 pt-8 border-t border-slate-100 text-center">
+                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 border border-slate-100">
+                                <i class="fas fa-clock text-blue-500 text-xs"></i>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Menunggu Verifikasi Admin</span>
                             </div>
-                            @endif
+                        </div>
                         @endif
                     @endif
                 @endauth
             </div>
+        </div>
 
-            <!-- Additional Info -->
-            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white rounded-xl p-6 text-center shadow">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-shield-alt text-blue-600"></i>
-                    </div>
-                    <h3 class="font-bold text-gray-800 mb-2">Aman & Terpercaya</h3>
-                    <p class="text-sm text-gray-600">Donasi Anda digunakan sesuai dengan tujuan</p>
-                </div>
-                <div class="bg-white rounded-xl p-6 text-center shadow">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-receipt text-green-600"></i>
-                    </div>
-                    <h3 class="font-bold text-gray-800 mb-2">Transparan</h3>
-                    <p class="text-sm text-gray-600">Laporan penggunaan dana tersedia untuk Anda</p>
-                </div>
-                <div class="bg-white rounded-xl p-6 text-center shadow">
-                    <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-hand-holding-heart text-amber-600"></i>
-                    </div>
-                    <h3 class="font-bold text-gray-800 mb-2">Dampak Nyata</h3>
-                    <p class="text-sm text-gray-600">Donasi Anda langsung membantu masyarakat</p>
-                </div>
+        <!-- LOWER TRUST BADGES -->
+        <div class="mt-10 flex flex-wrap justify-center gap-8 opacity-40 grayscale contrast-125">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-shield-check text-xl"></i>
+                <span class="text-[10px] font-black uppercase tracking-tighter">Verified System</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-lock-alt text-xl"></i>
+                <span class="text-[10px] font-black uppercase tracking-tighter">End-to-end Encrypted</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-heart-circle text-xl"></i>
+                <span class="text-[10px] font-black uppercase tracking-tighter">100% Transparent</span>
             </div>
         </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-gray-300 py-12 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div class="text-center md:text-left">
-                    <h4 class="text-xl font-bold text-white mb-4">DonGiv</h4>
-                    <p class="text-sm">Creating positive change through transparent and effective charitable giving.</p>
-                </div>
-                <div class="text-center md:text-left">
-                    <h5 class="font-semibold text-white mb-4">Explore</h5>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="{{ route('home') }}" class="hover:text-white transition">Home</a></li>
-                        <li><a href="{{ route('donation.details') }}" class="hover:text-white transition">Donations</a></li>
-                        <li><a href="#" class="hover:text-white transition">Volunteer</a></li>
-                        <li><a href="#" class="hover:text-white transition">About Us</a></li>
-                    </ul>
-                </div>
-                <div class="text-center md:text-left">
-                    <h5 class="font-semibold text-white mb-4">Legal</h5>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-white transition">Charity Registration</a></li>
-                    </ul>
-                </div>
-                <div class="text-center md:text-left">
-                    <h5 class="font-semibold text-white mb-4">Contact Us</h5>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition">Support Center</a></li>
-                        <li><a href="#" class="hover:text-white transition">Partnership Inquiry</a></li>
-                        <li><a href="#" class="hover:text-white transition">Media Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-sm">
-                <p>&copy; {{ date('Y') }} DonGiv — Making a Difference Together ❤️</p>
-            </div>
-        </div>
-    </footer>
+        <p class="text-center mt-12 text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em]">
+            &copy; {{ date('Y') }} DonGiv Platform &bull; Terimakasih Sudah Berdonasi 
+        </p>
+    </div>
+
+    <script>
+        // Simple file label update
+        const fileInput = document.getElementById('proof_upload');
+        const fileLabel = document.getElementById('file_label');
+        if(fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                if(e.target.files.length > 0) {
+                    fileLabel.innerText = e.target.files[0].name;
+                }
+            });
+        }
+    </script>
 </body>
 </html>

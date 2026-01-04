@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('campaigns', function (Blueprint $table) {
-            $table->string('kategori')->nullable(); // Kolom untuk menyimpan kategori kampanye
-        });
+        // PERBAIKAN: Cek apakah kolom 'kategori' sudah ada
+        if (!Schema::hasColumn('campaigns', 'kategori')) {
+            Schema::table('campaigns', function (Blueprint $table) {
+                $table->string('kategori')->nullable(); 
+            });
+        }
     }
 
     /**
@@ -22,7 +25,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('campaigns', function (Blueprint $table) {
-            $table->dropColumn('kategori');
+            // Cek sebelum menghapus untuk menghindari error saat rollback
+            if (Schema::hasColumn('campaigns', 'kategori')) {
+                $table->dropColumn('kategori');
+            }
         });
     }
 };

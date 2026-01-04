@@ -16,10 +16,10 @@ use App\Http\Controllers\CampaignController as FrontendCampaignController;
 
 // --- 2. CONTROLLERS ADMIN ---
 use App\Http\Controllers\Admin\NotifikasiController;
-// Alias Admin
 use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
 use App\Http\Controllers\Admin\VolunteerVerificationController;
 use App\Http\Controllers\Admin\VolunteerAdminController; 
+use App\Http\Controllers\Admin\WithdrawalController;
 
 
 // Halaman Utama
@@ -107,6 +107,12 @@ Route::middleware(['auth'])->group(function () {
 
     // --- ROUTE ADMIN ---
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+
+        // Route Penyaluran Dana (Finance)
+        Route::get('/withdrawals', [App\Http\Controllers\Admin\WithdrawalController::class, 'index'])->name('withdrawals.index');
+        Route::post('/withdrawals', [App\Http\Controllers\Admin\WithdrawalController::class, 'store'])->name('withdrawals.store');
+        // Route History
+        Route::get('/withdrawals/{id}/history', [App\Http\Controllers\Admin\WithdrawalController::class, 'history'])->name('withdrawals.history');
         
         // Dashboard & Settings
         Route::get('dashboard', function () { return view('admin.dashboard'); })->name('dashboard');
@@ -137,6 +143,7 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('donation-transactions/{order_id}/proof', [App\Http\Controllers\API\DonationVerificationController::class, 'deleteProof'])->name('donations.proof.delete');
         });
 
+
         // Halaman API Verifikasi Donasi
         Route::get('donation-verifications', [App\Http\Controllers\Admin\DonationVerificationController::class, 'index'])->name('donations.api.index');
 
@@ -156,8 +163,7 @@ Route::middleware(['auth'])->group(function () {
         // Route tambahan untuk list pendaftar (jika VolunteerAdminController punya method ini)
         Route::get('/daftar-pendaftar', [VolunteerAdminController::class, 'pendaftarIndex'])->name('pendaftar.list');
     });
-});
 
 // Route untuk testing gambar
 Route::get('/test-image/{folder}/{filename}', [App\Http\Controllers\TestImageController::class, 'testImage']);
-
+});

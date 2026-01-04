@@ -353,7 +353,7 @@
             </div>
 
             <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} DonasiKita. Hak Cipta Dilindungi.</p>
+                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} DonGiv. Hak Cipta Dilindungi.</p>
                 <div class="flex gap-6 text-sm text-slate-500 font-medium">
                     <a href="#" class="hover:text-white transition-colors">Syarat & Ketentuan</a>
                     <a href="#" class="hover:text-white transition-colors">Privasi</a>

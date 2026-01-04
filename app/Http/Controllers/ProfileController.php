@@ -114,6 +114,13 @@ class ProfileController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        // --- PERBAIKAN DI SINI ---
+        // Pindahkan logika ini SEBELUM return view
+        $myCampaigns = \App\Models\Campaign::where('user_id', $user->id)
+            ->with('withdrawals') 
+            ->latest()
+            ->get();
+
         return view('profiles.index', compact(
             'user',
             'donations',
@@ -124,61 +131,62 @@ class ProfileController extends Controller
             'countVolunteerCampaigns',
             'donationTransactions',
             'legacyDonations',
-            'allDonations'
+            'allDonations',
+            'myCampaigns' // <-- Variable ini sekarang sudah ada isinya
         ));
     }
 
     public function update(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    // 1. Cek apakah ini update PASSWORD atau update PROFIL
-    if ($request->has('update_password')) {
-        
-        // --- LOGIKA UPDATE PASSWORD ---
-        $request->validate([
-            'current_password' => 'nullable|current_password', // Opsional: Cek password lama (aman)
-            'password' => 'required|min:8|confirmed',
-        ]);
+        // 1. Cek apakah ini update PASSWORD atau update PROFIL
+        if ($request->has('update_password')) {
+            
+            // --- LOGIKA UPDATE PASSWORD ---
+            $request->validate([
+                'current_password' => 'nullable|current_password', // Opsional: Cek password lama (aman)
+                'password' => 'required|min:8|confirmed',
+            ]);
 
-        $user->password = Hash::make($request->password);
-        $user->save();
+            $user->password = Hash::make($request->password);
+            $user->save();
 
-        return back()->with('success', 'Kata sandi berhasil diperbarui!');
+            return back()->with('success', 'Kata sandi berhasil diperbarui!');
 
-    } else {
+        } else {
 
-        // --- LOGIKA UPDATE PROFIL ---
-        $request->validate([
-            'name' => 'required|string|max:255',
-            // Email divalidasi tapi tidak diupdate jika read-only di view, 
-            // tapi tetap kita validasi untuk keamanan.
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:15',
-            'alamat' => 'nullable|string|max:500',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+            // --- LOGIKA UPDATE PROFIL ---
+            $request->validate([
+                'name' => 'required|string|max:255',
+                // Email divalidasi tapi tidak diupdate jika read-only di view, 
+                // tapi tetap kita validasi untuk keamanan.
+                'email' => 'required|email|unique:users,email,'.$user->id,
+                'phone' => 'nullable|string|max:15',
+                'alamat' => 'nullable|string|max:500',
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            ]);
 
-        $user->name = $request->name;
-        // $user->email = $request->email; // Opsional: Hapus baris ini jika email benar-benar dilarang ganti
-        // Tapi biasanya kita biarkan tersimpan ulang untuk konsistensi data
-        $user->phone = $request->phone;
-        $user->address = $request->alamat; // Pastikan kolom database Anda 'address' atau sesuaikan
+            $user->name = $request->name;
+            // $user->email = $request->email; // Opsional: Hapus baris ini jika email benar-benar dilarang ganti
+            // Tapi biasanya kita biarkan tersimpan ulang untuk konsistensi data
+            $user->phone = $request->phone;
+            $user->address = $request->alamat; // Pastikan kolom database Anda 'address' atau sesuaikan
 
-        // Upload Foto
-        if ($request->hasFile('photo')) {
-            if ($user->photo && Storage::exists('public/' . $user->photo)) {
-                Storage::delete('public/' . $user->photo);
-            }  // End of nested if to delete old photo
-            $path = $request->file('photo')->store('profile-photos', 'public');
-            $user->photo = $path;
-        }  // End of if to upload photo
+            // Upload Foto
+            if ($request->hasFile('photo')) {
+                if ($user->photo && Storage::exists('public/' . $user->photo)) {
+                    Storage::delete('public/' . $user->photo);
+                }  // End of nested if to delete old photo
+                $path = $request->file('photo')->store('profile-photos', 'public');
+                $user->photo = $path;
+            }  // End of if to upload photo
 
-        $user->save();
+            $user->save();
 
-        return back()->with('success', 'Informasi profil berhasil diperbarui!');
-    }  // Closes the else block
-}  // Closes the update method
+            return back()->with('success', 'Informasi profil berhasil diperbarui!');
+        }  // Closes the else block
+    }  // Closes the update method
 
     public function showTransactionHistory()
     {

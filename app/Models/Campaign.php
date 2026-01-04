@@ -98,6 +98,12 @@ class Campaign extends Model
     {
         return $this->hasMany(\App\Models\Donation::class, 'campaign_id');
     }
+    // Relationship: Campaign has many withdrawals
+    // Penting untuk menghitung total dana yang sudah ditarik
+    public function withdrawals()
+    {
+        return $this->hasMany(\App\Models\Withdrawal::class, 'campaign_id');
+    }
 
     // Accessor to calculate current amount from all verified donations
     public function getCurrentAmountAttribute($value)

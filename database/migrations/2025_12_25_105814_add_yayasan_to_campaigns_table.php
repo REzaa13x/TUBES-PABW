@@ -11,9 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('campaigns', function (Blueprint $table) {
-            $table->string('yayasan')->nullable()->after('kategori');
-        });
+        // LOGIKA PERBAIKAN:
+        // Cek apakah kolom 'yayasan' sudah ada di tabel 'campaigns'.
+        // Jika belum ada, baru tambahkan. Jika sudah ada, lewati.
+        if (!Schema::hasColumn('campaigns', 'yayasan')) {
+            Schema::table('campaigns', function (Blueprint $table) {
+                $table->string('yayasan')->nullable()->after('kategori');
+            });
+        }
     }
 
     /**
@@ -22,7 +27,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('campaigns', function (Blueprint $table) {
-            $table->dropColumn('yayasan');
+            if (Schema::hasColumn('campaigns', 'yayasan')) {
+                $table->dropColumn('yayasan');
+            }
         });
     }
 };

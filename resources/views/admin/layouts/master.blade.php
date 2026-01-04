@@ -87,6 +87,21 @@
             color: #2563eb;
             /* Icon juga jadi biru */
         }
+        
+        /* Custom Scrollbar for Sidebar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
     </style>
 </head>
 
@@ -114,6 +129,12 @@
                 <i class="fas fa-file-invoice-dollar w-6 text-center text-lg mr-2"></i>
                 <span>Verifikasi Donasi</span>
             </a>
+            
+            <a href="{{ route('admin.withdrawals.index') }}" class="nav-item {{ request()->routeIs('admin.withdrawals.*') ? 'active' : '' }}">
+                <i class="fas fa-money-bill-wave w-6 text-center text-lg mr-2"></i>
+                <span>Penyaluran Dana</span>
+            </a>
+            
             <a href="{{ route('admin.campaigns.index') }}" class="nav-item {{ request()->routeIs('admin.campaigns.*') ? 'active' : '' }}">
                 <i class="fas fa-hand-holding-heart w-6 text-center text-lg mr-2"></i>
                 <span>Kampanye Donasi</span>

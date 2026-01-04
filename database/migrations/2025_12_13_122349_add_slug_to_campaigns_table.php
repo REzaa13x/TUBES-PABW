@@ -7,17 +7,21 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up()
-{
-    Schema::table('campaigns', function (Blueprint $table) {
-        // Menambahkan kolom slug setelah kolom title (atau sesuaikan)
-        $table->string('slug')->unique()->nullable()->after('id');
-    });
-}
+    {
+        // PERBAIKAN: Cek dulu apakah kolom 'slug' sudah ada
+        if (!Schema::hasColumn('campaigns', 'slug')) {
+            Schema::table('campaigns', function (Blueprint $table) {
+                $table->string('slug')->unique()->nullable()->after('id');
+            });
+        }
+    }
 
-public function down()
-{
-    Schema::table('campaigns', function (Blueprint $table) {
-        $table->dropColumn('slug');
-    });
-}
+    public function down()
+    {
+        Schema::table('campaigns', function (Blueprint $table) {
+            if (Schema::hasColumn('campaigns', 'slug')) {
+                $table->dropColumn('slug');
+            }
+        });
+    }
 };

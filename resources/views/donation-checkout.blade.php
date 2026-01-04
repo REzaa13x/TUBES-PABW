@@ -4,398 +4,336 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Checkout Donasi - DonGiv</title>
+    <title>Secure Donation Checkout | Modern Giving Experience</title>
 
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F8FAFC;
+            color: #1E293B;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .amount-card {
+            @apply relative border-2 border-slate-100 rounded-2xl p-5 cursor-pointer
+                   transition-all duration-300 hover:border-blue-300 hover:shadow-md;
+        }
+
+        .amount-input:checked + .amount-card {
+            @apply border-blue-600 bg-blue-50 ring-4 ring-blue-500/10;
+        }
+
+        .quote-box {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quote-box::before {
+            content: '"';
+            position: absolute;
+            top: -20px;
+            left: 10px;
+            font-size: 8rem;
+            color: rgba(37, 99, 235, 0.05);
+            font-family: serif;
+        }
+
+        /* Smooth scroll behavior */
+        html { scroll-behavior: smooth; }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-cyan-50 text-gray-800 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-sm py-4">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonGiv Logo" class="h-8">
-                    <span class="text-xl font-bold text-primary">DonGiv</span>
-                </div>
-                <a href="{{ route('home') }}" class="text-gray-700 hover:text-primary font-medium transition">
-                    <i class="fas fa-home mr-1"></i>Beranda
-                </a>
+
+<body class="min-h-screen flex flex-col">
+
+<!-- NAVBAR -->
+<nav class="bg-white/70 backdrop-blur-lg border-b border-slate-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-200">
+                <i class="fas fa-hand-holding-heart text-white text-lg"></i>
+            </div>
+            <div class="hidden sm:block">
+                <h1 class="text-sm font-extrabold text-slate-900 tracking-tight leading-none">Donasi Kebaikan</h1>
+                <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest mt-1">Langkah Nyata Anda</p>
             </div>
         </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="py-8 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-4xl mx-auto">
-            <div class="text-center mb-10">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Formulir Donasi</h1>
-                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Berikan kontribusi Anda untuk membantu mewujudkan perubahan positif di masyarakat
-                </p>
+        <div class="flex items-center gap-8">
+            <div class="hidden lg:flex items-center gap-4 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                <span class="text-blue-600">01. Detail</span>
+                <span class="w-10 h-[1px] bg-slate-100"></span>
+                <span>02. Pembayaran</span>
             </div>
+            <a href="{{ route('home') }}" class="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest">
+                Batal
+            </a>
+        </div>
+    </div>
+</nav>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Left Column - Form -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100">
+<main class="flex-grow py-10">
+    <div class="max-w-7xl mx-auto px-6">
+        @auth
+        <form id="donationForm" method="POST" action="{{ route('donation.process.midtrans') }}">
+            @csrf
+            <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
 
-                        <!-- Login Required Banner -->
-                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg mb-6 border border-blue-100">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 mr-3">
-                                    <i class="fas fa-exclamation-circle text-blue-800 text-xl"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-blue-800 mb-1">Login Diperlukan</h3>
-                                    <p class="text-blue-900 text-sm">
-                                        Anda harus login terlebih dahulu untuk membuat donasi. Donasi Anda akan tercatat dalam riwayat Anda dan koin kebaikan akan ditambahkan ke akun Anda.
-                                    </p>
-                                </div>
-                            </div>
+            <input type="hidden" name="payment_method" value="midtrans">
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                
+                <!-- KOLOM KIRI: FORMULIR -->
+                <div class="lg:col-span-8 space-y-8">
+                    
+                    <!-- HERO SECTION DALAM FORM -->
+                    <div class="relative rounded-[2.5rem] bg-blue-600 p-10 md:p-14 overflow-hidden shadow-2xl shadow-blue-200">
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+                        <div class="relative z-10 max-w-lg">
+                            <h2 class="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-4">
+                                Ubah Dunia Menjadi Lebih Baik.
+                            </h2>
+                            <p class="text-blue-100 text-sm md:text-base leading-relaxed opacity-90">
+                                Setiap rupiah yang Anda berikan adalah harapan bagi mereka yang membutuhkan. Mari salurkan kebaikan hari ini.
+                            </p>
                         </div>
+                    </div>
 
-                    @auth
-                        <!-- Campaign Info -->
-                        @if($campaign)
-                        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-xl mb-8 border border-blue-100">
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0 mr-4">
-                                    <div class="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-hand-holding-heart text-blue-600"></i>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-gray-800 text-lg">{{ $campaign->title }}</h3>
-                                    <div class="flex flex-wrap gap-4 mt-2 text-sm text-gray-600">
-                                        <span class="flex items-center">
-                                            <i class="fas fa-coins mr-1"></i>
-                                            Target: <span class="font-medium ml-1">Rp {{ number_format($campaign->target_amount, 0, ',', '.') }}</span>
-                                        </span>
-                                        <span class="flex items-center">
-                                            <i class="fas fa-chart-line mr-1"></i>
-                                            Tercapai: <span class="font-medium ml-1">Rp {{ number_format($campaign->current_amount, 0, ',', '.') }}</span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Donation Form -->
-                        <form id="donationForm" action="{{ route('donation.process.midtrans') }}" method="POST" class="space-y-6">
-                            @csrf
-                            @if($campaign)
-                                <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
-                            @endif
-                            <!-- Hidden input to always specify Midtrans as payment method -->
-                            <input type="hidden" name="payment_method" value="midtrans">
-
-                            <!-- Amount Selection -->
+                    <!-- STEP 1: NOMINAL -->
+                    <section class="bg-white rounded-[2rem] p-8 md:p-12 border border-slate-100 shadow-sm">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-3">Jumlah Donasi</label>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                                    <button type="button" class="amount-btn py-3 px-4 border border-gray-300 rounded-xl text-center font-medium hover:bg-blue-50 hover:border-blue-300 transition-all" data-amount="50000">Rp 50.000</button>
-                                    <button type="button" class="amount-btn py-3 px-4 border border-gray-300 rounded-xl text-center font-medium hover:bg-blue-50 hover:border-blue-300 transition-all" data-amount="100000">Rp 100.000</button>
-                                    <button type="button" class="amount-btn py-3 px-4 border border-gray-300 rounded-xl text-center font-medium hover:bg-blue-50 hover:border-blue-300 transition-all" data-amount="200000">Rp 200.000</button>
-                                    <button type="button" class="amount-btn py-3 px-4 border border-gray-300 rounded-xl text-center font-medium hover:bg-blue-50 hover:border-blue-300 transition-all" data-amount="500000">Rp 500.000</button>
-                                </div>
-
-                                <div class="relative mt-2">
-                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">Rp</span>
-                                    <input type="number"
-                                           name="amount"
-                                           id="custom_amount"
-                                           placeholder="Atau masukkan jumlah lain"
-                                           class="w-full pl-10 pr-3 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                </div>
+                                <span class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-2 block">Step 01</span>
+                                <h3 class="text-2xl font-extrabold text-slate-900">Pilih Nominal Donasi</h3>
                             </div>
-
-                            <!-- Personal Information -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="donor_name" class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap *</label>
-                                    <input type="text"
-                                           name="donor_name"
-                                           id="donor_name"
-                                           required
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-
-                                <div>
-                                    <label for="donor_email" class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                                    <input type="email"
-                                           name="donor_email"
-                                           id="donor_email"
-                                           required
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-
-                                <div>
-                                    <label for="donor_phone" class="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon</label>
-                                    <input type="tel"
-                                           name="donor_phone"
-                                           id="donor_phone"
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="Contoh: 081234567890">
-                                </div>
-
-                                <div>
-                                    <label for="donor_anonymous" class="block text-sm font-medium text-gray-700 mb-2">Jenis Donasi</label>
-                                    <select name="anonymous" id="donor_anonymous" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="0" selected>Donasi Terbuka (Nama akan ditampilkan)</option>
-                                        <option value="1">Donasi Anonim (Nama disembunyikan)</option>
-                                    </select>
-                                </div>
+                            <!-- QUOTE INTERNATIONAL 1 -->
+                            <div class="max-w-xs italic text-right text-[11px] text-slate-400 leading-relaxed border-r-2 border-blue-500 pr-4">
+                                "No one has ever become poor by giving."
+                                <span class="block font-bold mt-1 text-slate-600">— Anne Frank</span>
                             </div>
-
-                            <!-- Payment Method Selection -->
-                            <div class="pt-4">
-                                <div class="bg-gradient-to-r from-green-50 to-blue-50 p-5 rounded-xl mb-6 border border-green-100">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 mr-4">
-                                            <div class="bg-green-100 w-10 h-10 rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-badge-check text-green-800 text-lg"></i>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h3 class="font-bold text-green-800 mb-1">Metode Pembayaran Aman & Terpercaya</h3>
-                                            <p class="text-green-900 text-sm">
-                                                Pembayaran dikelola secara aman oleh Midtrans - payment gateway terpercaya di Indonesia
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 gap-4">
-                                    <div class="bg-white border-2 border-blue-200 rounded-xl p-5 text-center">
-                                        <div class="flex justify-center mb-3">
-                                            <i class="fas fa-credit-card text-3xl text-blue-600"></i>
-                                        </div>
-
-                                        <h4 class="font-bold text-gray-800 mb-2">Midtrans Payment Gateway</h4>
-                                        <p class="text-gray-600 text-sm mb-3">
-                                            Bayar dengan kartu kredit, debit, e-Wallet, atau QRIS melalui sistem pembayaran terpercaya
-                                        </p>
-
-                                        <div class="flex flex-wrap justify-center gap-2 mt-3">
-                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Kartu Kredit</span>
-                                            <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">OVO</span>
-                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">GoPay</span>
-                                            <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">ShopeePay</span>
-                                            <span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">QRIS</span>
-                                        </div>
-
-                                        <input type="hidden" name="payment_method" value="midtrans">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Info Section -->
-                            <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
-                                <div class="flex items-start">
-                                    <div class="flex-shrink-0 mr-3">
-                                        <i class="fas fa-shield-alt text-blue-800 text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-blue-800 mb-1">Bayar Aman & Cepat</h3>
-                                        <p class="text-blue-900 text-sm">
-                                            Anda akan diarahkan ke halaman pembayaran aman Midtrans. Proses pembayaran hanya membutuhkan beberapa detik.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Submit Button -->
-                            <div class="pt-4">
-                                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg">
-                                    <i class="fas fa-credit-card mr-2"></i>Bayar Melalui Midtrans
-                                </button>
-                            </div>
-                        </form>
-                    @else
-                        <!-- Login Required Message -->
-                        <div class="text-center py-12">
-                            <i class="fas fa-user-lock text-5xl text-gray-400 mb-4"></i>
-                            <h3 class="text-xl font-bold text-gray-800 mb-4">Login Diperlukan untuk Berdonasi</h3>
-                            <p class="text-gray-600 mb-6">Anda harus login terlebih dahulu untuk membuat donasi. Donasi Anda akan tercatat dalam riwayat Anda dan koin kebaikan akan ditambahkan ke akun Anda.</p>
-                            <a href="{{ route('login') }}" class="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                                <i class="fas fa-sign-in-alt mr-2"></i>Login untuk Berdonasi
-                            </a>
                         </div>
-                    @endauth
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
+                            @foreach([50000, 100000, 250000, 500000] as $amount)
+                            <label class="block relative">
+                                <input type="radio" name="preset_selector" value="{{ $amount }}" class="amount-input hidden">
+                                <div class="amount-card text-center">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Donasi</p>
+                                    <p class="text-base font-extrabold text-slate-900">Rp{{ number_format($amount, 0, ',', '.') }}</p>
+                                </div>
+                            </label>
+                            @endforeach
+                        </div>
+
+                        <div class="space-y-4">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Masukkan Nominal Lain</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-8 flex items-center pointer-events-none">
+                                    <span class="text-2xl font-black text-blue-600">Rp</span>
+                                </div>
+                                <input type="number" id="real_amount" name="amount"
+                                       class="w-full pl-20 pr-10 py-8 rounded-3xl border-2 border-slate-50 bg-slate-50/50 focus:border-blue-600 focus:bg-white focus:ring-0 outline-none text-3xl font-black transition-all"
+                                       placeholder="0">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- STEP 2: DATA DIRI -->
+                    <section class="bg-white rounded-[2rem] p-8 md:p-12 border border-slate-100 shadow-sm space-y-10">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-2 block">Step 02</span>
+                                <h3 class="text-2xl font-extrabold text-slate-900">Data Pengirim</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400">
+                                <i class="fas fa-id-card text-xl"></i>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-3">
+                                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Nama Lengkap</label>
+                                <input type="text" name="donor_name" value="{{ Auth::user()->name }}" 
+                                       class="w-full px-6 py-5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition-all font-semibold">
+                            </div>
+                            <div class="space-y-3">
+                                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Notifikasi</label>
+                                <input type="email" name="donor_email" value="{{ Auth::user()->email }}" 
+                                       class="w-full px-6 py-5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition-all font-semibold">
+                            </div>
+                        </div>
+
+                        <!-- FEATURE: SEMBUNYIKAN NAMA -->
+                        <div class="p-8 rounded-[2rem] border-2 border-dashed border-blue-100 bg-blue-50/20 flex flex-col md:flex-row md:items-center justify-between gap-6 group">
+                            <div class="flex items-start gap-5">
+                                <div class="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-blue-600 shadow-sm border border-blue-50">
+                                    <i class="fas fa-user-secret text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-extrabold text-slate-900 text-lg">Sembunyikan Nama Saya</h4>
+                                    <p class="text-sm text-slate-500 leading-relaxed mt-1">Gunakan identitas "Hamba Allah" pada daftar donatur publik.</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer scale-110">
+                                <input type="checkbox" name="anonymous" value="1" class="sr-only peer">
+                                <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </section>
+
+                    <!-- QUOTE INTERNATIONAL 2 -->
+                    <div class="bg-slate-900 rounded-[2.5rem] p-10 md:p-16 text-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-full opacity-10">
+                            <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white"></path>
+                            </svg>
+                        </div>
+                        <div class="relative z-10">
+                            <p class="text-xl md:text-2xl font-medium text-blue-100 italic leading-relaxed">
+                                "It's not how much we give but how much love we put into giving."
+                            </p>
+                            <h5 class="mt-6 text-white font-black uppercase tracking-[0.3em] text-xs">— Mother Teresa —</h5>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- KOLOM KANAN: RINGKASAN (STICKY) -->
+                <div class="lg:col-span-4 space-y-8">
+                    <div class="lg:sticky lg:top-28 space-y-6">
+                        
+                        <!-- SUMMARY CARD -->
+                        <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-xl shadow-slate-200/50">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 border-b border-slate-50 pb-4">
+                                Rincian Donasi Anda
+                            </h4>
+                            
+                            <div class="space-y-6 mb-10">
+                                <div class="flex justify-between items-start gap-4">
+                                    <span class="text-xs font-bold text-slate-400 uppercase">Program</span>
+                                    <span class="text-sm font-black text-slate-900 text-right leading-tight">
+                                        {{ $campaign?->title ?? 'Bantuan Kemanusiaan Global' }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs font-bold text-slate-400 uppercase">Gateway</span>
+                                    <span class="text-[10px] font-black bg-blue-600 text-white px-3 py-1 rounded-full uppercase">MIDTRANS SECURE</span>
+                                </div>
+                                
+                                <div class="pt-6 border-t border-slate-100">
+                                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Pembayaran</p>
+                                    <div class="flex items-baseline gap-2 text-blue-600">
+                                        <span class="text-xl font-black">Rp</span>
+                                        <span id="display_amount" class="text-5xl font-black tracking-tighter">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="submitBtn"
+                                    class="w-full bg-slate-900 hover:bg-blue-600 text-white font-black py-6 rounded-3xl transition-all duration-500 transform active:scale-[0.97] shadow-xl hover:shadow-blue-500/20 flex items-center justify-center gap-3 group">
+                                <span class="uppercase tracking-widest text-sm">Konfirmasi Donasi</span>
+                                <i class="fas fa-arrow-right text-xs transition-transform group-hover:translate-x-1"></i>
+                            </button>
+
+                            <p class="text-center text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-8">
+                                Secured by SSL & Bank Indonesia
+                            </p>
+                        </div>
+
+                        <!-- SIDEBAR QUOTE 3 -->
+                        <div class="bg-blue-50 rounded-[2rem] p-8 border border-blue-100/50">
+                            <p class="text-xs text-blue-700 font-medium italic leading-relaxed">
+                                "We make a living by what we get, but we make a life by what we give."
+                            </p>
+                            <p class="mt-4 text-[10px] font-black text-blue-900 uppercase tracking-widest">— Winston Churchill</p>
+                        </div>
+
+                        <!-- TRUST BADGES -->
+                        <div class="grid grid-cols-3 gap-4 opacity-30 grayscale">
+                            <div class="flex justify-center"><i class="fab fa-cc-visa text-3xl"></i></div>
+                            <div class="flex justify-center"><i class="fab fa-cc-mastercard text-3xl"></i></div>
+                            <div class="flex justify-center"><i class="fas fa-university text-3xl"></i></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Right Column - Information -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 sticky top-6">
-                        <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">Kepercayaan Donatur</h3>
-
-                        <div class="space-y-5">
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0 mr-3">
-                                    <div class="bg-green-100 w-10 h-10 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-shield-alt text-green-600"></i>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold text-gray-800">Aman & Terpercaya</h4>
-                                    <p class="text-sm text-gray-600">Donasi Anda akan digunakan sesuai dengan tujuan</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0 mr-3">
-                                    <div class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-receipt text-blue-600"></i>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold text-gray-800">Transparan</h4>
-                                    <p class="text-sm text-gray-600">Laporan penggunaan dana tersedia untuk Anda</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0 mr-3">
-                                    <div class="bg-amber-100 w-10 h-10 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-hand-holding-heart text-amber-600"></i>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold text-gray-800">Dampak Nyata</h4>
-                                    <p class="text-sm text-gray-600">Donasi Anda langsung membantu masyarakat</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-8 pt-6 border-t border-gray-200">
-                            <h4 class="font-bold text-gray-800 mb-4 text-center">Didukung Oleh</h4>
-                            <div class="flex justify-center space-x-4">
-                                <div class="text-center">
-                                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                        <i class="fas fa-globe text-white text-lg"></i>
-                                    </div>
-                                    <span class="text-xs text-gray-600">Midtrans</span>
-                                </div>
-                                <div class="text-center">
-                                    <div class="bg-gradient-to-br from-green-500 to-green-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                        <i class="fab fa-cc-visa text-white"></i>
-                                    </div>
-                                    <span class="text-xs text-gray-600">Credit Card</span>
-                                </div>
-                                <div class="text-center">
-                                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                        <i class="fab fa-google-pay text-white"></i>
-                                    </div>
-                                    <span class="text-xs text-gray-600">e-Wallet</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Testimonial Section -->
-                    <div class="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl shadow-lg p-6 mt-6 text-white">
-                        <h3 class="font-bold text-lg mb-3">Kata Mereka</h3>
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 mr-3">
-                                <div class="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-quote-left text-white"></i>
-                                </div>
-                            </div>
-                            <p class="text-sm italic text-white">"Setiap donasi membawa harapan dan perubahan nyata untuk masyarakat yang membutuhkan."</p>
-                        </div>
-                    </div>
-                </div>
             </div>
+        </form>
+        @endauth
+    </div>
+</main>
+
+<footer class="py-16 bg-white border-t border-slate-50 mt-20">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+        <div class="flex justify-center gap-8 mb-8 text-slate-300">
+            <i class="fab fa-instagram text-xl"></i>
+            <i class="fab fa-facebook text-xl"></i>
+            <i class="fab fa-twitter text-xl"></i>
         </div>
-    </main>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">
+            &copy; {{ date('Y') }} &bull; DonGiv &bull; Terdaftar & Diawasi
+        </p>
+    </div>
+</footer>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-gray-300 py-12 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div class="text-center md:text-left">
-                    <h4 class="text-xl font-bold text-white mb-4">DonGiv</h4>
-                    <p class="text-sm">Creating positive change through transparent and effective charitable giving.</p>
-                </div>
-                <div class="text-center md:text-left">
-                    <h5 class="font-semibold text-white mb-4">Explore</h5>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="{{ route('home') }}" class="hover:text-white transition">Home</a></li>
-                        <li><a href="{{ route('donation.details') }}" class="hover:text-white transition">Donations</a></li>
-                        <li><a href="#" class="hover:text-white transition">Volunteer</a></li>
-                        <li><a href="#" class="hover:text-white transition">About Us</a></li>
-                    </ul>
-                </div>
-                <div class="text-center md:text-left">
-                    <h5 class="font-semibold text-white mb-4">Legal</h5>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-white transition">Charity Registration</a></li>
-                    </ul>
-                </div>
-                <div class="text-center md:text-left">
-                    <h5 class="font-semibold text-white mb-4">Contact Us</h5>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition">Support Center</a></li>
-                        <li><a href="#" class="hover:text-white transition">Partnership Inquiry</a></li>
-                        <li><a href="#" class="hover:text-white transition">Media Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-sm">
-                <p>&copy; {{ date('Y') }} DonGiv — Making a Difference Together ❤️</p>
-            </div>
-        </div>
-    </footer>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('real_amount');
+    const display = document.getElementById('display_amount');
+    const presetRadios = document.querySelectorAll('input[name=preset_selector]');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('donationForm');
 
-    <!-- JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Amount buttons functionality
-            const amountButtons = document.querySelectorAll('.amount-btn');
-            const customAmountInput = document.getElementById('custom_amount');
+    const formatIDR = (num) => {
+        return Number(num).toLocaleString('id-ID');
+    };
 
-            amountButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    amountButtons.forEach(btn => {
-                        btn.classList.remove('border-blue-500', 'bg-blue-50');
-                    });
-
-                    // Add active class to clicked button
-                    this.classList.add('border-blue-500', 'bg-blue-50');
-
-                    // Set value to custom input
-                    customAmountInput.value = this.getAttribute('data-amount');
-                });
-            });
-
-            // Update button highlight based on custom input
-            customAmountInput.addEventListener('input', function() {
-                amountButtons.forEach(btn => btn.classList.remove('border-blue-500', 'bg-blue-50'));
-            });
-
-            // Optional: Add loading indicator when submitting
-            const donationForm = document.getElementById('donationForm');
-            const submitBtn = document.getElementById('submitBtn');
-
-            donationForm.addEventListener('submit', function() {
-                // Disable button and show loading state
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses Pembayaran...';
-            });
+    presetRadios.forEach(radio => {
+        radio.addEventListener('change', e => {
+            const val = e.target.value;
+            input.value = val;
+            display.innerText = formatIDR(val);
+            
+            // Animasi kecil saat berubah
+            display.classList.add('scale-110');
+            setTimeout(() => display.classList.remove('scale-110'), 200);
         });
-    </script>
+    });
+
+    input.addEventListener('input', e => {
+        const val = e.target.value;
+        display.innerText = formatIDR(val || 0);
+        
+        // Hapus seleksi radio jika input manual
+        if(val) {
+            presetRadios.forEach(r => r.checked = false);
+        }
+    });
+
+    form.addEventListener('submit', () => {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        submitBtn.innerHTML = `
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="uppercase tracking-widest text-sm">Sedang Memproses...</span>
+        `;
+    });
+});
+</script>
+
 </body>
 </html>
