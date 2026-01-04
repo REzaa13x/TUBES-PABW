@@ -89,16 +89,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/donation/upload-proof/{order_id}', [DonationController::class, 'uploadProof'])->name('donation.upload.proof');
         Route::get('/transaction/download/{order_id}', [DonationController::class, 'downloadTransactionPDF'])->name('transaction.download.pdf');
 
-        // Fitur Notifikasi (PENTING: Untuk fitur notifikasi kita tadi)
-        Route::post('/notifications/mark-all-read', function () {
-            auth()->user()->unreadNotifications->markAsRead();
-            return back();
-        })->name('notifications.markAllRead');
-
         // Route untuk melihat status lamaran (Halaman "Surat")
         Route::get('/volunteer/status/{slug}', [VolunteerApplicationController::class, 'checkStatus'])
             ->name('volunteer.application.status');
     });
+
+    // Fitur Notifikasi - Tidak menggunakan middleware prevent.admin.user.pages agar bisa diakses oleh admin juga
+    Route::post('/notifications/mark-all-read', function () {
+        auth()->user()->unreadNotifications->markAsRead();
+        return back();
+    })->name('notifications.markAllRead');
 
     // Proses Pendaftaran Relawan - tidak menggunakan middleware prevent.admin.user.pages untuk sementara
     Route::get('/volunteer/{slug}/register', [VolunteerApplicationController::class, 'create'])->name('volunteer.register.create');
@@ -115,7 +115,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/withdrawals/{id}/history', [App\Http\Controllers\Admin\WithdrawalController::class, 'history'])->name('withdrawals.history');
         
         // Dashboard & Settings
-        Route::get('dashboard', function () { return view('admin.dashboard'); })->name('dashboard');
+        Route::get('dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::get('settings', function () { return view('admin.settings'); })->name('settings');
         Route::resource('profiles', \App\Http\Controllers\Admin\UserController::class);
 

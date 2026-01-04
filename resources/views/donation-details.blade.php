@@ -162,7 +162,15 @@
                             </div>
                             <div>
                                 <h4 class="font-bold text-slate-800">Penyaluran Dana</h4>
-                                <p class="text-slate-600 text-sm leading-relaxed mt-1">100% donasi Anda (setelah biaya operasional platform) akan langsung digunakan untuk implementasi program. DonasiKita memastikan transparansi dan akuntabilitas dalam semua upaya kami.</p>
+                                <p class="text-slate-600 text-sm leading-relaxed mt-1">
+                                    100% donasi Anda (setelah biaya operasional platform) akan langsung digunakan untuk implementasi program.
+                                    @if(isset($withdrawals) && $withdrawals->count() > 0)
+                                        Sudah disalurkan: <span class="font-bold text-green-600">Rp {{ number_format($totalDistributed ?? 0, 0, ',', '.') }}</span>
+                                        dari total <span class="font-bold">Rp {{ number_format($totalDonated ?? 0, 0, ',', '.') }}</span>
+                                    @else
+                                        DonasiKita memastikan transparansi dan akuntabilitas dalam semua upaya kami.
+                                    @endif
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -172,32 +180,67 @@
                     <h3 class="text-xl font-bold text-slate-800 mb-8 flex items-center gap-2">
                         <i class="fas fa-history text-blue-500"></i> Kabar Terbaru
                     </h3>
-                    
-                    <div class="relative border-l-2 border-slate-100 ml-3 space-y-8 pl-8 pb-2">
-                        <div class="relative group">
-                            <div class="absolute -left-[41px] bg-blue-100 border-4 border-white w-6 h-6 rounded-full flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                                <div class="w-2 h-2 bg-blue-600 rounded-full group-hover:bg-white"></div>
+
+                    <!-- Fund Distribution Updates -->
+                    <div class="mb-8">
+                        <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-money-bill-wave text-green-500"></i> Penyaluran Dana
+                        </h4>
+
+                        <!-- Fund Distribution Summary -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                <div class="text-sm text-blue-600 font-semibold">Total Donasi</div>
+                                <div class="text-lg font-bold text-slate-800">Rp {{ number_format($totalDonated ?? 0, 0, ',', '.') }}</div>
                             </div>
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
-                                    <h4 class="font-bold text-slate-800">Penyaluran Sembako Tahap 1</h4>
-                                    <span class="text-xs font-semibold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200">15 Mar 2024</span>
-                                </div>
-                                <p class="text-slate-600 text-sm">Alhamdulillah, bantuan tahap pertama berupa paket sembako telah disalurkan kepada 500 keluarga penerima manfaat di lokasi bencana.</p>
+                            <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                                <div class="text-sm text-green-600 font-semibold">Tersalurkan</div>
+                                <div class="text-lg font-bold text-slate-800">Rp {{ number_format($totalDistributed ?? 0, 0, ',', '.') }}</div>
+                            </div>
+                            <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                <div class="text-sm text-amber-600 font-semibold">Tersisa</div>
+                                <div class="text-lg font-bold text-slate-800">Rp {{ number_format($remainingFunds ?? 0, 0, ',', '.') }}</div>
                             </div>
                         </div>
 
-                        <div class="relative group">
-                             <div class="absolute -left-[41px] bg-green-100 border-4 border-white w-6 h-6 rounded-full flex items-center justify-center group-hover:bg-green-600 transition-colors">
-                                <div class="w-2 h-2 bg-green-600 rounded-full group-hover:bg-white"></div>
-                            </div>
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
-                                    <h4 class="font-bold text-slate-800">Distribusi Perlengkapan Sekolah</h4>
-                                    <span class="text-xs font-semibold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200">28 Feb 2024</span>
+                        <!-- Distribution Timeline -->
+                        <div class="relative border-l-2 border-slate-100 ml-3 space-y-6 pl-8 pb-2">
+                            @if(isset($withdrawals) && $withdrawals->count() > 0)
+                                @foreach($withdrawals as $withdrawal)
+                                <div class="relative group">
+                                    <div class="absolute -left-[41px] bg-green-100 border-4 border-white w-6 h-6 rounded-full flex items-center justify-center group-hover:bg-green-600 transition-colors">
+                                        <div class="w-2 h-2 bg-green-600 rounded-full group-hover:bg-white"></div>
+                                    </div>
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
+                                            <h4 class="font-bold text-slate-800">Penyaluran Dana: {{ $withdrawal->bank_name ?? 'Transfer Bank' }}</h4>
+                                            <span class="text-xs font-semibold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200">
+                                                {{ $withdrawal->transferred_at ? $withdrawal->transferred_at->format('d M Y') : $withdrawal->created_at->format('d M Y') }}
+                                            </span>
+                                        </div>
+                                        <div class="text-sm text-green-600 font-bold mb-1">Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</div>
+                                        <p class="text-slate-600 text-sm">
+                                            @if($withdrawal->admin_note)
+                                                {{ $withdrawal->admin_note }}
+                                            @else
+                                                Dana sebesar Rp {{ number_format($withdrawal->amount, 0, ',', '.') }} telah disalurkan untuk kebutuhan {{ $campaign->title ?? 'program ini' }}.
+                                            @endif
+                                        </p>
+                                        @if($withdrawal->status !== 'completed')
+                                            <span class="inline-block mt-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+                                                Status: {{ ucfirst($withdrawal->status) }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
-                                <p class="text-slate-600 text-sm">Berkat dukungan Anda, kami dapat menyediakan perlengkapan sekolah untuk 200 anak di daerah pedesaan.</p>
-                            </div>
+                                @endforeach
+                            @else
+                                <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 text-center">
+                                    <i class="fas fa-info-circle text-blue-500 text-2xl mb-3"></i>
+                                    <p class="text-blue-700 font-medium">Belum ada penyaluran dana</p>
+                                    <p class="text-blue-600 text-sm mt-1">Dana yang terkumpul akan disalurkan sesuai kebutuhan program</p>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -307,6 +350,41 @@
                             </li>
                         </ul>
                         
+                        @if($campaign->yayasan)
+                        <div class="mt-4 pt-4 border-t border-slate-100">
+                            <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <img src="https://placehold.co/30x30/1e40af/ffffff?text=Y" class="rounded-full w-6 h-6" alt="Foundation">
+                                Yayasan: {{ $campaign->yayasan }}
+                            </h4>
+                            <p class="text-slate-600 text-sm mb-3 leading-relaxed">
+                                Kampanye ini dikelola oleh {{ $campaign->yayasan }}. Dana yang terkumpul akan disalurkan secara transparan untuk kebutuhan program.
+                            </p>
+
+                            <!-- Foundation Fund Distribution Summary -->
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div class="bg-green-50 p-3 rounded-lg border border-green-100">
+                                    <div class="text-xs text-green-600">Tersalurkan</div>
+                                    <div class="text-sm font-bold text-slate-800">Rp {{ number_format($totalDistributed ?? 0, 0, ',', '.') }}</div>
+                                </div>
+                                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                    <div class="text-xs text-blue-600">Tersisa</div>
+                                    <div class="text-sm font-bold text-slate-800">Rp {{ number_format($remainingFunds ?? 0, 0, ',', '.') }}</div>
+                                </div>
+                            </div>
+
+                            @if(isset($withdrawals) && $withdrawals->count() > 0)
+                                <div class="text-xs text-slate-500">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    {{ $withdrawals->count() }} kali penyaluran telah dilakukan
+                                </div>
+                            @else
+                                <div class="text-xs text-slate-500">
+                                    <i class="fas fa-clock text-amber-500"></i>
+                                    Menunggu penyaluran dana
+                                </div>
+                            @endif
+                        </div>
+                        @else
                         <div class="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500 space-y-1 text-center">
                              <div class="flex items-center justify-center gap-2">
                                 <i class="fas fa-envelope text-blue-400"></i> contact@donasikita.org
@@ -315,6 +393,7 @@
                                 <i class="fas fa-phone text-blue-400"></i> +62 123 456 789
                              </div>
                         </div>
+                        @endif
                     </div>
                     
                 </div>

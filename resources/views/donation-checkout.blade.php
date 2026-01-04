@@ -52,6 +52,11 @@
 
         /* Smooth scroll behavior */
         html { scroll-behavior: smooth; }
+
+        /* Consistent border radius */
+        .rounded-card { @apply rounded-2xl; }
+        .rounded-section { @apply rounded-[2rem]; }
+        .rounded-button { @apply rounded-3xl; }
     </style>
 </head>
 
@@ -84,24 +89,25 @@
 </nav>
 
 <main class="flex-grow py-10">
-    <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-7xl mx-auto px-6 flex justify-center w-full">
         @auth
+        <div class="w-full">
         <form id="donationForm" method="POST" action="{{ route('donation.process.midtrans') }}">
             @csrf
             <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
 
             <input type="hidden" name="payment_method" value="midtrans">
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
                 <!-- KOLOM KIRI: FORMULIR -->
-                <div class="lg:col-span-8 space-y-8">
-                    
+                <div class="lg:col-span-8 space-y-6">
+
                     <!-- HERO SECTION DALAM FORM -->
-                    <div class="relative rounded-[2.5rem] bg-blue-600 p-10 md:p-14 overflow-hidden shadow-2xl shadow-blue-200">
+                    <div class="relative rounded-section bg-blue-600 p-8 md:p-10 overflow-hidden shadow-2xl shadow-blue-200">
                         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
                         <div class="relative z-10 max-w-lg">
-                            <h2 class="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-4">
+                            <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight mb-3 sm:mb-4">
                                 Ubah Dunia Menjadi Lebih Baik.
                             </h2>
                             <p class="text-blue-100 text-sm md:text-base leading-relaxed opacity-90">
@@ -111,8 +117,8 @@
                     </div>
 
                     <!-- STEP 1: NOMINAL -->
-                    <section class="bg-white rounded-[2rem] p-8 md:p-12 border border-slate-100 shadow-sm">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                    <section class="bg-white rounded-section p-6 md:p-8 border border-slate-100 shadow-sm">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
                             <div>
                                 <span class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-2 block">Step 01</span>
                                 <h3 class="text-2xl font-extrabold text-slate-900">Pilih Nominal Donasi</h3>
@@ -124,7 +130,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                             @foreach([50000, 100000, 250000, 500000] as $amount)
                             <label class="block relative">
                                 <input type="radio" name="preset_selector" value="{{ $amount }}" class="amount-input hidden">
@@ -143,14 +149,14 @@
                                     <span class="text-2xl font-black text-blue-600">Rp</span>
                                 </div>
                                 <input type="number" id="real_amount" name="amount"
-                                       class="w-full pl-20 pr-10 py-8 rounded-3xl border-2 border-slate-50 bg-slate-50/50 focus:border-blue-600 focus:bg-white focus:ring-0 outline-none text-3xl font-black transition-all"
+                                       class="w-full pl-20 pr-10 py-6 rounded-button border-2 border-slate-50 bg-slate-50/50 focus:border-blue-600 focus:bg-white focus:ring-0 outline-none text-3xl font-black transition-all"
                                        placeholder="0">
                             </div>
                         </div>
                     </section>
 
                     <!-- STEP 2: DATA DIRI -->
-                    <section class="bg-white rounded-[2rem] p-8 md:p-12 border border-slate-100 shadow-sm space-y-10">
+                    <section class="bg-white rounded-section p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
                         <div class="flex items-center justify-between">
                             <div>
                                 <span class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-2 block">Step 02</span>
@@ -164,18 +170,18 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="space-y-3">
                                 <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Nama Lengkap</label>
-                                <input type="text" name="donor_name" value="{{ Auth::user()->name }}" 
+                                <input type="text" name="donor_name" value="{{ Auth::user()->name }}"
                                        class="w-full px-6 py-5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition-all font-semibold">
                             </div>
                             <div class="space-y-3">
                                 <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Notifikasi</label>
-                                <input type="email" name="donor_email" value="{{ Auth::user()->email }}" 
+                                <input type="email" name="donor_email" value="{{ Auth::user()->email }}"
                                        class="w-full px-6 py-5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition-all font-semibold">
                             </div>
                         </div>
 
                         <!-- FEATURE: SEMBUNYIKAN NAMA -->
-                        <div class="p-8 rounded-[2rem] border-2 border-dashed border-blue-100 bg-blue-50/20 flex flex-col md:flex-row md:items-center justify-between gap-6 group">
+                        <div class="p-6 rounded-section border-2 border-dashed border-blue-100 bg-blue-50/20 flex flex-col md:flex-row md:items-center justify-between gap-4 group">
                             <div class="flex items-start gap-5">
                                 <div class="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-blue-600 shadow-sm border border-blue-50">
                                     <i class="fas fa-user-secret text-2xl"></i>
@@ -193,7 +199,7 @@
                     </section>
 
                     <!-- QUOTE INTERNATIONAL 2 -->
-                    <div class="bg-slate-900 rounded-[2.5rem] p-10 md:p-16 text-center relative overflow-hidden">
+                    <div class="bg-slate-900 rounded-section p-8 md:p-12 text-center relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-full opacity-10">
                             <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                                 <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white"></path>
@@ -212,17 +218,17 @@
                 <!-- KOLOM KANAN: RINGKASAN (STICKY) -->
                 <div class="lg:col-span-4 space-y-8">
                     <div class="lg:sticky lg:top-28 space-y-6">
-                        
+
                         <!-- SUMMARY CARD -->
-                        <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-xl shadow-slate-200/50">
-                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 border-b border-slate-50 pb-4">
+                        <div class="bg-white rounded-section p-6 border border-slate-100 shadow-xl shadow-slate-200/50">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-50 pb-3">
                                 Rincian Donasi Anda
                             </h4>
-                            
-                            <div class="space-y-6 mb-10">
+
+                            <div class="space-y-4 mb-8">
                                 <div class="flex justify-between items-start gap-4">
                                     <span class="text-xs font-bold text-slate-400 uppercase">Program</span>
-                                    <span class="text-sm font-black text-slate-900 text-right leading-tight">
+                                    <span class="text-sm font-black text-slate-900 text-right leading-tight max-w-[60%]">
                                         {{ $campaign?->title ?? 'Bantuan Kemanusiaan Global' }}
                                     </span>
                                 </div>
@@ -230,7 +236,7 @@
                                     <span class="text-xs font-bold text-slate-400 uppercase">Gateway</span>
                                     <span class="text-[10px] font-black bg-blue-600 text-white px-3 py-1 rounded-full uppercase">MIDTRANS SECURE</span>
                                 </div>
-                                
+
                                 <div class="pt-6 border-t border-slate-100">
                                     <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Pembayaran</p>
                                     <div class="flex items-baseline gap-2 text-blue-600">
@@ -241,7 +247,7 @@
                             </div>
 
                             <button type="submit" id="submitBtn"
-                                    class="w-full bg-slate-900 hover:bg-blue-600 text-white font-black py-6 rounded-3xl transition-all duration-500 transform active:scale-[0.97] shadow-xl hover:shadow-blue-500/20 flex items-center justify-center gap-3 group">
+                                    class="w-full bg-slate-900 hover:bg-blue-600 text-white font-black py-6 rounded-button transition-all duration-500 transform active:scale-[0.97] shadow-xl hover:shadow-blue-500/20 flex items-center justify-center gap-3 group">
                                 <span class="uppercase tracking-widest text-sm">Konfirmasi Donasi</span>
                                 <i class="fas fa-arrow-right text-xs transition-transform group-hover:translate-x-1"></i>
                             </button>
@@ -252,7 +258,7 @@
                         </div>
 
                         <!-- SIDEBAR QUOTE 3 -->
-                        <div class="bg-blue-50 rounded-[2rem] p-8 border border-blue-100/50">
+                        <div class="bg-blue-50 rounded-section p-6 border border-blue-100/50">
                             <p class="text-xs text-blue-700 font-medium italic leading-relaxed">
                                 "We make a living by what we get, but we make a life by what we give."
                             </p>
@@ -260,7 +266,7 @@
                         </div>
 
                         <!-- TRUST BADGES -->
-                        <div class="grid grid-cols-3 gap-4 opacity-30 grayscale">
+                        <div class="grid grid-cols-3 gap-3 opacity-30 grayscale">
                             <div class="flex justify-center"><i class="fab fa-cc-visa text-3xl"></i></div>
                             <div class="flex justify-center"><i class="fab fa-cc-mastercard text-3xl"></i></div>
                             <div class="flex justify-center"><i class="fas fa-university text-3xl"></i></div>
@@ -270,6 +276,7 @@
 
             </div>
         </form>
+        </div>
         @endauth
     </div>
 </main>
@@ -304,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const val = e.target.value;
             input.value = val;
             display.innerText = formatIDR(val);
-            
+
             // Animasi kecil saat berubah
             display.classList.add('scale-110');
             setTimeout(() => display.classList.remove('scale-110'), 200);
@@ -314,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     input.addEventListener('input', e => {
         const val = e.target.value;
         display.innerText = formatIDR(val || 0);
-        
+
         // Hapus seleksi radio jika input manual
         if(val) {
             presetRadios.forEach(r => r.checked = false);

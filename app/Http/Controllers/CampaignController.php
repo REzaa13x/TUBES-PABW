@@ -95,7 +95,13 @@ class CampaignController extends Controller
         $today = \Carbon\Carbon::today();
         $sisaHari = max(0, $today->diffInDays($endDate, false));
 
-        return view('donation-details', compact('campaign', 'donaturCount', 'sisaHari'));
+        // Get withdrawal information (fund distribution)
+        $withdrawals = $campaign->withdrawals()->with('user')->get();
+        $totalDistributed = $campaign->withdrawals()->sum('amount');
+        $totalDonated = $campaign->current_amount ?? 0;
+        $remainingFunds = max(0, $totalDonated - $totalDistributed);
+
+        return view('donation-details', compact('campaign', 'donaturCount', 'sisaHari', 'withdrawals', 'totalDistributed', 'totalDonated', 'remainingFunds'));
     }
 
     // API method to get all campaigns

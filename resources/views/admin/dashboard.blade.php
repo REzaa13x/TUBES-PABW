@@ -28,15 +28,15 @@
                 <i class="fas fa-wallet text-lg"></i>
             </div>
             <span class="flex items-center text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                <i class="fas fa-arrow-up mr-1"></i> 12.5%
+                <i class="fas fa-arrow-up mr-1"></i> +12.5%
             </span>
         </div>
         <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Total Donasi</h3>
-        <p class="text-2xl font-extrabold text-slate-800">Rp 42.500.000</p>
+        <p class="text-2xl font-extrabold text-slate-800">Rp {{ number_format($totalAmount, 0, ',', '.') }}</p>
         <div class="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-            <div class="bg-blue-500 h-1.5 rounded-full" style="width: 75%"></div>
+            <div class="bg-blue-500 h-1.5 rounded-full" style="width: {{ $monthlyAmount > 0 ? min(100, ($monthlyAmount / max(1, $monthlyAmount)) * 100) : 0 }}%"></div>
         </div>
-        <p class="text-[10px] text-slate-400 mt-2 text-right">75% dari target bulan ini</p>
+        <p class="text-[10px] text-slate-400 mt-2 text-right">Rp {{ number_format($monthlyAmount, 0, ',', '.') }} bulan ini</p>
     </div>
 
     {{-- Card 2: Kampanye Aktif --}}
@@ -47,25 +47,25 @@
             </div>
         </div>
         <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Kampanye Aktif</h3>
-        <p class="text-2xl font-extrabold text-slate-800">18 <span class="text-sm font-medium text-slate-400">/ 24</span></p>
+        <p class="text-2xl font-extrabold text-slate-800">{{ $activeCampaigns }} <span class="text-sm font-medium text-slate-400">/ {{ $totalCampaigns }}</span></p>
         <div class="flex items-center gap-2 mt-4 text-xs text-slate-500">
-            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> 6 Selesai minggu ini
+            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> {{ $activeVolunteerCampaigns }} Kampanye Relawan Aktif
         </div>
     </div>
 
-    {{-- Card 3: Relawan --}}
+    {{-- Card 3: Donasi Bulan Ini --}}
     <div class="bg-white p-6 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-300 border border-slate-100">
         <div class="flex justify-between items-start mb-4">
             <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-                <i class="fas fa-users text-lg"></i>
+                <i class="fas fa-chart-line text-lg"></i>
             </div>
             <span class="flex items-center text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                +8
+                +{{ $totalDonations > 0 ? number_format(($totalDonations / max(1, $totalDonations)) * 100, 1) : '0' }}%
             </span>
         </div>
-        <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Relawan Baru</h3>
-        <p class="text-2xl font-extrabold text-slate-800">124</p>
-        <p class="text-xs text-slate-400 mt-1">Total Relawan Aktif: 1,205</p>
+        <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Total Donasi</h3>
+        <p class="text-2xl font-extrabold text-slate-800">{{ $totalDonations }}</p>
+        <p class="text-xs text-slate-400 mt-1">{{ $totalUsers }} Pengguna Terdaftar</p>
     </div>
 
     {{-- Card 4: Menunggu Verifikasi (Actionable) --}}
@@ -79,7 +79,7 @@
                 </div>
             </div>
             <h3 class="text-orange-100 text-xs font-bold uppercase tracking-wider mb-1">Perlu Tindakan</h3>
-            <p class="text-2xl font-extrabold text-white">5 Transaksi</p>
+            <p class="text-2xl font-extrabold text-white">{{ $pendingTransactions }} Transaksi</p>
             <a href="{{ route('admin.donations.index') }}" class="inline-flex items-center gap-2 mt-4 text-xs font-bold bg-white/20 px-3 py-2 rounded-lg hover:bg-white/30 transition-colors">
                 Verifikasi Sekarang <i class="fas fa-arrow-right"></i>
             </a>
@@ -93,7 +93,7 @@
     {{-- Main Chart (Donasi) --}}
     <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
         <div class="flex justify-between items-center mb-6">
-            <h3 class="font-bold text-slate-800">Tren Donasi</h3>
+            <h3 class="font-bold text-slate-800">Tren Donasi 12 Bulan Terakhir</h3>
             <button class="text-slate-400 hover:text-blue-600 transition-colors"><i class="fas fa-ellipsis-h"></i></button>
         </div>
         <div class="h-80 w-full relative">
@@ -109,38 +109,49 @@
             {{-- Garis Vertikal --}}
             <div class="absolute left-3.5 top-2 bottom-2 w-0.5 bg-slate-100"></div>
 
-            {{-- Activity Item 1 --}}
+            @forelse($recentDonations as $donation)
             <div class="flex gap-4 relative">
                 <div class="w-8 h-8 rounded-full bg-green-100 border-2 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
                     <i class="fas fa-check text-green-600 text-xs"></i>
                 </div>
                 <div>
-                    <p class="text-sm font-bold text-slate-800">Donasi #INV-001 Diverifikasi</p>
-                    <p class="text-xs text-slate-500 mt-0.5">Oleh Admin Budi • 5 menit lalu</p>
+                    <p class="text-sm font-bold text-slate-800">Donasi {{ $donation->order_id }} Diverifikasi</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Rp {{ number_format($donation->amount, 0, ',', '.') }} • {{ $donation->created_at->diffForHumans() }}</p>
                 </div>
             </div>
+            @empty
+            <div class="flex gap-4 relative">
+                <div class="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
+                    <i class="fas fa-info text-gray-600 text-xs"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-slate-800">Belum ada aktivitas</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Tidak ada donasi baru</p>
+                </div>
+            </div>
+            @endforelse
 
-            {{-- Activity Item 2 --}}
+            @forelse($recentVolunteers as $volunteer)
             <div class="flex gap-4 relative">
                 <div class="w-8 h-8 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
                     <i class="fas fa-user-plus text-blue-600 text-xs"></i>
                 </div>
                 <div>
-                    <p class="text-sm font-bold text-slate-800">Susi Kurnia mendaftar</p>
-                    <p class="text-xs text-slate-500 mt-0.5">Sebagai Relawan Pengajar</p>
+                    <p class="text-sm font-bold text-slate-800">{{ $volunteer->user->name ?? 'Relawan' }} mendaftar</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Sebagai Relawan • {{ $volunteer->created_at->diffForHumans() }}</p>
                 </div>
             </div>
-
-            {{-- Activity Item 3 --}}
+            @empty
             <div class="flex gap-4 relative">
-                <div class="w-8 h-8 rounded-full bg-purple-100 border-2 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
-                    <i class="fas fa-plus text-purple-600 text-xs"></i>
+                <div class="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
+                    <i class="fas fa-info text-gray-600 text-xs"></i>
                 </div>
                 <div>
-                    <p class="text-sm font-bold text-slate-800">Kampanye Baru Dibuat</p>
-                    <p class="text-xs text-slate-500 mt-0.5">"Bantu Korban Banjir Demak"</p>
+                    <p class="text-sm font-bold text-slate-800">Belum ada pendaftaran relawan</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Tidak ada relawan baru</p>
                 </div>
             </div>
+            @endforelse
         </div>
 
         {{-- Quick Action Button --}}
@@ -159,13 +170,18 @@
         gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)'); // Blue with opacity
         gradient.addColorStop(1, 'rgba(59, 130, 246, 0)'); // Transparent
 
+        // Data from controller
+        const monthlyData = @json($monthlyDonationData);
+        const labels = monthlyData.map(item => item.month);
+        const amounts = monthlyData.map(item => item.amount / 1000000); // Convert to millions for display
+
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                labels: labels,
                 datasets: [{
                     label: 'Total Donasi (Juta Rp)',
-                    data: [12, 19, 15, 22, 18, 25, 20, 28, 24, 30, 27, 32],
+                    data: amounts,
                     borderColor: '#3b82f6',
                     backgroundColor: gradient,
                     borderWidth: 2,
@@ -195,7 +211,12 @@
                             size: 12
                         },
                         cornerRadius: 8,
-                        displayColors: false
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Rp ' + context.parsed.y.toFixed(1) + ' Juta';
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -209,7 +230,10 @@
                             font: {
                                 size: 11
                             },
-                            color: '#94a3b8'
+                            color: '#94a3b8',
+                            callback: function(value) {
+                                return 'Rp ' + value + 'J';
+                            }
                         }
                     },
                     x: {
