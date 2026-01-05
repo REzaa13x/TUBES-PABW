@@ -109,7 +109,7 @@
                         <img src="{{ $campaign->image }}"
                             alt="{{ $campaign->judul }}"
                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                            onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                            onerror="this.onerror=null; this.src='https://placehold.co/400x300?text=No+Image';">
                     </div>
 
                     <div class="p-6 flex flex-col flex-grow">
@@ -202,7 +202,7 @@
 
                 {{-- GAMBAR UTAMA (Full Width tapi pendek agar rapi) --}}
                 <div class="relative h-56 w-full bg-slate-100">
-                    <img id="modalImage" src="" alt="Campaign Cover" class="h-full w-full object-cover" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                    <img id="modalImage" src="" alt="Campaign Cover" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/400x300?text=No+Image';">
                     <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-30"></div>
                 </div>
 
@@ -384,7 +384,9 @@
 
         // 2. Populate Image
         const imgUrl = element.getAttribute('data-image');
-        document.getElementById('modalImage').src = imgUrl;
+        const imgElement = document.getElementById('modalImage');
+        imgElement.onerror = function() { this.onerror=null; this.src='https://placehold.co/400x300?text=No+Image'; };
+        imgElement.src = imgUrl;
 
         // 3. Logic Progress Bar & Kuota
         const current = element.getAttribute('data-quota-current');

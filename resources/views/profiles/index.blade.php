@@ -236,11 +236,22 @@
                                                 <td class="px-6 py-4 text-sm font-bold">Rp {{ number_format($t->amount, 0, ',', '.') }}</td>
                                                 <td class="px-6 py-4"><span class="px-2 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">{{ $t->status }}</span></td>
                                                 <td class="px-6 py-4">
-                                                    @if($t->status === 'AWAITING_TRANSFER')
-                                                        <form action="{{ route('profiles.upload.proof', $t->order_id) }}" method="POST" enctype="multipart/form-data">
-                                                            @csrf
-                                                            <label class="text-blue-600 hover:text-blue-900 cursor-pointer text-xs font-bold"><i class="fas fa-upload"></i> Upload <input type="file" name="proof" class="hidden" onchange="this.form.submit()"></label>
-                                                        </form>
+                                                    @if($t->status === 'AWAITING_TRANSFER' || $t->status === 'PENDING_VERIFICATION')
+                                                        @if($t->proof_of_transfer_path)
+                                                            <a href="{{ asset('storage/' . $t->proof_of_transfer_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900 text-xs font-bold mr-3"><i class="fas fa-image"></i> Lihat Bukti</a>
+                                                            <a href="{{ route('profiles.invoice', ['id' => $t->id]) }}" class="text-blue-600 hover:text-blue-900 text-xs font-bold mr-3"><i class="fas fa-file-invoice"></i> Invoice</a>
+                                                        @else
+                                                            <form action="{{ route('profiles.upload.proof', $t->order_id) }}" method="POST" enctype="multipart/form-data" class="inline">
+                                                                @csrf
+                                                                <label class="text-blue-600 hover:text-blue-900 cursor-pointer text-xs font-bold mr-3"><i class="fas fa-upload"></i> Upload <input type="file" name="proof" class="hidden" onchange="this.form.submit()"></label>
+                                                            </form>
+                                                            <a href="{{ route('profiles.invoice', ['id' => $t->id]) }}" class="text-blue-600 hover:text-blue-900 text-xs font-bold"><i class="fas fa-file-invoice"></i> Invoice</a>
+                                                        @endif
+                                                    @else
+                                                        @if($t->proof_of_transfer_path)
+                                                            <a href="{{ asset('storage/' . $t->proof_of_transfer_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900 text-xs font-bold mr-3"><i class="fas fa-image"></i> Lihat Bukti</a>
+                                                        @endif
+                                                        <a href="{{ route('profiles.invoice', ['id' => $t->id]) }}" class="text-blue-600 hover:text-blue-900 text-xs font-bold"><i class="fas fa-file-invoice"></i> Invoice</a>
                                                     @endif
                                                 </td>
                                             </tr>
@@ -261,7 +272,9 @@
                                         <div class="flex justify-between items-start gap-4 mb-4">
                                             <div class="flex gap-4">
                                                 <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-                                                    <img src="{{ asset('storage/' . $app->campaign->image) }}" class="w-full h-full object-cover">
+                                                    <img src="{{ $app->campaign->image ? $app->campaign->image : 'https://placehold.co/56x56?text=No+Image' }}"
+                                                         class="w-full h-full object-cover"
+                                                         onerror="this.onerror=null; this.src='https://placehold.co/56x56?text=No+Image';">
                                                 </div>
                                                 <div>
                                                     <h4 class="font-bold text-slate-800 text-base line-clamp-1">{{ $app->campaign->judul }}</h4>

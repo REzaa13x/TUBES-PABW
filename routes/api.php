@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\VolunteerCampaignController;
 use App\Http\Controllers\Api\VolunteerApplicationController;
 use App\Http\Controllers\Api\AdminDonationCampaignController;
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\CampaignController as MainCampaignController; // Import the main CampaignController
 
 // Route untuk endpoint API campaign untuk Flutter
@@ -68,8 +69,6 @@ Route::prefix('v1')->middleware('cors')->group(function () {
         // Protected campaign routes
         Route::apiResource('campaigns', CampaignController::class)->except(['index', 'show']);
 
-        // Protected donation routes
-        Route::post('/donations/process/midtrans', [DonationController::class, 'processWithMidtrans'])->name('api.donation.process.midtrans');
         Route::get('/donations', [DonationController::class, 'index'])->name('api.donations.index');
         Route::get('/donations/{order_id}', [DonationController::class, 'show']);
         Route::get('/donations/{order_id}/admin', [DonationController::class, 'showForAdmin']);
@@ -84,31 +83,29 @@ Route::prefix('v1')->middleware('cors')->group(function () {
         Route::get('/profile/history', [ProfileController::class, 'getCompleteHistory'])->name('api.profile.history');
         Route::get('/profile/stats', [ProfileController::class, 'getStats'])->name('api.profile.stats');
 
-        // Campaign donations with Midtrans
-        Route::post('/campaigns/{id}/midtrans-payment', [CampaignController::class, 'createMidtransPayment']);
 
         // Admin dashboard stats routes (Sekarang: /api/v1/admin/...)
         Route::prefix('admin')->group(function () {
-            Route::get('/dashboard/stats', [AdminController::class, 'dashboardStats']);
-            Route::get('/campaigns/stats', [AdminController::class, 'campaignStats']);
-            Route::get('/donations/stats', [AdminController::class, 'donationStats']);
+            Route::get('/dashboard/stats', [App\Http\Controllers\Api\AdminController::class, 'dashboardStats']);
+            Route::get('/campaigns/stats', [App\Http\Controllers\Api\AdminController::class, 'campaignStats']);
+            Route::get('/donations/stats', [App\Http\Controllers\Api\AdminController::class, 'donationStats']);
 
             // Notification routes
-            Route::get('/notifications', [AdminController::class, 'getNotifications']);
-            Route::get('/notifications/unread-count', [AdminController::class, 'getUnreadNotificationsCount']);
-            Route::put('/notifications/mark-all-read', [AdminController::class, 'markAllAsRead']);
-            Route::put('/notifications/{id}/mark-read', [AdminController::class, 'markAsRead']);
-            Route::post('/notifications/send', [AdminController::class, 'sendNotification']);
+            Route::get('/notifications', [App\Http\Controllers\Api\AdminController::class, 'getNotifications']);
+            Route::get('/notifications/unread-count', [App\Http\Controllers\Api\AdminController::class, 'getUnreadNotificationsCount']);
+            Route::put('/notifications/mark-all-read', [App\Http\Controllers\Api\AdminController::class, 'markAllAsRead']);
+            Route::put('/notifications/{id}/mark-read', [App\Http\Controllers\Api\AdminController::class, 'markAsRead']);
+            Route::post('/notifications/send', [App\Http\Controllers\Api\AdminController::class, 'sendNotification']);
 
             // Coin routes
-            Route::get('/coins/history', [AdminController::class, 'coinHistory']);
-            Route::get('/coins/user/{userId}', [AdminController::class, 'coinHistoryByUser']);
-            Route::get('/coins/stats', [AdminController::class, 'coinStats']);
-            Route::post('/coins/award/{userId}', [AdminController::class, 'awardCoins']);
+            Route::get('/coins/history', [App\Http\Controllers\Api\AdminController::class, 'coinHistory']);
+            Route::get('/coins/user/{userId}', [App\Http\Controllers\Api\AdminController::class, 'coinHistoryByUser']);
+            Route::get('/coins/stats', [App\Http\Controllers\Api\AdminController::class, 'coinStats']);
+            Route::post('/coins/award/{userId}', [App\Http\Controllers\Api\AdminController::class, 'awardCoins']);
 
             // Donation verification routes
-            Route::get('/donations/{orderId}/detail', [AdminController::class, 'donationDetail']);
-            Route::put('/donations/{orderId}/status', [AdminController::class, 'updateDonationStatus']);
+            Route::get('/donations/{orderId}/detail', [App\Http\Controllers\Api\AdminController::class, 'donationDetail']);
+            Route::put('/donations/{orderId}/status', [App\Http\Controllers\Api\AdminController::class, 'updateDonationStatus']);
 
             // Additional donation verification routes
             Route::get('/donations/{order_id}/with-proof', [App\Http\Controllers\API\DonationVerificationController::class, 'getTransactionWithProof']);
@@ -117,21 +114,21 @@ Route::prefix('v1')->middleware('cors')->group(function () {
             Route::delete('/donations/{order_id}/proof', [App\Http\Controllers\API\DonationVerificationController::class, 'deleteProof']);
 
             // Volunteer management
-            Route::get('/volunteers', [AdminController::class, 'volunteers']);
-            Route::get('/volunteers/{id}', [AdminController::class, 'volunteer']);
-            Route::post('/volunteers', [AdminController::class, 'createVolunteer']);
-            Route::put('/volunteers/{id}', [AdminController::class, 'updateVolunteer']);
-            Route::delete('/volunteers/{id}', [AdminController::class, 'deleteVolunteer']);
+            Route::get('/volunteers', [App\Http\Controllers\Api\AdminController::class, 'volunteers']);
+            Route::get('/volunteers/{id}', [App\Http\Controllers\Api\AdminController::class, 'volunteer']);
+            Route::post('/volunteers', [App\Http\Controllers\Api\AdminController::class, 'createVolunteer']);
+            Route::put('/volunteers/{id}', [App\Http\Controllers\Api\AdminController::class, 'updateVolunteer']);
+            Route::delete('/volunteers/{id}', [App\Http\Controllers\Api\AdminController::class, 'deleteVolunteer']);
 
             // Volunteer Campaigns admin
-            Route::get('/volunteer-campaigns-admin', [AdminController::class, 'adminVolunteerCampaigns']);
-            Route::get('/volunteer-campaigns-admin/{id}', [AdminController::class, 'adminVolunteerCampaign']);
+            Route::get('/volunteer-campaigns-admin', [App\Http\Controllers\Api\AdminController::class, 'adminVolunteerCampaigns']);
+            Route::get('/volunteer-campaigns-admin/{id}', [App\Http\Controllers\Api\AdminController::class, 'adminVolunteerCampaign']);
 
             // Donation Campaigns management
             Route::apiResource('donation-campaigns', AdminDonationCampaignController::class);
 
             // Dashboard overview
-            Route::get('/dashboard/overview', [AdminController::class, 'dashboardOverview']);
+            Route::get('/dashboard/overview', [App\Http\Controllers\Api\AdminController::class, 'dashboardOverview']);
         });
 
         // Volunteer Campaigns API endpoints

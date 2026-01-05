@@ -68,7 +68,38 @@
                         <h3 class="font-bold text-gray-800 mb-3">Detail Donasi</h3>
                         <p class="font-medium">Rp {{ number_format($transaction->amount ?? $transaction->amount, 0, ',', '.') }}</p>
                         <p class="text-gray-600">Tanggal: {{ $transaction->created_at->format('d F Y H:i') }}</p>
-                        <p class="text-gray-600">Metode Pembayaran: {{ $transaction->payment_method ?? 'Tidak Tersedia' }}</p>
+                        <p class="text-gray-600">
+                            Metode Pembayaran:
+                            @if($transaction->payment_method == 'bank_transfer')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-university mr-1"></i> Transfer Bank
+                                </span>
+                            @elseif($transaction->payment_method == 'e_wallet')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-wallet mr-1"></i> E-Wallet
+                                </span>
+                            @elseif($transaction->payment_method == 'qris')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    <i class="fas fa-qrcode mr-1"></i> QRIS
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ ucfirst(str_replace('_', ' ', $transaction->payment_method)) }}
+                                </span>
+                            @endif
+                        </p>
+                        @if($transaction->payment_method_data)
+                            @php
+                                $paymentData = json_decode($transaction->payment_method_data, true);
+                            @endphp
+                            @if($paymentData && isset($paymentData['selected_bank']))
+                                <p class="text-gray-600">Bank Tujuan: {{ $paymentData['selected_bank'] }}</p>
+                            @elseif($paymentData && isset($paymentData['selected_ewallet']))
+                                <p class="text-gray-600">E-Wallet: {{ $paymentData['selected_ewallet'] }}</p>
+                            @elseif($paymentData && isset($paymentData['selected_qris']))
+                                <p class="text-gray-600">Aplikasi QRIS: {{ $paymentData['selected_qris'] }}</p>
+                            @endif
+                        @endif
                     </div>
                 </div>
 

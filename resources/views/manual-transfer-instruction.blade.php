@@ -276,8 +276,28 @@
                                         <span class="text-green-700 font-bold text-lg">2</span>
                                     </div>
                                     <div class="flex-1">
-                                        <h3 class="font-bold text-lg text-gray-800">Lakukan Transfer</h3>
-                                        <p class="text-gray-600 mt-2">Silakan lakukan transfer sesuai dengan jumlah donasi dan rekening yang tercantum di atas.</p>
+                                        <h3 class="font-bold text-lg text-gray-800">
+                                            @if($transaction->payment_method == 'bank_transfer')
+                                                Lakukan Transfer Bank
+                                            @elseif($transaction->payment_method == 'e_wallet')
+                                                Lakukan Pembayaran e-Wallet
+                                            @elseif($transaction->payment_method == 'qris')
+                                                Lakukan Pembayaran QRIS
+                                            @else
+                                                Lakukan Pembayaran
+                                            @endif
+                                        </h3>
+                                        <p class="text-gray-600 mt-2">
+                                            @if($transaction->payment_method == 'bank_transfer')
+                                                Silakan lakukan transfer sesuai dengan jumlah donasi dan rekening yang tercantum di atas.
+                                            @elseif($transaction->payment_method == 'e_wallet')
+                                                Silakan lakukan pembayaran melalui aplikasi e-wallet yang Anda pilih.
+                                            @elseif($transaction->payment_method == 'qris')
+                                                Silakan scan QRIS dan lakukan pembayaran sesuai jumlah yang tertera.
+                                            @else
+                                                Silakan lakukan pembayaran sesuai metode yang Anda pilih.
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
 
@@ -286,8 +306,8 @@
                                         <span class="text-amber-700 font-bold text-lg">3</span>
                                     </div>
                                     <div class="flex-1">
-                                        <h3 class="font-bold text-lg text-gray-800">Upload Bukti Transfer</h3>
-                                        <p class="text-gray-600 mt-2">Setelah melakukan transfer, silakan upload bukti transfer Anda pada form di bawah.</p>
+                                        <h3 class="font-bold text-lg text-gray-800">Upload Bukti Pembayaran</h3>
+                                        <p class="text-gray-600 mt-2">Setelah melakukan pembayaran, silakan upload bukti pembayaran Anda pada form di bawah.</p>
                                     </div>
                                 </div>
                             </div>
@@ -300,11 +320,19 @@
                                 Catatan Penting
                             </h3>
                             <ul class="list-disc pl-5 space-y-2 text-amber-700">
-                                <li>Pastikan jumlah transfer sesuai dengan jumlah donasi yang Anda tentukan</li>
+                                <li>Pastikan jumlah pembayaran sesuai dengan jumlah donasi yang Anda tentukan</li>
+                                @if($transaction->payment_method == 'bank_transfer')
                                 <li>Batas waktu transfer adalah <strong>{{ $transaction->transfer_deadline->format('d M Y H:i') }}</strong></li>
                                 <li>Jika transfer dilakukan setelah batas waktu, maka otomatis akan dibatalkan</li>
-                                <li>Simpan bukti transfer Anda sebagai referensi</li>
                                 <li>Gunakan aplikasi mobile banking atau ATM untuk proses transfer yang lebih mudah</li>
+                                @elseif($transaction->payment_method == 'e_wallet')
+                                <li>Gunakan aplikasi e-wallet yang Anda pilih untuk melakukan pembayaran</li>
+                                <li>Pastikan nomor atau akun e-wallet tujuan benar</li>
+                                @elseif($transaction->payment_method == 'qris')
+                                <li>Gunakan aplikasi pembayaran yang mendukung QRIS</li>
+                                <li>Pastikan QRIS terbaca dengan jelas saat scan</li>
+                                @endif
+                                <li>Simpan bukti pembayaran Anda sebagai referensi</li>
                             </ul>
                         </div>
 

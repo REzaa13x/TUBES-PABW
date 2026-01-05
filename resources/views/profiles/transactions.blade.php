@@ -59,7 +59,7 @@
 
                     <!-- Donation Transactions Tab -->
                     <div class="mb-8">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4"><i class="fas fa-receipt mr-2 text-blue-600"></i>Donasi Melalui Midtrans</h3>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4"><i class="fas fa-receipt mr-2 text-blue-600"></i>Riwayat Donasi</h3>
                         
                         @if($donationTransactions->count() > 0)
                             <div class="overflow-x-auto">
@@ -71,6 +71,7 @@
                                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kampanye</th>
                                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti Transfer</th>
                                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                         </tr>
                                     </thead>
@@ -81,33 +82,63 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $transaction->campaign ? $transaction->campaign->title : 'Donasi Umum' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                    {{ $transaction->status === 'VERIFIED' ? 'bg-green-100 text-green-800' : 
-                                                       ($transaction->status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                                    {{ $transaction->status === 'VERIFIED' ? 'bg-green-100 text-green-800' :
+                                                       ($transaction->status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                                                        'bg-red-100 text-red-800') }}">
                                                     {{ $transaction->status_label }}
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $transaction->created_at->format('d M Y H:i') }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                @if($transaction->status === 'AWAITING_TRANSFER')
-                                                    <!-- Upload proof form for pending transfers -->
-                                                    <form action="{{ route('profiles.upload.proof', $transaction->order_id) }}" method="POST" enctype="multipart/form-data" class="inline">
-                                                        @csrf
-                                                        <div class="flex flex-col space-y-2">
-                                                            <label class="text-blue-600 hover:text-blue-900 cursor-pointer text-sm">
-                                                                <i class="fas fa-upload mr-1"></i>Upload Bukti
-                                                                <input type="file" name="proof" accept="image/*" class="hidden" onchange="this.form.submit()" required>
-                                                            </label>
+                                                @if($transaction->proof_of_transfer_path)
+                                                    <a href="{{ asset('storage/' . $transaction->proof_of_transfer_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900 text-sm">
+                                                        <i class="fas fa-image mr-1"></i>Lihat Bukti
+                                                    </a>
+                                                @else
+                                                    <span class="text-gray-400 text-sm">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                @if($transaction->status === 'AWAITING_TRANSFER' || $transaction->status === 'PENDING_VERIFICATION')
+                                                    <!-- Upload proof form for transfers that are awaiting transfer or pending verification -->
+                                                    @if($transaction->proof_of_transfer_path)
+                                                        <!-- If proof already exists, show both proof and invoice -->
+                                                        <div class="flex flex-col space-y-1">
+                                                            <a href="{{ asset('storage/' . $transaction->proof_of_transfer_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900 text-sm">
+                                                                <i class="fas fa-image mr-1"></i>Lihat Bukti
+                                                            </a>
                                                             <a href="{{ route('profiles.invoice', ['id' => $transaction->id]) }}" class="text-blue-600 hover:text-blue-900 text-sm">
-                                                                <i class="fas fa-file-invoice mr-1"></i>Lihat
+                                                                <i class="fas fa-file-invoice mr-1"></i>Lihat Invoice
                                                             </a>
                                                         </div>
-                                                    </form>
+                                                    @else
+                                                        <!-- If no proof exists, show upload form -->
+                                                        <form action="{{ route('profiles.upload.proof', $transaction->order_id) }}" method="POST" enctype="multipart/form-data" class="inline">
+                                                            @csrf
+                                                            <div class="flex flex-col space-y-2">
+                                                                <label class="text-blue-600 hover:text-blue-900 cursor-pointer text-sm">
+                                                                    <i class="fas fa-upload mr-1"></i>Upload Bukti
+                                                                    <input type="file" name="proof" accept="image/*" class="hidden" onchange="this.form.submit()" required>
+                                                                </label>
+                                                                <a href="{{ route('profiles.invoice', ['id' => $transaction->id]) }}" class="text-blue-600 hover:text-blue-900 text-sm">
+                                                                    <i class="fas fa-file-invoice mr-1"></i>Lihat Invoice
+                                                                </a>
+                                                            </div>
+                                                        </form>
+                                                    @endif
                                                 @else
-                                                    <a href="{{ route('profiles.invoice', ['id' => $transaction->id]) }}" class="text-blue-600 hover:text-blue-900">
-                                                        <i class="fas fa-file-invoice mr-1"></i>Lihat
-                                                    </a>
+                                                    <!-- For other statuses, show proof if exists, otherwise just invoice -->
+                                                    <div class="flex flex-col space-y-1">
+                                                        @if($transaction->proof_of_transfer_path)
+                                                            <a href="{{ asset('storage/' . $transaction->proof_of_transfer_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900 text-sm">
+                                                                <i class="fas fa-image mr-1"></i>Lihat Bukti
+                                                            </a>
+                                                        @endif
+                                                        <a href="{{ route('profiles.invoice', ['id' => $transaction->id]) }}" class="text-blue-600 hover:text-blue-900 text-sm">
+                                                            <i class="fas fa-file-invoice mr-1"></i>Lihat Invoice
+                                                        </a>
+                                                    </div>
                                                 @endif
                                             </td>
                                         </tr>
@@ -122,7 +153,7 @@
                         @else
                             <div class="text-center py-8">
                                 <i class="fas fa-receipt text-5xl text-gray-300 mb-4"></i>
-                                <p class="text-gray-600">Belum ada riwayat donasi melalui Midtrans</p>
+                                <p class="text-gray-600">Belum ada riwayat donasi</p>
                             </div>
                         @endif
                     </div>
@@ -141,6 +172,7 @@
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kampanye</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti Transfer</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
@@ -151,14 +183,17 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rp {{ number_format($donation->amount, 0, ',', '.') }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $donation->campaign ? $donation->campaign->title : 'Donasi Umum' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $donation->status === 'paid' ? 'bg-green-100 text-green-800' : 
-                                                   ($donation->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                                {{ $donation->status === 'paid' ? 'bg-green-100 text-green-800' :
+                                                   ($donation->status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                                    'bg-red-100 text-red-800') }}">
                                                 {{ ucfirst($donation->status) }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $donation->created_at->format('d M Y H:i') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <span class="text-gray-400 text-sm">-</span>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <a href="{{ route('profiles.invoice', ['id' => $donation->id]) }}" class="text-blue-600 hover:text-blue-900">
                                                 <i class="fas fa-file-invoice mr-1"></i>Lihat

@@ -40,6 +40,7 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-blue-50">
                                 <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Gambar</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Nama</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Email</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Status</th>
@@ -49,6 +50,20 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach($volunteersByCampaign[$campaign->id]->take(5) as $volunteer) <!-- Take only first 5 -->
                                     <tr class="hover:bg-blue-50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            @if($volunteer->campaign && $volunteer->campaign->image)
+                                                <div class="w-10 h-10 rounded overflow-hidden bg-gray-100">
+                                                    <img src="{{ $volunteer->campaign->image }}"
+                                                         alt="Gambar Kampanye"
+                                                         class="w-full h-full object-cover"
+                                                         onerror="this.onerror=null; this.src='https://placehold.co/40x40?text=No+Image';">
+                                                </div>
+                                            @else
+                                                <div class="w-10 h-10 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
+                                                    <i class="fas fa-image text-gray-400"></i>
+                                                </div>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="text-sm font-medium text-gray-900">{{ substr($volunteer->nama_lengkap, 0, 20) }}{{ strlen($volunteer->nama_lengkap) > 20 ? '...' : '' }}</div>
                                         </td>

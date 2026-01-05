@@ -180,6 +180,20 @@
                 </div>
                 @endif
 
+                {{-- Campaign Image --}}
+                @if($campaign->image)
+                    <div class="w-full h-40 rounded-xl overflow-hidden mb-4">
+                        <img src="{{ $campaign->image }}"
+                             alt="{{ $campaign->judul }}"
+                             class="w-full h-full object-cover"
+                             onerror="this.onerror=null; this.src='https://placehold.co/400x200?text=No+Image';">
+                    </div>
+                @else
+                    <div class="w-full h-40 rounded-xl bg-gray-100 mb-4 flex items-center justify-center">
+                        <i class="fas fa-image text-gray-400 text-2xl"></i>
+                    </div>
+                @endif
+
                 {{-- Icon --}}
                 <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 text-2xl mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
                     @if($campaign->kategori == 'Pendidikan') <i class="fas fa-chalkboard-teacher"></i>

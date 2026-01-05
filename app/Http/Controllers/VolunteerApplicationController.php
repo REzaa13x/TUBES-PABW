@@ -76,6 +76,12 @@ class VolunteerApplicationController extends Controller
 
     public function checkStatus($slug)
     {
+        // Check if the authenticated user is an admin
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            // Redirect admin to admin dashboard instead of user pages
+            return redirect('/admin/dashboard');
+        }
+
         $campaign = VolunteerCampaign::where('slug', $slug)->firstOrFail();
 
         $application = VolunteerApplication::where('user_id', Auth::id())
@@ -84,7 +90,7 @@ class VolunteerApplicationController extends Controller
 
         return view('volunteer.status', [
             'campaign'    => $campaign,
-            'application' => $application, 
+            'application' => $application,
             'status'      => $application->status
         ]);
     }

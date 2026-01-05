@@ -76,6 +76,19 @@
                             <span class="text-gray-800 sm:text-right">{{ $volunteer->updated_at->format('d M Y H:i') }}</span>
                         </div>
                     </div>
+
+                    <!-- Campaign Image -->
+                    @if($volunteer->campaign && $volunteer->campaign->image)
+                    <div class="mt-4">
+                        <h4 class="font-medium text-gray-600 mb-2">Gambar Kampanye:</h4>
+                        <div class="flex justify-center">
+                            <img src="{{ $volunteer->campaign->image }}"
+                                 alt="Gambar Kampanye"
+                                 class="max-w-full max-h-48 rounded-lg border shadow-sm object-contain"
+                                 onerror="this.onerror=null; this.src='https://placehold.co/400x300?text=No+Image';">
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
 

@@ -81,7 +81,9 @@
                     <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-8 text-left">
                         <div class="flex items-center gap-4 mb-4 border-b border-slate-200 border-dashed pb-4">
                             <div class="w-12 h-12 rounded-xl bg-white border border-slate-200 p-1 shadow-sm">
-                                <img src="{{ asset('storage/' . $campaign->image) }}" class="w-full h-full object-cover rounded-lg">
+                                <img src="{{ $campaign->image ? $campaign->image : 'https://placehold.co/48x48?text=No+Image' }}"
+                                     class="w-full h-full object-cover rounded-lg"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/48x48?text=No+Image';">
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs text-slate-400 font-bold uppercase mb-0.5">Program Kampanye</p>

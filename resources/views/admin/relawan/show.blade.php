@@ -9,7 +9,8 @@
                 <div class="flex items-center gap-3 mb-3">
                     @if($campaign->image)
                         <div class="w-12 h-12 rounded-lg overflow-hidden">
-                            <img src="{{ asset($campaign->image) }}" alt="Gambar Kampanye" class="w-full h-full object-cover">
+                            <img src="{{ $campaign->image }}" alt="Gambar Kampanye" class="w-full h-full object-cover"
+                                 onerror="this.onerror=null; this.src='https://placehold.co/48x48?text=No+Image';">
                         </div>
                     @else
                         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -200,7 +201,8 @@
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Gambar Kampanye</label>
                             <div class="p-3 rounded-lg">
-                                <img src="{{ asset($campaign->image) }}" alt="Gambar Kampanye" class="w-full max-w-md rounded-lg border border-gray-200 object-cover h-48">
+                                <img src="{{ $campaign->image }}" alt="Gambar Kampanye" class="w-full max-w-md rounded-lg border border-gray-200 object-cover h-48"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/600x200?text=No+Image';">
                             </div>
                         </div>
                         @endif

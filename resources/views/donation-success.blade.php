@@ -75,7 +75,7 @@
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-400 font-medium">Metode</span>
-                            <span class="text-slate-900 font-bold">Midtrans Secure Gateway</span>
+                            <span class="text-slate-900 font-bold">Secure Payment Gateway</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-400 font-medium">Waktu</span>

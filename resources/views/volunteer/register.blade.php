@@ -36,6 +36,18 @@
                     </div>
                 </div>
 
+                {{-- Campaign Image --}}
+                @if($campaign->image)
+                <div class="relative -mt-12 mx-8">
+                    <div class="bg-white rounded-xl shadow-lg p-2">
+                        <img src="{{ $campaign->image }}"
+                             alt="{{ $campaign->judul }}"
+                             class="w-full h-48 object-cover rounded-lg"
+                             onerror="this.onerror=null; this.src='https://placehold.co/600x200?text=No+Image';">
+                    </div>
+                </div>
+                @endif
+
                 {{-- Form Body --}}
                 <div class="p-8 md:p-10">
                     <form id="registrationForm" action="{{ route('volunteer.register.store', $campaign->slug) }}" method="POST" enctype="multipart/form-data" class="space-y-6">

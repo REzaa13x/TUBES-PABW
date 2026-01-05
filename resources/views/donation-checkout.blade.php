@@ -92,11 +92,11 @@
     <div class="max-w-7xl mx-auto px-6 flex justify-center w-full">
         @auth
         <div class="w-full">
-        <form id="donationForm" method="POST" action="{{ route('donation.process.midtrans') }}">
+        <form id="donationForm" method="POST" action="{{ route('donation.process') }}">
             @csrf
             <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
 
-            <input type="hidden" name="payment_method" value="midtrans">
+            <input type="hidden" name="payment_method" value="bank_transfer">
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
@@ -234,7 +234,7 @@
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-xs font-bold text-slate-400 uppercase">Gateway</span>
-                                    <span class="text-[10px] font-black bg-blue-600 text-white px-3 py-1 rounded-full uppercase">MIDTRANS SECURE</span>
+                                    <span class="text-[10px] font-black bg-blue-600 text-white px-3 py-1 rounded-full uppercase">SECURE PAYMENT</span>
                                 </div>
 
                                 <div class="pt-6 border-t border-slate-100">
@@ -242,6 +242,120 @@
                                     <div class="flex items-baseline gap-2 text-blue-600">
                                         <span class="text-xl font-black">Rp</span>
                                         <span id="display_amount" class="text-5xl font-black tracking-tighter">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PEMBAYARAN SECTION -->
+                            <div class="mt-6">
+                                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-50 pb-3">
+                                    Metode Pembayaran
+                                </h4>
+
+                                <div class="space-y-4">
+                                    <!-- Bank Transfer Option -->
+                                    <div class="payment-option">
+                                        <label class="flex items-center p-4 border-2 border-slate-100 rounded-2xl cursor-pointer hover:border-blue-300 transition-all">
+                                            <input type="radio" name="payment_method" value="bank_transfer" class="hidden peer" checked>
+                                            <div class="flex items-center justify-between w-full">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                                        <i class="fas fa-university text-blue-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-bold text-slate-900">Transfer Bank</p>
+                                                        <p class="text-xs text-slate-500">BCA, BNI, BRI, Mandiri</p>
+                                                    </div>
+                                                </div>
+                                                <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center peer-checked:border-blue-600 peer-checked:bg-blue-600">
+                                                    <div class="w-3 h-3 rounded-full bg-blue-600 hidden peer-checked:block"></div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div class="bank-transfer-options mt-3 pl-14 space-y-3 hidden">
+                                            <label class="block">
+                                                <span class="text-xs font-medium text-slate-500">Pilih Bank</span>
+                                                <select name="selected_bank" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                                    <option value="">Pilih Bank Tujuan</option>
+                                                    <option value="BCA">BCA - Bank Central Asia</option>
+                                                    <option value="BNI">BNI - Bank Negara Indonesia</option>
+                                                    <option value="BRI">BRI - Bank Rakyat Indonesia</option>
+                                                    <option value="Mandiri">Mandiri - Bank Mandiri</option>
+                                                    <option value="BTN">BTN - Bank Tabungan Negara</option>
+                                                    <option value="BTPN">BTPN - Bank BTPN</option>
+                                                </select>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- E-Wallet Option -->
+                                    <div class="payment-option">
+                                        <label class="flex items-center p-4 border-2 border-slate-100 rounded-2xl cursor-pointer hover:border-blue-300 transition-all">
+                                            <input type="radio" name="payment_method" value="e_wallet" class="hidden peer">
+                                            <div class="flex items-center justify-between w-full">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                                                        <i class="fas fa-wallet text-green-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-bold text-slate-900">E-Wallet</p>
+                                                        <p class="text-xs text-slate-500">OVO, GoPay, DANA, LinkAja</p>
+                                                    </div>
+                                                </div>
+                                                <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center peer-checked:border-blue-600 peer-checked:bg-blue-600">
+                                                    <div class="w-3 h-3 rounded-full bg-blue-600 hidden peer-checked:block"></div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div class="ewallet-options mt-3 pl-14 space-y-3 hidden">
+                                            <label class="block">
+                                                <span class="text-xs font-medium text-slate-500">Pilih E-Wallet</span>
+                                                <select name="selected_ewallet" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                                    <option value="">Pilih E-Wallet</option>
+                                                    <option value="OVO">OVO</option>
+                                                    <option value="GoPay">GoPay</option>
+                                                    <option value="DANA">DANA</option>
+                                                    <option value="LinkAja">LinkAja</option>
+                                                    <option value="ShopeePay">ShopeePay</option>
+                                                </select>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- QRIS Option -->
+                                    <div class="payment-option">
+                                        <label class="flex items-center p-4 border-2 border-slate-100 rounded-2xl cursor-pointer hover:border-blue-300 transition-all">
+                                            <input type="radio" name="payment_method" value="qris" class="hidden peer">
+                                            <div class="flex items-center justify-between w-full">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                                                        <i class="fas fa-qrcode text-purple-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-bold text-slate-900">QRIS</p>
+                                                        <p class="text-xs text-slate-500">Scan QR untuk pembayaran</p>
+                                                    </div>
+                                                </div>
+                                                <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center peer-checked:border-blue-600 peer-checked:bg-blue-600">
+                                                    <div class="w-3 h-3 rounded-full bg-blue-600 hidden peer-checked:block"></div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <div class="qris-options mt-3 pl-14 space-y-3 hidden">
+                                            <label class="block">
+                                                <span class="text-xs font-medium text-slate-500">Pilih Aplikasi QRIS</span>
+                                                <select name="selected_qris" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                                    <option value="">Pilih Aplikasi Pembayaran</option>
+                                                    <option value="OVO">OVO</option>
+                                                    <option value="GoPay">GoPay</option>
+                                                    <option value="DANA">DANA</option>
+                                                    <option value="LinkAja">LinkAja</option>
+                                                    <option value="ShopeePay">ShopeePay</option>
+                                                    <option value="BCA Mobile">BCA Mobile</option>
+                                                    <option value="BRI Mobile">BRI Mobile</option>
+                                                </select>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -340,6 +454,28 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     });
 });
+
+// Toggle payment method options
+document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        // Hide all options
+        document.querySelectorAll('.bank-transfer-options, .ewallet-options, .qris-options').forEach(el => {
+            el.classList.add('hidden');
+        });
+
+        // Show selected option
+        if(this.value === 'bank_transfer') {
+            document.querySelector('.bank-transfer-options').classList.remove('hidden');
+        } else if(this.value === 'e_wallet') {
+            document.querySelector('.ewallet-options').classList.remove('hidden');
+        } else if(this.value === 'qris') {
+            document.querySelector('.qris-options').classList.remove('hidden');
+        }
+    });
+});
+
+// Initialize with bank transfer options visible
+document.querySelector('.bank-transfer-options').classList.remove('hidden');
 </script>
 
 </body>

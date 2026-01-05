@@ -26,7 +26,19 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-3 text-sm">{{ $app->campaign->judul }}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <div class="flex items-center">
+                                @if($app->campaign->image)
+                                    <div class="w-8 h-8 rounded overflow-hidden mr-2">
+                                        <img src="{{ $app->campaign->image }}"
+                                             alt="{{ $app->campaign->judul }}"
+                                             class="w-full h-full object-cover"
+                                             onerror="this.onerror=null; this.src='https://placehold.co/32x32?text=No+Image';">
+                                    </div>
+                                @endif
+                                <div>{{ $app->campaign->judul }}</div>
+                            </div>
+                        </td>
                         <td class="px-4 py-3 text-sm">{{ $app->posisi_dilamar }}</td>
                         <td class="px-4 py-3 text-sm">
                             <a href="{{ asset('storage/' . $app->cv_path) }}" target="_blank" class="text-blue-600 hover:underline">Download CV</a>

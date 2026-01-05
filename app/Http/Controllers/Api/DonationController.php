@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DonationTransaction;
 use App\Models\Campaign;
-use App\Services\MidtransService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
@@ -13,83 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 class DonationController extends Controller
 {
-    protected $midtransService;
 
-    public function __construct(MidtransService $midtransService)
-    {
-        $this->midtransService = $midtransService;
-    }
-
-    /**
-     * Process donation with Midtrans for authenticated API users
-     */
-    public function processWithMidtrans(Request $request): JsonResponse
-    {
-        // Validate the donation data
-        $validator = Validator::make($request->all(), [
-            'amount' => 'required|numeric|min:1',
-            'donor_name' => 'required|string|max:255',
-            'donor_email' => 'required|email|max:255',
-            'donor_phone' => 'nullable|string|max:20',
-            'anonymous' => 'nullable|boolean',
-            'campaign_id' => 'nullable|exists:campaigns,id'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        // Generate unique order ID
-        $order_id = 'API-DONATION-' . strtoupper(Str::random(10));
-
-        // Create initial transaction record with pending status
-        $transaction = DonationTransaction::create([
-            'order_id' => $order_id,
-            'amount' => $request->amount,
-            'donor_name' => $request->donor_name,
-            'donor_email' => $request->donor_email,
-            'donor_phone' => $request->donor_phone,
-            'user_id' => $request->user()->id, // API user is authenticated
-            'anonymous' => $request->anonymous ?? 0,
-            'payment_method' => 'midtrans', // Use Midtrans as payment method
-            'status' => 'PENDING', // Initial status is pending
-            'campaign_id' => $request->campaign_id,
-        ]);
-
-        // Create Midtrans payment parameters
-        $params = $this->midtransService->createDonationParams(
-            $request->campaign_id ?? 0,
-            $request->amount,
-            $request->donor_name,
-            $request->donor_email,
-            $order_id
-        );
-
-        // Create payment request to Midtrans
-        $paymentResponse = $this->midtransService->createPaymentRequest($params);
-
-        if ($paymentResponse['success']) {
-            return response()->json([
-                'message' => 'Payment created successfully',
-                'data' => [
-                    'snap_token' => $paymentResponse['snap_token'],
-                    'redirect_url' => $paymentResponse['redirect_url'],
-                    'transaction_id' => $paymentResponse['transaction_id'],
-                    'order_id' => $order_id,
-                ]
-            ]);
-        } else {
-            // Delete the transaction if payment creation failed
-            $transaction->delete();
-
-            return response()->json([
-                'message' => 'Failed to create payment: ' . $paymentResponse['message']
-            ], 500);
-        }
-    }
 
     /**
      * Get user's donation history

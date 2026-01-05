@@ -43,9 +43,10 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-16 w-16 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                                    <img class="h-16 w-16 object-cover" 
-                                         src="{{ $campaign->image ? asset('storage/' . $campaign->image) : 'https://via.placeholder.com/150' }}" 
-                                         alt="{{ $campaign->judul }}">
+                                    <img class="h-16 w-16 object-cover"
+                                         src="{{ $campaign->image ? $campaign->image : 'https://placehold.co/64x64?text=No+Image' }}"
+                                         alt="{{ $campaign->judul }}"
+                                         onerror="this.onerror=null; this.src='https://placehold.co/64x64?text=No+Image';">
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-bold text-gray-900 line-clamp-1">{{ $campaign->judul }}</div>

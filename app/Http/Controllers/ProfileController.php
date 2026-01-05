@@ -223,9 +223,15 @@ class ProfileController extends Controller
             return redirect()->back()->with('error', 'Transaksi tidak ditemukan atau tidak milik Anda');
         }
 
-        // Only allow uploading proof for transactions with status AWAITING_TRANSFER
-        if ($transaction->status !== 'AWAITING_TRANSFER') {
-            return redirect()->back()->with('error', 'Bukti transfer hanya bisa diupload untuk transaksi yang menunggu transfer');
+        // Only allow uploading proof for transactions with status AWAITING_TRANSFER or PENDING_VERIFICATION
+        // and only if no proof has been uploaded yet
+        if (!in_array($transaction->status, ['AWAITING_TRANSFER', 'PENDING_VERIFICATION'])) {
+            return redirect()->back()->with('error', 'Bukti transfer hanya bisa diupload untuk transaksi yang menunggu transfer atau sedang diverifikasi');
+        }
+
+        // Check if proof already exists
+        if ($transaction->proof_of_transfer_path) {
+            return redirect()->back()->with('error', 'Bukti transfer sudah pernah diupload sebelumnya');
         }
 
         $request->validate([

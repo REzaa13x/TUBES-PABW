@@ -84,7 +84,9 @@
                     @if($campaign->image)
                     <div class="mb-4">
                         <p class="text-xs text-gray-500 mb-2">Gambar Saat Ini:</p>
-                        <img src="{{ asset('storage/' . $campaign->image) }}" class="w-full h-32 object-cover rounded-lg border border-gray-200">
+                        <img src="{{ $campaign->image }}"
+                             class="w-full h-32 object-cover rounded-lg border border-gray-200"
+                             onerror="this.onerror=null; this.src='https://placehold.co/400x128?text=No+Image';">
                     </div>
                     @endif
 

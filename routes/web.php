@@ -47,7 +47,6 @@ Route::get('/donasi/{slug}', [FrontendCampaignController::class, 'showDonation']
 // Donation checkout and processing routes (require authentication to link to user account)
 Route::middleware(['auth'])->group(function () {
     Route::get('/donation-checkout/{campaign?}', [DonationController::class, 'checkout'])->name('donation.checkout');
-    Route::post('/donation-process-midtrans', [DonationController::class, 'processWithMidtrans'])->name('donation.process.midtrans');
     Route::post('/donation-process', [DonationController::class, 'process'])->name('donation.process');
 });
 
@@ -69,8 +68,6 @@ Route::get('/campaigns', [FrontendCampaignController::class, 'index'])->name('ca
 // 3. Detail Kampanye
 Route::get('/volunteer/campaigns/{slug}', [FrontendCampaignController::class, 'show'])->name('volunteer.campaigns.show');
 
-// Midtrans webhook (non-authenticated - called by Midtrans server)
-Route::post('/midtrans/webhook', [DonationController::class, 'handleMidtransNotification'])->name('midtrans.webhook');
 
 Route::middleware(['auth'])->group(function () {
 
@@ -84,7 +81,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Authenticated donation routes (require login) - Prevent admin access
-    Route::group(['middleware' => ['prevent.admin.user.pages']], function () {
+    Route::middleware(['auth'])->group(function () {
         Route::get('/donation/manual-transfer/{order_id}', [DonationController::class, 'manualTransfer'])->name('donation.manual.transfer');
         Route::post('/donation/upload-proof/{order_id}', [DonationController::class, 'uploadProof'])->name('donation.upload.proof');
         Route::get('/transaction/download/{order_id}', [DonationController::class, 'downloadTransactionPDF'])->name('transaction.download.pdf');

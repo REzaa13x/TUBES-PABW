@@ -84,7 +84,7 @@
                                 </span>
                             @elseif($transaction->payment_method == 'midtrans')
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                    <i class="fas fa-credit-card mr-1"></i> Midtrans
+                                    <i class="fas fa-credit-card mr-1"></i> Bank Transfer (Lama)
                                 </span>
                             @else
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -102,6 +102,27 @@
                         <h6 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Batas Transfer</h6>
                         <p class="mt-1 text-gray-900">{{ $transaction->transfer_deadline->format('d M Y H:i') }}</p>
                     </div>
+                    @endif
+                    @if($transaction->payment_method_data)
+                        @php
+                            $paymentData = json_decode($transaction->payment_method_data, true);
+                        @endphp
+                        @if($paymentData && isset($paymentData['selected_bank']))
+                        <div>
+                            <h6 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Bank Tujuan</h6>
+                            <p class="mt-1 text-gray-900">{{ $paymentData['selected_bank'] }}</p>
+                        </div>
+                        @elseif($paymentData && isset($paymentData['selected_ewallet']))
+                        <div>
+                            <h6 class="text-sm font-medium text-gray-500 uppercase tracking-wider">E-Wallet</h6>
+                            <p class="mt-1 text-gray-900">{{ $paymentData['selected_ewallet'] }}</p>
+                        </div>
+                        @elseif($paymentData && isset($paymentData['selected_qris']))
+                        <div>
+                            <h6 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Aplikasi QRIS</h6>
+                            <p class="mt-1 text-gray-900">{{ $paymentData['selected_qris'] }}</p>
+                        </div>
+                        @endif
                     @endif
                 </div>
 
@@ -170,6 +191,28 @@
                         <div>
                             <h6 class="text-sm font-medium text-gray-500">Nama Bank</h6>
                             <p class="mt-1 text-gray-900">{{ $transaction->bank_name }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Proof of Transfer (if exists) -->
+                @if($transaction->proof_of_transfer_path)
+                <div class="mb-6">
+                    <h5 class="text-lg font-semibold text-gray-800 mb-4">Bukti Transfer</h5>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex justify-center">
+                            <img src="{{ asset('storage/' . $transaction->proof_of_transfer_path) }}"
+                                 alt="Bukti Transfer"
+                                 class="max-w-full max-h-96 rounded-lg border shadow-sm"
+                                 onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=Gambar+Tidak+Dapat+Dimuat';">
+                        </div>
+                        <div class="mt-4 text-center">
+                            <a href="{{ asset('storage/' . $transaction->proof_of_transfer_path) }}"
+                               target="_blank"
+                               class="inline-flex items-center px-4 py-2 border border-blue-300 text-sm font-medium rounded-md shadow-sm text-blue-700 bg-blue-50 hover:bg-blue-100">
+                                <i class="fas fa-external-link-alt mr-2"></i> Lihat Gambar Penuh
+                            </a>
                         </div>
                     </div>
                 </div>
