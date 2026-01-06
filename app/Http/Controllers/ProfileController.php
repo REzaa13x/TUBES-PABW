@@ -157,34 +157,110 @@ class ProfileController extends Controller
         } else {
 
             // --- LOGIKA UPDATE PROFIL ---
-            $request->validate([
-                'name' => 'required|string|max:255',
-                // Email divalidasi tapi tidak diupdate jika read-only di view, 
-                // tapi tetap kita validasi untuk keamanan.
-                'email' => 'required|email|unique:users,email,'.$user->id,
-                'phone' => 'nullable|string|max:15',
-                'alamat' => 'nullable|string|max:500',
-                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            ]);
+            // Check if this is a photo-only update (AJAX request with only photo field)
+            if ($request->hasFile('photo') && !$request->has('name') && !$request->has('email')) {
+                // Only validate the photo field for photo-only updates
+                $request->validate([
+                    'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+                ]);
 
-            $user->name = $request->name;
-            // $user->email = $request->email; // Opsional: Hapus baris ini jika email benar-benar dilarang ganti
-            // Tapi biasanya kita biarkan tersimpan ulang untuk konsistensi data
-            $user->phone = $request->phone;
-            $user->address = $request->alamat; // Pastikan kolom database Anda 'address' atau sesuaikan
+                // Upload Foto only
+                if ($request->hasFile('photo')) {
+                    \Log::info('Processing photo upload for user: ' . $user->id);
 
-            // Upload Foto
-            if ($request->hasFile('photo')) {
-                if ($user->photo && Storage::exists('public/' . $user->photo)) {
-                    Storage::delete('public/' . $user->photo);
-                }  // End of nested if to delete old photo
-                $path = $request->file('photo')->store('profile-photos', 'public');
-                $user->photo = $path;
-            }  // End of if to upload photo
+                    if ($user->photo && Storage::exists('public/' . $user->photo)) {
+                        \Log::info('Deleting old photo: ' . $user->photo);
+                        Storage::delete('public/' . $user->photo);
+                    }  // End of nested if to delete old photo
 
-            $user->save();
+                    $file = $request->file('photo');
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('profile-photos', $filename, 'public');
 
-            return back()->with('success', 'Informasi profil berhasil diperbarui!');
+                    \Log::info('New photo stored at: ' . $path);
+
+                    // Simpan path lengkap ke database
+                    $user->photo = $path;
+
+                    \Log::info('Photo field set to: ' . $user->photo);
+                }  // End of if to upload photo
+
+                $user->save();
+
+                // Check if request is AJAX
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Foto profil berhasil diperbarui!',
+                        'data' => [
+                            'photo' => $user->photo ? asset('storage/' . $user->photo) : null,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            'phone' => $user->phone,
+                            'address' => $user->alamat ?? null
+                        ]
+                    ]);
+                }
+
+                return back()->with('success', 'Foto profil berhasil diperbarui!');
+            } else {
+                // Full profile update - validate all fields
+                $request->validate([
+                    'name' => 'required|string|max:255',
+                    // Email divalidasi tapi tidak diupdate jika read-only di view,
+                    // tapi tetap kita validasi untuk keamanan.
+                    'email' => 'required|email|unique:users,email,'.$user->id,
+                    'phone' => 'nullable|string|max:15',
+                    'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                ]);
+
+                $user->name = $request->name;
+                // $user->email = $request->email; // Opsional: Hapus baris ini jika email benar-benar dilarang ganti
+                // Tapi biasanya kita biarkan tersimpan ulang untuk konsistensi data
+                $user->phone = $request->phone;
+                // Note: 'alamat' field doesn't exist in the users table, so we skip it
+                // If you need address field, you'll need to create a migration to add it
+
+                // Upload Foto
+                if ($request->hasFile('photo')) {
+                    \Log::info('Processing photo upload for user: ' . $user->id);
+
+                    if ($user->photo && Storage::exists('public/' . $user->photo)) {
+                        \Log::info('Deleting old photo: ' . $user->photo);
+                        Storage::delete('public/' . $user->photo);
+                    }  // End of nested if to delete old photo
+
+                    $file = $request->file('photo');
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('profile-photos', $filename, 'public');
+
+                    \Log::info('New photo stored at: ' . $path);
+
+                    // Simpan path lengkap ke database
+                    $user->photo = $path;
+
+                    \Log::info('Photo field set to: ' . $user->photo);
+                }  // End of if to upload photo
+
+                $user->save();
+
+                // Check if request is AJAX
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Informasi profil berhasil diperbarui!',
+                        'data' => [
+                            'photo' => $user->photo ? asset('storage/' . $user->photo) : null,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            'phone' => $user->phone,
+                            'address' => $user->alamat ?? null
+                        ]
+                    ]);
+                }
+
+                return back()->with('success', 'Informasi profil berhasil diperbarui!');
+            }
         }  // Closes the else block
     }  // Closes the update method
 

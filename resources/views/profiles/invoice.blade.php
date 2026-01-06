@@ -114,6 +114,29 @@
                 </div>
                 @endif
 
+                <!-- Proof of Transfer (if exists) -->
+                @if($transaction->proof_of_transfer_path)
+                <div class="mb-8">
+                    <h3 class="font-bold text-gray-800 mb-3">Bukti Transfer</h3>
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                        <p class="text-green-800 mb-3">Bukti transfer telah diupload dan sedang menunggu verifikasi admin.</p>
+                        <div class="flex justify-center">
+                            <img src="{{ $transaction->proof_of_transfer_path }}"
+                                 alt="Bukti Transfer"
+                                 class="max-w-full max-h-64 rounded-lg border border-gray-200 object-contain"
+                                 onerror="this.onerror=null; this.src='https://placehold.co/400x300?text=No+Image';">
+                        </div>
+                        <div class="mt-3 text-center">
+                            <a href="{{ $transaction->proof_of_transfer_path }}"
+                               target="_blank"
+                               class="inline-flex items-center px-4 py-2 border border-green-300 text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200">
+                                <i class="fas fa-external-link-alt mr-2"></i> Lihat Gambar Penuh
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Transaction Details Table -->
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">

@@ -17,7 +17,7 @@
                         <div class="w-28 h-28 rounded-full p-1 bg-white shadow-lg border border-slate-100">
                             <div class="w-full h-full rounded-full overflow-hidden relative group/img">
                                 @if($user->photo)
-                                    <img src="{{ asset('storage/' . $user->photo) }}" class="w-full h-full object-cover">
+                                    <img src="{{ asset('storage/' . $user->photo) }}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/112x112?text={{ substr($user->name, 0, 1) }}';">
                                 @else
                                     <div class="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400 text-4xl font-bold">
                                         {{ substr($user->name, 0, 1) }}
@@ -126,7 +126,27 @@
                             </div>
                             <form action="{{ route('profiles.update') }}" method="POST" enctype="multipart/form-data">
                                 @csrf @method('PUT')
-                                <input type="file" name="photo" id="photoInput" class="hidden" onchange="this.form.submit()">
+                                <div class="flex flex-col items-center mb-8">
+                                    <div class="relative group">
+                                        <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                                            @if($user->photo)
+                                                <img src="{{ asset('storage/' . $user->photo) }}"
+                                                     id="photoPreview"
+                                                     class="w-full h-full object-cover"
+                                                     onerror="this.onerror=null; this.src='https://placehold.co/96x96?text={{ substr($user->name, 0, 1) }}';">
+                                            @else
+                                                <div id="photoPreview" class="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400 text-3xl font-bold">
+                                                    {{ substr($user->name, 0, 1) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <label for="photoInput" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white rounded-full">
+                                            <i class="fas fa-camera text-xl"></i>
+                                        </label>
+                                    </div>
+                                    <input type="file" name="photo" id="photoInput" class="hidden" onchange="uploadPhoto(this); return false;">
+                                    <p class="mt-3 text-sm text-slate-500">Klik avatar untuk ganti foto</p>
+                                </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     <div class="group">
                                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Nama Lengkap</label>
@@ -141,12 +161,10 @@
                                         <input type="text" name="phone" value="{{ old('phone', $user->phone ?? '') }}" placeholder="08..." class="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none">
                                     </div>
                                 </div>
-                                <div class="mb-8 group">
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Alamat Domisili</label>
-                                    <textarea name="alamat" rows="3" class="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none resize-none" placeholder="Masukkan alamat lengkap...">{{ old('alamat', $user->address ?? '') }}</textarea>
-                                </div>
+                                <!-- Note: 'alamat' field doesn't exist in the users table, so we remove this field -->
+                                <!-- If you need address field, you'll need to create a migration to add it to the users table -->
                                 <div class="flex justify-end pt-6 border-t border-slate-50">
-                                    <button type="submit" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:scale-95">Simpan Perubahan</button>
+                                    <button type="submit" id="profileSubmitBtn" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:scale-95">Simpan Perubahan</button>
                                 </div>
                             </form>
                         </div>
@@ -201,11 +219,21 @@
                                                 <p class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg inline-block">{{ $item['campaign']->title ?? $item['campaign']->judul ?? 'Kampanye Umum' }}</p>
                                             </div>
                                         </div>
-                                        <div class="text-right w-full md:w-auto flex flex-row md:flex-col justify-between items-center md:items-end mt-4 md:mt-0">
+                                        <div class="text-right w-full md:w-auto flex flex-row md:flex-col justify-between items-center md:items-end mt-4 md:mt-0 space-y-2 md:space-y-0">
                                             <p class="text-lg font-black text-slate-800">Rp {{ number_format($item['amount'], 0, ',', '.') }}</p>
-                                            <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ ($item['status'] == 'paid' || $item['status'] == 'VERIFIED') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600' }}">
-                                                {{ $item['status'] }}
-                                            </span>
+                                            <div class="flex flex-col items-end space-y-1">
+                                                <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ ($item['status'] == 'paid' || $item['status'] == 'VERIFIED') ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600' }}">
+                                                    {{ $item['status'] }}
+                                                </span>
+                                                @if(isset($item['model']) && $item['model']->proof_of_transfer_path)
+                                                    <div class="flex items-center space-x-2">
+                                                        <a href="{{ $item['model']->proof_of_transfer_path }}" target="_blank" class="text-blue-600 hover:text-blue-900 text-xs font-bold"
+                                                           onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=No+Image';">
+                                                           <i class="fas fa-image mr-1"></i>Lihat Bukti
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 @empty
@@ -226,6 +254,7 @@
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bukti Transfer</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                         </tr>
                                     </thead>
@@ -236,21 +265,37 @@
                                                 <td class="px-6 py-4 text-sm font-bold">Rp {{ number_format($t->amount, 0, ',', '.') }}</td>
                                                 <td class="px-6 py-4"><span class="px-2 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">{{ $t->status }}</span></td>
                                                 <td class="px-6 py-4">
+                                                    @if($t->proof_of_transfer_path)
+                                                        <a href="{{ $t->proof_of_transfer_path }}" target="_blank" class="text-blue-600 hover:text-blue-900 text-xs font-bold"
+                                                           onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=No+Image';">
+                                                           <i class="fas fa-image mr-1"></i>Lihat Bukti
+                                                        </a>
+                                                    @else
+                                                        <span class="text-gray-400 text-xs">-</span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-6 py-4">
                                                     @if($t->status === 'AWAITING_TRANSFER' || $t->status === 'PENDING_VERIFICATION')
-                                                        @if($t->proof_of_transfer_path)
-                                                            <a href="{{ asset('storage/' . $t->proof_of_transfer_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900 text-xs font-bold mr-3"><i class="fas fa-image"></i> Lihat Bukti</a>
-                                                            <a href="{{ route('profiles.invoice', ['id' => $t->id]) }}" class="text-blue-600 hover:text-blue-900 text-xs font-bold mr-3"><i class="fas fa-file-invoice"></i> Invoice</a>
+                                                        @if(!$t->proof_of_transfer_path)
+                                                            <div class="flex flex-col space-y-2">
+                                                                <form id="uploadForm_{{ $t->order_id }}" action="{{ route('profiles.upload.proof', $t->order_id) }}" method="POST" enctype="multipart/form-data" class="inline">
+                                                                    @csrf
+                                                                    <label class="text-blue-600 hover:text-blue-900 cursor-pointer text-xs font-bold mr-3 flex items-center">
+                                                                        <i class="fas fa-upload mr-1"></i> Upload
+                                                                        <input type="file" name="proof" accept="image/*" class="hidden" onchange="handleImagePreview(this, 'preview_{{ $t->order_id }}'); document.getElementById('uploadForm_{{ $t->order_id }}').submit()" required>
+                                                                    </label>
+                                                                </form>
+                                                                <div class="mt-1">
+                                                                    <img id="preview_{{ $t->order_id }}" class="hidden max-w-xs max-h-24 rounded-lg border border-gray-200" src="" alt="Preview Bukti Transfer">
+                                                                </div>
+                                                                <a href="{{ route('profiles.invoice', ['id' => $t->id]) }}" class="text-blue-600 hover:text-blue-900 text-xs font-bold"><i class="fas fa-file-invoice"></i> Invoice</a>
+                                                            </div>
                                                         @else
-                                                            <form action="{{ route('profiles.upload.proof', $t->order_id) }}" method="POST" enctype="multipart/form-data" class="inline">
-                                                                @csrf
-                                                                <label class="text-blue-600 hover:text-blue-900 cursor-pointer text-xs font-bold mr-3"><i class="fas fa-upload"></i> Upload <input type="file" name="proof" class="hidden" onchange="this.form.submit()"></label>
-                                                            </form>
-                                                            <a href="{{ route('profiles.invoice', ['id' => $t->id]) }}" class="text-blue-600 hover:text-blue-900 text-xs font-bold"><i class="fas fa-file-invoice"></i> Invoice</a>
+                                                            <div class="flex flex-col space-y-2">
+                                                                <a href="{{ route('profiles.invoice', ['id' => $t->id]) }}" class="text-blue-600 hover:text-blue-900 text-xs font-bold mr-3"><i class="fas fa-file-invoice"></i> Invoice</a>
+                                                            </div>
                                                         @endif
                                                     @else
-                                                        @if($t->proof_of_transfer_path)
-                                                            <a href="{{ asset('storage/' . $t->proof_of_transfer_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900 text-xs font-bold mr-3"><i class="fas fa-image"></i> Lihat Bukti</a>
-                                                        @endif
                                                         <a href="{{ route('profiles.invoice', ['id' => $t->id]) }}" class="text-blue-600 hover:text-blue-900 text-xs font-bold"><i class="fas fa-file-invoice"></i> Invoice</a>
                                                     @endif
                                                 </td>
@@ -320,6 +365,96 @@
                 switchTab('edit-profile'); // Default tab
             }
         });
+    </script>
+
+    <script>
+        // Function to handle image preview for file inputs
+        function handleImagePreview(input, previewId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const preview = document.getElementById(previewId);
+                    if (preview) {
+                        // Update the src attribute for img tags
+                        if (preview.tagName === 'IMG') {
+                            preview.src = e.target.result;
+                        }
+                        // Update the background for div tags
+                        else {
+                            preview.style.backgroundImage = `url('${e.target.result}')`;
+                            preview.style.backgroundSize = 'cover';
+                            preview.style.backgroundPosition = 'center';
+                            preview.innerHTML = ''; // Clear any existing content
+                        }
+                    }
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Function to upload photo via AJAX
+        async function uploadPhoto(input) {
+            if (!input.files || !input.files[0]) {
+                return;
+            }
+
+            const file = input.files[0];
+            console.log('Selected file:', file.name, file.size, file.type);
+
+            const formData = new FormData();
+            formData.append('photo', file);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            formData.append('_method', 'PUT');
+
+            // Show loading indicator
+            const labelElement = document.querySelector('label[for="photoInput"]');
+            const originalHTML = labelElement.innerHTML;
+            labelElement.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengupload...';
+
+            try {
+                const response = await fetch('{{ route('profiles.update') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server error response:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (result.success) {
+                    // Update the image preview with the new photo from server response
+                    const preview = document.getElementById('photoPreview');
+                    if (preview && preview.tagName === 'IMG') {
+                        preview.src = result.data.photo;
+                    }
+
+                    // Show success message
+                    alert(result.message || 'Foto profil berhasil diperbarui!');
+                } else {
+                    // Show error message
+                    const errorMessage = result.message || 'Gagal mengupload foto';
+                    alert('Gagal mengupload foto: ' + errorMessage);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat mengupload foto: ' + error.message);
+            } finally {
+                // Restore label
+                labelElement.innerHTML = originalHTML;
+            }
+        }
     </script>
 
     <style>

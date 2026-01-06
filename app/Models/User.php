@@ -99,4 +99,6 @@ class User extends Authenticatable
         // Sesuaikan nama kolom foreign key jika bukan 'user_id'
         return $this->hasMany(VolunteerApplication::class);
     }
+
+
 }

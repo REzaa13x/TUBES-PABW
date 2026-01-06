@@ -117,6 +117,20 @@
                             <i class="fas fa-map-marker-alt text-indigo-500"></i> {{ Str::limit($campaign->lokasi, 20) }}
                             <span class="mx-1">•</span>
                             <i class="far fa-calendar-alt text-indigo-500"></i> {{ $formattedDate }}
+                            <span class="mx-1">•</span>
+                            <i class="fas fa-clock text-indigo-500"></i>
+                            @php
+                                $endDate = \Carbon\Carbon::parse($campaign->tanggal_selesai);
+                                $now = \Carbon\Carbon::now();
+                                $diffInDays = $endDate->diffInDays($now, false);
+                            @endphp
+                            @if($diffInDays > 0)
+                                {{ $diffInDays }} hari tersisa
+                            @elseif($diffInDays == 0)
+                                Hari ini berakhir
+                            @else
+                                Sudah berakhir
+                            @endif
                         </div>
 
                         <h3 class="text-xl font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors line-clamp-2">

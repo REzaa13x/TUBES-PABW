@@ -6,6 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title }}</title>
 
     {{-- CDN Tailwind & FontAwesome --}}
@@ -149,17 +150,44 @@
                     @auth
                         <div id="serverAuthElements" class="relative ml-2">
                             <button id="profileButton" class="flex items-center gap-2 px-1 py-1 pr-3 rounded-full border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all focus:outline-none focus:ring-2 focus:ring-blue-100">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white">
-                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                                </div>
-                                <span class="text-sm font-semibold text-slate-700 max-w-[100px] truncate">{{ auth()->user()->name }}</span>
+                                @if(auth()->check() && auth()->user()->photo)
+                                    <img src="{{ asset('storage/' . auth()->user()->photo) }}"
+                                         class="w-8 h-8 rounded-full object-cover shadow-md ring-2 ring-white"
+                                         onerror="this.onerror=null; this.src='https://placehold.co/32x32?text={{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}';">
+                                @elseif(auth()->check())
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white">
+                                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                                    </div>
+                                @else
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white">
+                                        U
+                                    </div>
+                                @endif
+                                <span class="text-sm font-semibold text-slate-700 max-w-[100px] truncate">{{ auth()->user()->name ?? 'User' }}</span>
                                 <i class="fas fa-chevron-down text-xs text-slate-400"></i>
                             </button>
                             <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 transform origin-top-right transition-all">
                                 <div class="px-5 py-3 border-b border-slate-50 mb-2">
                                     <p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Akun Masuk</p>
-                                    <p class="text-sm font-bold text-slate-800 truncate">{{ auth()->user()->name }}</p>
-                                    <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        @if(auth()->check() && auth()->user()->photo)
+                                            <img src="{{ asset('storage/' . auth()->user()->photo) }}"
+                                                 class="w-10 h-10 rounded-full object-cover"
+                                                 onerror="this.onerror=null; this.src='https://placehold.co/40x40?text={{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}';">
+                                        @elseif(auth()->check())
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold">
+                                                {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                                            </div>
+                                        @else
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold">
+                                                U
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-800 truncate">{{ auth()->user()->name ?? 'User' }}</p>
+                                            <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email ?? 'email@example.com' }}</p>
+                                        </div>
+                                    </div>
                                 </div>
                                {{-- PERBAIKAN DI SINI: href="#" diganti route('profiles.index') --}}
                                 <a href="{{ route('profiles.index') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
@@ -280,6 +308,19 @@
 
                     {{-- Mobile Profile Menu for API Auth --}}
                     <div id="mobileProfileContainer" class="hidden">
+                        <div class="px-4 py-3 border-b border-slate-50">
+                            @if(auth()->check() && auth()->user()->photo)
+                                <img src="{{ asset('storage/' . auth()->user()->photo) }}"
+                                     class="w-12 h-12 rounded-full object-cover mx-auto mb-2"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/48x48?text={{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}';">
+                            @elseif(auth()->check())
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-lg mx-auto mb-2">
+                                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                                </div>
+                            @endif
+                            <p class="text-sm font-bold text-slate-800 text-center">{{ auth()->user()->name ?? 'User' }}</p>
+                            <p class="text-xs text-slate-500 text-center">{{ auth()->user()->email ?? 'email@example.com' }}</p>
+                        </div>
                         <a id="mobileProfileLink" href="{{ route('profiles.index') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
                             <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-primary flex items-center justify-center mr-3 transition-colors">
                                 <i class="fas fa-user-circle"></i>

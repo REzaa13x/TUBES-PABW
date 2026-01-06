@@ -202,13 +202,13 @@
                     <h5 class="text-lg font-semibold text-gray-800 mb-4">Bukti Transfer</h5>
                     <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                         <div class="flex justify-center">
-                            <img src="{{ asset('storage/' . $transaction->proof_of_transfer_path) }}"
+                            <img src="{{ $transaction->proof_of_transfer_path }}"
                                  alt="Bukti Transfer"
                                  class="max-w-full max-h-96 rounded-lg border shadow-sm"
                                  onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=Gambar+Tidak+Dapat+Dimuat';">
                         </div>
                         <div class="mt-4 text-center">
-                            <a href="{{ asset('storage/' . $transaction->proof_of_transfer_path) }}"
+                            <a href="{{ $transaction->proof_of_transfer_path }}"
                                target="_blank"
                                class="inline-flex items-center px-4 py-2 border border-blue-300 text-sm font-medium rounded-md shadow-sm text-blue-700 bg-blue-50 hover:bg-blue-100">
                                 <i class="fas fa-external-link-alt mr-2"></i> Lihat Gambar Penuh

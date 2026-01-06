@@ -62,4 +62,20 @@ class DonationTransaction extends Model
 
         return $statusLabels[$this->status] ?? $this->status;
     }
+
+    // Accessor to handle different proof of transfer path formats
+    public function getProofOfTransferPathAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        // If it's already a proxy URL or external URL, return as is
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        // For local storage files, return the correct URL
+        return asset('storage/' . $value);
+    }
 }
