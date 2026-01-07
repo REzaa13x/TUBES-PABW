@@ -26,38 +26,45 @@ class DonationCampaignController extends Controller
     // 3. STORE (Menyimpan Data Baru)
     public function store(Request $request)
     {
-        // Validasi Input
-        $validated = $request->validate([
-            'title'           => 'required|max:255',
-            'description'     => 'required',
-            'target_amount'   => 'required|numeric|min:1',
-            'current_amount'  => 'nullable|numeric|min:0',
-            'status'          => 'required|in:Active,Completed,Inactive,Pending',
-            'kategori'        => 'required|in:Lingkungan,Kesehatan,Pendidikan,Sosial Kemanusiaan,Bencana Alam',
-            'yayasan'         => 'nullable|string|max:255',
-            'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'end_date'        => 'required|date'
-        ]);
+        try {
+            // Validasi Input
+            $validated = $request->validate([
+                'title'           => 'required|max:255',
+                'description'     => 'required',
+                'target_amount'   => 'required|numeric|min:1',
+                'current_amount'  => 'nullable|numeric|min:0',
+                'status'          => 'required|in:Active,Completed,Inactive,Pending',
+                'kategori'        => 'required|in:Lingkungan,Kesehatan,Pendidikan,Sosial Kemanusiaan,Bencana Alam',
+                'yayasan'         => 'nullable|string|max:255',
+                'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'end_date'        => 'required|date|after_or_equal:'.date('Y-m-d')
+            ]);
 
-        // Upload Gambar
-        if ($request->file('image')) {
-            $validated['image'] = $request->file('image')->store('campaigns', 'public');
+            // Upload Gambar
+            if ($request->file('image')) {
+                $validated['image'] = $request->file('image')->store('campaigns', 'public');
+            }
+
+            // Set default values if not provided
+            $validated['current_amount'] = $validated['current_amount'] ?? 0;
+
+            // Generate slug from title
+            $validated['slug'] = Str::slug($request->title) . '-' . time();
+
+            // Set user_id to currently authenticated admin
+            $validated['user_id'] = auth()->id();
+
+            // Simpan ke Database
+            Campaign::create($validated);
+
+            return redirect()->route('admin.campaigns.index')
+                ->with('success', 'Kampanye donasi berhasil diterbitkan! Data kini tampil di halaman publik.');
+        } catch (\Exception $e) {
+            \Log::error('Error creating campaign: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal membuat kampanye: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        // Set default values if not provided
-        $validated['current_amount'] = $validated['current_amount'] ?? 0;
-
-        // Generate slug from title
-        $validated['slug'] = Str::slug($request->title) . '-' . time();
-
-        // Set user_id to currently authenticated admin
-        $validated['user_id'] = auth()->id();
-
-        // Simpan ke Database
-        Campaign::create($validated);
-
-        return redirect()->route('admin.campaigns.index')
-            ->with('success', 'Kampanye donasi berhasil diterbitkan! Data kini tampil di halaman publik.');
     }
 
     // 4. EDIT (Menampilkan Form Edit)
@@ -70,43 +77,50 @@ class DonationCampaignController extends Controller
     // 5. UPDATE (Menyimpan Perubahan)
     public function update(Request $request, $id)
     {
-        $campaign = Campaign::findOrFail($id);
+        try {
+            $campaign = Campaign::findOrFail($id);
 
-        $validated = $request->validate([
-            'title'           => 'required|max:255',
-            'description'     => 'required',
-            'target_amount'   => 'required|numeric|min:1',
-            'current_amount'  => 'nullable|numeric|min:0',
-            'status'          => 'required|in:Active,Completed,Inactive,Pending',
-            'kategori'        => 'required|in:Lingkungan,Kesehatan,Pendidikan,Sosial Kemanusiaan,Bencana Alam',
-            'yayasan'         => 'nullable|string|max:255',
-            'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'end_date'        => 'required|date'
-        ]);
+            $validated = $request->validate([
+                'title'           => 'required|max:255',
+                'description'     => 'required',
+                'target_amount'   => 'required|numeric|min:1',
+                'current_amount'  => 'nullable|numeric|min:0',
+                'status'          => 'required|in:Active,Completed,Inactive,Pending',
+                'kategori'        => 'required|in:Lingkungan,Kesehatan,Pendidikan,Sosial Kemanusiaan,Bencana Alam',
+                'yayasan'         => 'nullable|string|max:255',
+                'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'end_date'        => 'required|date|after_or_equal:'.date('Y-m-d')
+            ]);
 
-        // Cek jika ada gambar baru yang diupload
-        if ($request->file('image')) {
-            // Hapus gambar lama
-            if ($campaign->image) {
-                Storage::delete('public/' . $campaign->image);
+            // Cek jika ada gambar baru yang diupload
+            if ($request->file('image')) {
+                // Hapus gambar lama
+                if ($campaign->image) {
+                    Storage::delete('public/' . $campaign->image);
+                }
+                // Simpan gambar baru
+                $validated['image'] = $request->file('image')->store('campaigns', 'public');
             }
-            // Simpan gambar baru
-            $validated['image'] = $request->file('image')->store('campaigns', 'public');
+
+            // Update slug if title has changed
+            if ($request->title != $campaign->title) {
+                $validated['slug'] = Str::slug($request->title) . '-' . time();
+            } else {
+                // Don't update the slug if title hasn't changed
+                unset($validated['slug']);
+            }
+
+            // Update Database
+            $campaign->update($validated);
+
+            return redirect()->route('admin.campaigns.index')
+                ->with('success', 'Kampanye donasi berhasil diperbarui!');
+        } catch (\Exception $e) {
+            \Log::error('Error updating campaign: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal memperbarui kampanye: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        // Update slug if title has changed
-        if ($request->title != $campaign->title) {
-            $validated['slug'] = Str::slug($request->title) . '-' . time();
-        } else {
-            // Don't update the slug if title hasn't changed
-            unset($validated['slug']);
-        }
-
-        // Update Database
-        $campaign->update($validated);
-
-        return redirect()->route('admin.campaigns.index')
-            ->with('success', 'Kampanye donasi berhasil diperbarui!');
     }
 
     // 6. DESTROY (Menghapus Data)

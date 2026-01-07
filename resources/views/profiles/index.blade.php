@@ -419,7 +419,8 @@
                     body: formData,
                     headers: {
                         'Accept': 'application/json',
-                    }
+                    },
+                    credentials: 'include' // Better for CSRF in production
                 });
 
                 console.log('Response status:', response.status);
@@ -449,7 +450,12 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Terjadi kesalahan saat mengupload foto: ' + error.message);
+                // More specific error handling for different error types
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    alert('Koneksi gagal: Pastikan jaringan internet stabil dan coba lagi. Jika masalah terus berlanjut, hubungi administrator.');
+                } else {
+                    alert('Terjadi kesalahan saat mengupload foto: ' + error.message);
+                }
             } finally {
                 // Restore label
                 labelElement.innerHTML = originalHTML;

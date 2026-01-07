@@ -699,6 +699,114 @@ class AdminController extends Controller
     }
 
     /**
+     * Create a new withdrawal request
+     */
+    public function createWithdrawal(Request $request)
+    {
+        // Only allow admin users
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Access denied. Admin only.'
+            ], 403);
+        }
+
+        $request->validate([
+            'campaign_id' => 'required|exists:campaigns,id',
+            'amount' => 'required|numeric|min:1000',
+            'expense_category' => 'required|string|max:100',
+            'custom_category' => 'nullable|string|max:100',
+            'description' => 'required|string|max:255',
+            'proof_file' => 'nullable|image|max:2048',
+        ]);
+
+        $campaign = \App\Models\Campaign::findOrFail($request->campaign_id);
+        $finalCategory = $request->expense_category;
+        if ($finalCategory === 'Lainnya' && $request->filled('custom_category')) {
+            $finalCategory = $request->custom_category;
+        }
+
+        $usedFunds = $campaign->withdrawals()
+            ->whereIn('status', ['approved', 'completed'])
+            ->sum('amount');
+        $currentBalance = $campaign->current_amount - $usedFunds;
+
+        if ($request->amount > $currentBalance) {
+            return response()->json([
+                'message' => 'Gagal! Saldo kampanye tidak mencukupi.'
+            ], 400);
+        }
+
+        $proofPath = null;
+        if ($request->hasFile('proof_file')) {
+            $proofPath = $request->file('proof_file')->store('withdrawal-proofs', 'public');
+        }
+
+        $withdrawal = \App\Models\Withdrawal::create([
+            'campaign_id' => $campaign->id,
+            'user_id' => auth()->id(),
+            'amount' => $request->amount,
+            'bank_name' => 'EXPENSE',
+            'account_number' => $finalCategory, // Simpan kategori final di sini
+            'account_holder_name' => $request->description,
+            'status' => 'approved',
+            'transferred_at' => now(),
+            'proof_file' => $proofPath,
+            'admin_note' => 'Pengeluaran dicatat manual oleh Admin.',
+        ]);
+
+        return response()->json([
+            'message' => 'Withdrawal created successfully',
+            'data' => $withdrawal
+        ], 201);
+    }
+
+    /**
+     * Get all withdrawals
+     */
+    public function getWithdrawals()
+    {
+        // Only allow admin users
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Access denied. Admin only.'
+            ], 403);
+        }
+
+        $withdrawals = \App\Models\Withdrawal::with('campaign')->orderBy('created_at', 'desc')->paginate(15);
+
+        return response()->json([
+            'message' => 'Withdrawals retrieved successfully',
+            'data' => $withdrawals
+        ]);
+    }
+
+    /**
+     * Get specific withdrawal
+     */
+    public function getWithdrawal($id)
+    {
+        // Only allow admin users
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Access denied. Admin only.'
+            ], 403);
+        }
+
+        $withdrawal = \App\Models\Withdrawal::with('campaign')->find($id);
+
+        if (!$withdrawal) {
+            return response()->json([
+                'message' => 'Withdrawal not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Withdrawal retrieved successfully',
+            'data' => $withdrawal
+        ]);
+    }
+
+    /**
      * Get comprehensive dashboard statistics for admin
      */
     public function dashboardOverview()

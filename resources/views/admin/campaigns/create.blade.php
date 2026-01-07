@@ -8,6 +8,23 @@
 
     <div class="px-4 py-3 mb-8 bg-white rounded-lg shadow-md">
 
+        {{-- Error Message --}}
+        @if($errors->any())
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                <ul class="list-disc pl-5">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                {{ session('error') }}
+            </div>
+        @endif
+
         {{-- Form Start --}}
         <form action="{{ route('admin.campaigns.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
@@ -51,7 +68,7 @@
 
                 <label class="block text-sm">
                     <span class="text-gray-700">Tanggal Berakhir</span>
-                    <input type="date" name="end_date" class="block w-full mt-1 text-sm border-gray-300 rounded-md focus:border-purple-400 focus:outline-none focus:shadow-outline-purple form-input" required />
+                    <input type="date" name="end_date" class="block w-full mt-1 text-sm border-gray-300 rounded-md focus:border-purple-400 focus:outline-none focus:shadow-outline-purple form-input" required min="{{ date('Y-m-d') }}" />
                 </label>
             </div>
 

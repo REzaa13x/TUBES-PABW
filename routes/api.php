@@ -74,6 +74,8 @@ Route::prefix('v1')->middleware('cors')->group(function () {
         Route::get('/donations/{order_id}/admin', [DonationController::class, 'showForAdmin']);
         Route::get('/my-donations', [DonationController::class, 'getUserDonations'])->name('api.donations.user');
         Route::put('/donations/{order_id}/status', [DonationController::class, 'updateStatus']);
+        Route::post('/donations', [DonationController::class, 'store'])->name('api.donations.store');
+        Route::post('/donations/{order_id}/proof', [DonationController::class, 'uploadProof'])->name('api.donations.proof.upload');
 
         // User profile routes
         Route::get('/profile', [ProfileController::class, 'show'])->name('api.profile.show');
@@ -126,6 +128,11 @@ Route::prefix('v1')->middleware('cors')->group(function () {
 
             // Donation Campaigns management
             Route::apiResource('donation-campaigns', AdminDonationCampaignController::class);
+
+            // Withdrawal management
+            Route::get('/withdrawals', [App\Http\Controllers\Api\AdminController::class, 'getWithdrawals']);
+            Route::get('/withdrawals/{id}', [App\Http\Controllers\Api\AdminController::class, 'getWithdrawal']);
+            Route::post('/withdrawals', [App\Http\Controllers\Api\AdminController::class, 'createWithdrawal']);
 
             // Dashboard overview
             Route::get('/dashboard/overview', [App\Http\Controllers\Api\AdminController::class, 'dashboardOverview']);

@@ -12,6 +12,142 @@ use Illuminate\Support\Facades\Validator;
 
 class DonationController extends Controller
 {
+    /**
+     * Create a new donation
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required|numeric|min:1',
+            'donor_name' => 'required|string|max:255',
+            'donor_email' => 'required|email|max:255',
+            'donor_phone' => 'nullable|string|max:20',
+            'anonymous' => 'nullable|boolean',
+            'payment_method' => 'required|in:bank_transfer,e_wallet,qris',
+            'campaign_id' => 'nullable|exists:campaigns,id',
+            'selected_bank' => 'nullable|required_if:payment_method,bank_transfer',
+            'selected_ewallet' => 'nullable|required_if:payment_method,e_wallet',
+            'selected_qris' => 'nullable|required_if:payment_method,qris',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Collect payment method specific data
+        $paymentMethodData = [];
+
+        if ($request->payment_method === 'bank_transfer' && $request->selected_bank) {
+            $paymentMethodData['selected_bank'] = $request->selected_bank;
+        } elseif ($request->payment_method === 'e_wallet' && $request->selected_ewallet) {
+            $paymentMethodData['selected_ewallet'] = $request->selected_ewallet;
+        } elseif ($request->payment_method === 'qris' && $request->selected_qris) {
+            $paymentMethodData['selected_qris'] = $request->selected_qris;
+        }
+
+        // Generate unique order ID
+        $order_id = 'ORD-' . strtoupper(Str::random(10));
+
+        // Define bank details for transfer (for bank_transfer method)
+        $bank_account_name = config('app.bank_account_name', 'Organisasi Amal DonGiv');
+        $bank_account_number = config('app.bank_account_number', '1234567890');
+        $bank_name = config('app.bank_name', 'Bank Mandiri');
+
+        // Calculate transfer deadline (24 hours from creation) for bank transfers
+        $transfer_deadline = null;
+        if ($request->payment_method === 'bank_transfer') {
+            $transfer_deadline = now()->addHours(24);
+        }
+
+        $transaction = DonationTransaction::create([
+            'order_id' => $order_id,
+            'amount' => $request->amount,
+            'donor_name' => $request->donor_name,
+            'donor_email' => $request->donor_email,
+            'donor_phone' => $request->donor_phone,
+            'user_id' => $user->id, // Link to logged-in user
+            'anonymous' => $request->anonymous ?? 0,
+            'payment_method' => $request->payment_method,
+            'payment_method_data' => json_encode($paymentMethodData),
+            'status' => 'AWAITING_TRANSFER', // This status applies to all payment methods initially
+            'campaign_id' => $request->campaign_id,
+            'transfer_deadline' => $transfer_deadline,
+            'bank_account_name' => $bank_account_name,
+            'bank_account_number' => $bank_account_number,
+            'bank_name' => $bank_name
+        ]);
+
+        return response()->json([
+            'message' => 'Donation created successfully',
+            'data' => $transaction
+        ], 201);
+    }
+
+    /**
+     * Upload proof of payment for a donation
+     */
+    public function uploadProof(Request $request, string $order_id): JsonResponse
+    {
+        $user = $request->user();
+
+        $transaction = DonationTransaction::where('order_id', $order_id)->first();
+
+        if (!$transaction) {
+            return response()->json([
+                'message' => 'Transaction not found'
+            ], 404);
+        }
+
+        // Check if the transaction belongs to the authenticated user
+        if ($transaction->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'Access denied. This transaction does not belong to you.'
+            ], 403);
+        }
+
+        // Only allow uploading proof for transactions with status AWAITING_TRANSFER or PENDING_VERIFICATION
+        if (!in_array($transaction->status, ['AWAITING_TRANSFER', 'PENDING_VERIFICATION'])) {
+            return response()->json([
+                'message' => 'Proof of payment can only be uploaded for transactions awaiting transfer or pending verification'
+            ], 400);
+        }
+
+        // Check if proof already exists
+        if ($transaction->proof_of_transfer_path) {
+            return response()->json([
+                'message' => 'Proof of payment has already been uploaded for this transaction'
+            ], 400);
+        }
+
+        $request->validate([
+            'proof' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        if ($request->hasFile('proof')) {
+            $file = $request->file('proof');
+            $filename = 'transfer-proof-' . $order_id . '-' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('transfer-proofs', $filename, 'public');
+
+            $transaction->update([
+                'proof_of_transfer_path' => $path,
+                'status' => 'PENDING_VERIFICATION'  // Update status to pending verification
+            ]);
+
+            return response()->json([
+                'message' => 'Proof of payment uploaded successfully. Status updated to pending verification.',
+                'data' => $transaction
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Failed to upload proof of payment'
+        ], 400);
+    }
 
 
     /**
