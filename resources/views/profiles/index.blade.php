@@ -317,13 +317,13 @@
                                         <div class="flex justify-between items-start gap-4 mb-4">
                                             <div class="flex gap-4">
                                                 <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-                                                    <img src="{{ $app->campaign->image ? $app->campaign->image : 'https://placehold.co/56x56?text=No+Image' }}"
+                                                    <img src="{{ $app->campaign && $app->campaign->image ? $app->campaign->image : 'https://placehold.co/56x56?text=No+Image' }}"
                                                          class="w-full h-full object-cover"
                                                          onerror="this.onerror=null; this.src='https://placehold.co/56x56?text=No+Image';">
                                                 </div>
                                                 <div>
-                                                    <h4 class="font-bold text-slate-800 text-base line-clamp-1">{{ $app->campaign->judul }}</h4>
-                                                    <p class="text-xs text-slate-500 mt-1"><i class="fas fa-map-marker-alt text-red-400"></i> {{ $app->campaign->lokasi }}</p>
+                                                    <h4 class="font-bold text-slate-800 text-base line-clamp-1">{{ $app->campaign ? $app->campaign->judul : 'Kampanye Tidak Ditemukan' }}</h4>
+                                                    <p class="text-xs text-slate-500 mt-1"><i class="fas fa-map-marker-alt text-red-400"></i> {{ $app->campaign ? $app->campaign->lokasi : 'Lokasi Tidak Tersedia' }}</p>
                                                 </div>
                                             </div>
                                             <span class="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-blue-600 border border-blue-100">{{ $app->status }}</span>
@@ -414,7 +414,7 @@
             labelElement.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengupload...';
 
             try {
-                const response = await fetch('{{ route('profiles.update') }}', {
+                const response = await fetch('{{ route('profiles.update', [], false) }}', {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -438,7 +438,12 @@
                     // Update the image preview with the new photo from server response
                     const preview = document.getElementById('photoPreview');
                     if (preview && preview.tagName === 'IMG') {
-                        preview.src = result.data.photo;
+                        // Ensure the image URL uses HTTPS if the page is loaded over HTTPS
+                        let photoUrl = result.data.photo;
+                        if (window.location.protocol === 'https:' && photoUrl.startsWith('http://')) {
+                            photoUrl = photoUrl.replace('http://', 'https://');
+                        }
+                        preview.src = photoUrl;
                     }
 
                     // Show success message

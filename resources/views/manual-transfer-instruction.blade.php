@@ -96,7 +96,13 @@
                                 </div>
                                 <div class="p-4 bg-white rounded-lg shadow-sm">
                                     <p class="text-sm text-gray-600">Batas Waktu</p>
-                                    <p class="text-xl font-bold text-amber-600">{{ $transaction->transfer_deadline->format('d M Y H:i') }}</p>
+                                    <p class="text-xl font-bold text-amber-600">
+                                        @if($transaction->transfer_deadline)
+                                            {{ $transaction->transfer_deadline->format('d M Y H:i') }}
+                                        @else
+                                            -
+                                        @endif
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -322,7 +328,13 @@
                             <ul class="list-disc pl-5 space-y-2 text-amber-700">
                                 <li>Pastikan jumlah pembayaran sesuai dengan jumlah donasi yang Anda tentukan</li>
                                 @if($transaction->payment_method == 'bank_transfer')
-                                <li>Batas waktu transfer adalah <strong>{{ $transaction->transfer_deadline->format('d M Y H:i') }}</strong></li>
+                                <li>Batas waktu transfer adalah <strong>
+                                    @if($transaction->transfer_deadline)
+                                        {{ $transaction->transfer_deadline->format('d M Y H:i') }}
+                                    @else
+                                        -
+                                    @endif
+                                </strong></li>
                                 <li>Jika transfer dilakukan setelah batas waktu, maka otomatis akan dibatalkan</li>
                                 <li>Gunakan aplikasi mobile banking atau ATM untuk proses transfer yang lebih mudah</li>
                                 @elseif($transaction->payment_method == 'e_wallet')

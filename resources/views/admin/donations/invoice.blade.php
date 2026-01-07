@@ -116,7 +116,13 @@
                                 @if($transaction->transfer_deadline)
                                 <div class="flex justify-end gap-4">
                                     <span class="text-sm text-slate-400 font-medium">Batas Waktu</span>
-                                    <span class="text-sm text-red-600 font-bold">{{ $transaction->transfer_deadline->format('d/m/Y H:i') }}</span>
+                                    <span class="text-sm text-red-600 font-bold">
+                                        @if($transaction->transfer_deadline)
+                                            {{ $transaction->transfer_deadline->format('d/m/Y H:i') }}
+                                        @else
+                                            -
+                                        @endif
+                                    </span>
                                 </div>
                                 @endif
                             </div>

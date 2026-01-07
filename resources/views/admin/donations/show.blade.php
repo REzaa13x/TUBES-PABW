@@ -100,7 +100,13 @@
                     @if($transaction->transfer_deadline)
                     <div>
                         <h6 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Batas Transfer</h6>
-                        <p class="mt-1 text-gray-900">{{ $transaction->transfer_deadline->format('d M Y H:i') }}</p>
+                        <p class="mt-1 text-gray-900">
+                            @if($transaction->transfer_deadline)
+                                {{ $transaction->transfer_deadline->format('d M Y H:i') }}
+                            @else
+                                -
+                            @endif
+                        </p>
                     </div>
                     @endif
                     @if($transaction->payment_method_data)
