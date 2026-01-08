@@ -129,6 +129,12 @@ Route::prefix('v1')->middleware('cors')->group(function () {
             // Donation Campaigns management
             Route::apiResource('donation-campaigns', AdminDonationCampaignController::class);
 
+            // User management
+            Route::get('/users', [App\Http\Controllers\Api\AdminController::class, 'getUsers']);
+            Route::get('/users/{id}', [App\Http\Controllers\Api\AdminController::class, 'getUser']);
+            Route::put('/users/{id}', [App\Http\Controllers\Api\AdminController::class, 'updateUser']);
+            Route::delete('/users/{id}', [App\Http\Controllers\Api\AdminController::class, 'deleteUser']);
+
             // Withdrawal management
             Route::get('/withdrawals', [App\Http\Controllers\Api\AdminController::class, 'getWithdrawals']);
             Route::get('/withdrawals/{id}', [App\Http\Controllers\Api\AdminController::class, 'getWithdrawal']);
