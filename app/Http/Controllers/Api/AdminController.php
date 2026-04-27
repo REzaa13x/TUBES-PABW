@@ -973,4 +973,122 @@ class AdminController extends Controller
         }
         return $data;
     }
+
+    /**
+     * Get all users for admin
+     */
+    public function getUsers()
+    {
+        // Only allow admin users
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Access denied. Admin only.'
+            ], 403);
+        }
+
+        $users = \App\Models\User::orderBy('created_at', 'desc')->paginate(15);
+
+        return response()->json([
+            'message' => 'Users retrieved successfully',
+            'data' => $users
+        ]);
+    }
+
+    /**
+     * Get specific user for admin
+     */
+    public function getUser($id)
+    {
+        // Only allow admin users
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Access denied. Admin only.'
+            ], 403);
+        }
+
+        $user = \App\Models\User::with(['donations', 'volunteerApplications.campaign'])->find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'User retrieved successfully',
+            'data' => $user
+        ]);
+    }
+
+    /**
+     * Update user for admin
+     */
+    public function updateUser(Request $request, $id)
+    {
+        // Only allow admin users
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Access denied. Admin only.'
+            ], 403);
+        }
+
+        $user = \App\Models\User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'role' => 'required|in:donatur,admin',
+            'password' => 'nullable|min:8'
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return response()->json([
+            'message' => 'User updated successfully',
+            'data' => $user
+        ]);
+    }
+
+    /**
+     * Delete user for admin
+     */
+    public function deleteUser($id)
+    {
+        // Only allow admin users
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Access denied. Admin only.'
+            ], 403);
+        }
+
+        $user = \App\Models\User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'User deleted successfully'
+        ]);
+    }
 }

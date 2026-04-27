@@ -66,10 +66,13 @@ Route::get('/relawan', [FrontendCampaignController::class, 'landing'])->name('vo
 Route::get('/volunteer/campaigns', [FrontendCampaignController::class, 'volunteerIndex'])->name('volunteer.campaigns.index');
 Route::get('/campaigns', [FrontendCampaignController::class, 'index'])->name('campaigns.all');
 // 3. Detail Kampanye
-Route::get('/volunteer/campaigns/{slug}', [FrontendCampaignController::class, 'show'])->name('volunteer.campaigns.show');
+// NOTE: This route is moved inside auth middleware group below because registration requires login
 
 
 Route::middleware(['auth'])->group(function () {
+
+    // Relawan - Detail Kampanye (memerlukan login untuk pendaftaran)
+    Route::get('/volunteer/campaigns/{slug}', [FrontendCampaignController::class, 'show'])->name('volunteer.campaigns.show');
 
     // Profil & Riwayat User (Frontend) - Allow all authenticated users (including admins)
     Route::prefix('profiles')->name('profiles.')->group(function() {

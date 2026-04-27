@@ -32,7 +32,7 @@ class UserController extends Controller
     // 2. Tampilkan Detail User & Riwayat
     public function show($id)
     {
-        $user = User::with(['donations', 'volunteerApplications.campaign'])->findOrFail($id);
+        $user = User::with(['donations', 'donationTransactions', 'volunteerApplications.campaign'])->findOrFail($id);
 
         return view('admin.users.show', compact('user'));
     }

@@ -60,8 +60,13 @@
                             </div>
                             <div>
                                 <p class="text-xs text-blue-500 font-bold uppercase tracking-wider mb-1">Data Akun</p>
-                                <p class="text-base text-slate-800 font-bold">{{ Auth::user()->name }}</p>
-                                <p class="text-sm text-slate-600">{{ Auth::user()->email }}</p>
+                                @if(Auth::user())
+                                    <p class="text-base text-slate-800 font-bold">{{ Auth::user()->name }}</p>
+                                    <p class="text-sm text-slate-600">{{ Auth::user()->email }}</p>
+                                @else
+                                    <p class="text-base text-slate-800 font-bold">Silakan login terlebih dahulu</p>
+                                    <p class="text-sm text-slate-600">Anda harus login untuk melanjutkan pendaftaran</p>
+                                @endif
                             </div>
                         </div>
 

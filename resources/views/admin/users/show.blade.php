@@ -90,7 +90,7 @@
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 bg-slate-50 flex justify-between items-center">
                     <h3 class="font-bold text-gray-800"><i class="fas fa-donate text-blue-500 mr-2"></i> Riwayat Donasi</h3>
-                    <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">{{ $user->donations->count() }} Transaksi</span>
+                    <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">{{ $user->donationTransactions->count() }} Transaksi</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -103,15 +103,17 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            @forelse($user->donations as $donation)
+                            @forelse($user->donationTransactions as $donation)
                             <tr>
-                                <td class="px-6 py-3 text-sm text-gray-600 font-mono">#{{ $donation->id }}</td>
+                                <td class="px-6 py-3 text-sm text-gray-600 font-mono">#{{ $donation->order_id }}</td>
                                 <td class="px-6 py-3 text-sm font-bold text-gray-800">Rp {{ number_format($donation->amount, 0, ',', '.') }}</td>
                                 <td class="px-6 py-3 text-sm">
-                                    @if($donation->status == 'paid')
+                                    @if($donation->status == 'VERIFIED')
                                         <span class="text-green-600 font-bold text-xs bg-green-50 px-2 py-1 rounded">Berhasil</span>
-                                    @elseif($donation->status == 'pending')
-                                        <span class="text-yellow-600 font-bold text-xs bg-yellow-50 px-2 py-1 rounded">Pending</span>
+                                    @elseif($donation->status == 'PENDING_VERIFICATION')
+                                        <span class="text-yellow-600 font-bold text-xs bg-yellow-50 px-2 py-1 rounded">Menunggu Verifikasi</span>
+                                    @elseif($donation->status == 'AWAITING_TRANSFER')
+                                        <span class="text-blue-600 font-bold text-xs bg-blue-50 px-2 py-1 rounded">Menunggu Transfer</span>
                                     @else
                                         <span class="text-red-600 font-bold text-xs bg-red-50 px-2 py-1 rounded">Gagal</span>
                                     @endif
