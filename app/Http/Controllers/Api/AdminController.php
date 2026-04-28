@@ -155,17 +155,12 @@ class AdminController extends Controller
     public function getNotifications(Request $request)
     {
         $user = auth()->user();
-
-        // Jika role admin, bisa melihat semua notifikasi
-        // Jika bukan admin, hanya bisa melihat notifikasi sendiri
         if ($user->role === 'admin') {
-            // Dalam konteks admin API, kita mungkin ingin mengambil notifikasi untuk user tertentu
             $userId = $request->query('user_id');
             if ($userId) {
                 $userNotifications = \App\Models\User::findOrFail($userId);
                 $notifications = $userNotifications->notifications()->paginate(10);
             } else {
-                // Secara default, kembalikan notifikasi milik admin itu sendiri
                 $notifications = $user->notifications()->paginate(10);
             }
         } else {

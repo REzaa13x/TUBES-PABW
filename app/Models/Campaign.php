@@ -23,12 +23,17 @@ class Campaign extends Model
         'status',
         'kategori',
         'yayasan',
+        'verification_token',
+        'validator_name',
+        'verified_at',
+        'validator_user_id',
     ];
 
     protected $casts = [
         'target_amount' => 'decimal:2',
         'current_amount' => 'decimal:2',
         'end_date' => 'date',
+        'verified_at' => 'datetime',
         'status' => 'string',
         'kategori' => 'string',
     ];

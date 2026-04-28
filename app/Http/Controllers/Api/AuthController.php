@@ -21,6 +21,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|in:user,validator',
             'phone' => 'nullable|string|max:15',
             'birth_date' => 'nullable|date',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -36,7 +37,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'donatur', // Default role for new users (matches database enum)
+            'role' => $request->role, // Role selected by user (donatur/validator)
             'coins' => 0, // Default coins for new users
             'photo' => $photoPath,
             'phone' => $request->phone,

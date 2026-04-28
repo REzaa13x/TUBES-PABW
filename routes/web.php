@@ -13,6 +13,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VolunteerApplicationController;
 // Alias Frontend
 use App\Http\Controllers\CampaignController as FrontendCampaignController;
+use App\Http\Controllers\VerificationController;
+
+// Verification Public Route (Tanpa Login)
+Route::get('/verify/{token}', [VerificationController::class, 'show'])->name('verify.show');
+Route::post('/verify/{token}', [VerificationController::class, 'verify'])->name('verify.confirm');
+Route::get('/verify-success', [VerificationController::class, 'success'])->name('verify.success');
 
 // --- 2. CONTROLLERS ADMIN ---
 use App\Http\Controllers\Admin\NotifikasiController;
@@ -58,6 +64,9 @@ Route::get('/donation-success', function () {
 Route::get('/donation-success/{order_id}', function ($order_id) {
     return view('donation-success', ['order_id' => $order_id]);
 })->name('donation.success.with.order');
+
+// Midtrans Callback
+Route::post('/midtrans/callback', [App\Http\Controllers\MidtransController::class, 'callback'])->name('midtrans.callback');
 
 // Relawan (Frontend Public)
 // 1. Landing Page Relawan

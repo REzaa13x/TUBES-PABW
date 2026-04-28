@@ -40,7 +40,16 @@
                                 </div>
                                 <div>
                                     <p class="font-semibold">{{ $campaign->title }}</p>
-                                    <p class="text-xs text-gray-600">Berakhir: {{ \Carbon\Carbon::parse($campaign->end_date)->format('d M Y') }}</p>
+                                    <div class="flex flex-col gap-0.5 mt-1">
+                                        <p class="text-[10px] text-gray-500">
+                                            <i class="far fa-calendar-alt mr-1"></i> Berakhir: {{ \Carbon\Carbon::parse($campaign->end_date)->format('d M Y') }}
+                                        </p>
+                                        @if($campaign->validator_name)
+                                        <p class="text-[10px] text-blue-600 font-black uppercase tracking-tighter">
+                                            <i class="fas fa-check-circle mr-1"></i> Verified by: {{ $campaign->validator_name }}
+                                        </p>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -57,6 +66,16 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center space-x-2 text-sm">
+                                @if(strtolower($campaign->status) == 'pending' && $campaign->verification_token)
+                                    {{-- Tombol Bagikan Link Verifikasi --}}
+                                    <button type="button" 
+                                            onclick="shareVerificationLink('{{ route('verify.show', $campaign->verification_token) }}')" 
+                                            class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-blue-600 rounded-lg focus:outline-none focus:shadow-outline-gray" 
+                                            title="Bagikan Link Verifikasi">
+                                        <i class="fas fa-share-nodes"></i>
+                                    </button>
+                                @endif
+
                                 {{-- Tombol Edit --}}
                                 <a href="{{ route('admin.campaigns.edit', $campaign->id) }}" class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg focus:outline-none focus:shadow-outline-gray" aria-label="Edit">
                                     <i class="fas fa-edit"></i>
@@ -89,3 +108,73 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    async function shareVerificationLink(baseUrl) {
+        const { value: formValues } = await Swal.fire({
+            title: 'Bagikan Link Verifikasi',
+            html:
+                '<div class="text-left"><label class="text-xs font-bold text-gray-500 uppercase">Identitas Validator (Email/Nama)</label>' +
+                '<input id="swal-input1" class="swal2-input mt-1" placeholder="contoh: budi@email.com"></div>' +
+                '<div class="text-left mt-4"><label class="text-xs font-bold text-gray-500 uppercase">Nomor WhatsApp (Opsional)</label>' +
+                '<input id="swal-input2" class="swal2-input mt-1" placeholder="contoh: 628123456789"></div>',
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Lanjut',
+            cancelButtonText: 'Batal',
+            preConfirm: () => {
+                const identity = document.getElementById('swal-input1').value;
+                if (!identity) {
+                    Swal.showValidationMessage('Identitas validator wajib diisi!');
+                }
+                return [
+                    identity,
+                    document.getElementById('swal-input2').value
+                ]
+            }
+        });
+
+        if (formValues) {
+            const [validatorIdentity, phoneNumber] = formValues;
+            const separator = baseUrl.includes('?') ? '&' : '?';
+            const finalUrl = `${baseUrl}${separator}validator=${encodeURIComponent(validatorIdentity)}`;
+            
+            const { value: action } = await Swal.fire({
+                title: 'Pilih Metode Berbagi',
+                text: `Link verifikasi untuk ${validatorIdentity} telah dibuat.`,
+                icon: 'question',
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Kirim ke WhatsApp',
+                denyButtonText: 'Salin Link Saja',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#25D366', // WA Green
+                denyButtonColor: '#3b82f6', // Blue
+            });
+
+            if (action === true) { // Kirim ke WA
+                if (!phoneNumber) {
+                    Swal.fire('Info', 'Mohon masukkan nomor WhatsApp untuk menggunakan fitur ini.', 'info');
+                    return;
+                }
+                const message = `Halo, mohon bantuannya untuk memverifikasi campaign donasi berikut ini:\n\n*${finalUrl}*\n\nTerima kasih!`;
+                window.open(`https://wa.me/${phoneNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+            } else if (action === false) { // Salin Link (Deny button)
+                navigator.clipboard.writeText(finalUrl).then(function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil disalin!',
+                        text: 'Link verifikasi telah siap di clipboard.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                });
+            }
+        }
+    }
+</script>
+@endpush

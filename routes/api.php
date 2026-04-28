@@ -129,6 +129,13 @@ Route::prefix('v1')->middleware('cors')->group(function () {
             // Donation Campaigns management
             Route::apiResource('donation-campaigns', AdminDonationCampaignController::class);
 
+            // Validator API Routes
+            Route::prefix('validator')->group(function () {
+                Route::get('/campaign/{token}', [\App\Http\Controllers\Api\ValidatorController::class, 'showCampaign']);
+                Route::post('/verify/{token}', [\App\Http\Controllers\Api\ValidatorController::class, 'verifyCampaign']);
+                Route::get('/history', [\App\Http\Controllers\Api\ValidatorController::class, 'getHistory']);
+            });
+
             // User management
             Route::get('/users', [App\Http\Controllers\Api\AdminController::class, 'getUsers']);
             Route::get('/users/{id}', [App\Http\Controllers\Api\AdminController::class, 'getUser']);

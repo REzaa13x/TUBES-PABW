@@ -109,70 +109,42 @@ class DonationController extends Controller
 
     public function process(Request $request)
     {
-        // Validate the donation data - new fields from donation-checkout
         $validator = Validator::make($request->all(), [
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|numeric|min:1000',
             'donor_name' => 'required|string|max:255',
             'donor_email' => 'required|email|max:255',
             'donor_phone' => 'nullable|string|max:20',
             'anonymous' => 'nullable|boolean',
-            'payment_method' => 'required|in:bank_transfer,e_wallet,qris',
-            'campaign_id' => 'nullable|exists:campaigns,id',
-            'selected_bank' => 'nullable|required_if:payment_method,bank_transfer',
-            'selected_ewallet' => 'nullable|required_if:payment_method,e_wallet',
-            'selected_qris' => 'nullable|required_if:payment_method,qris',
+            'campaign_id' => 'required|exists:campaigns,id',
+            'prayer' => 'nullable|string|max:1000',
+            'payment_method' => 'required|string',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        // Collect payment method specific data
-        $paymentMethodData = [];
-
-        if ($request->payment_method === 'bank_transfer' && $request->selected_bank) {
-            $paymentMethodData['selected_bank'] = $request->selected_bank;
-        } elseif ($request->payment_method === 'e_wallet' && $request->selected_ewallet) {
-            $paymentMethodData['selected_ewallet'] = $request->selected_ewallet;
-        } elseif ($request->payment_method === 'qris' && $request->selected_qris) {
-            $paymentMethodData['selected_qris'] = $request->selected_qris;
-        }
-
         // Generate unique order ID
-        $order_id = 'ORD-' . strtoupper(Str::random(10));
+        $order_id = 'DONGIV-' . strtoupper(Str::random(10));
 
-        // Define bank details for transfer (for bank_transfer method)
-        $bank_account_name = config('app.bank_account_name', 'Organisasi Amal DonGiv');
-        $bank_account_number = config('app.bank_account_number', '1234567890');
-        $bank_name = config('app.bank_name', 'Bank Mandiri');
-
-        // Calculate transfer deadline (24 hours from creation) for bank transfers
-        $transfer_deadline = null;
-        if ($request->payment_method === 'bank_transfer') {
-            $transfer_deadline = now()->addHours(24);
-        }
-
+        // Create transaction with AWAITING_TRANSFER status
         $transaction = \App\Models\DonationTransaction::create([
             'order_id' => $order_id,
             'amount' => $request->amount,
             'donor_name' => $request->donor_name,
             'donor_email' => $request->donor_email,
             'donor_phone' => $request->donor_phone,
-            'user_id' => auth()->id() ?? null, // Link to logged-in user, null if not authenticated
+            'user_id' => auth()->id() ?? null,
             'anonymous' => $request->anonymous ?? 0,
-            'payment_method' => $request->payment_method,
-            'payment_method_data' => json_encode($paymentMethodData),
-            'status' => 'AWAITING_TRANSFER', // This status applies to all payment methods initially
+            'status' => 'AWAITING_TRANSFER',
             'campaign_id' => $request->campaign_id,
-            'transfer_deadline' => $transfer_deadline,
-            'bank_account_name' => $bank_account_name,
-            'bank_account_number' => $bank_account_number,
-            'bank_name' => $bank_name
+            'prayer' => $request->prayer,
+            'payment_method' => $request->payment_method,
+            'transfer_deadline' => now()->addHours(24)
         ]);
 
-        // Redirect to manual transfer instruction page (this page will handle different payment methods)
         return redirect()->route('donation.manual.transfer', ['order_id' => $order_id])
-            ->with('success', 'Donasi berhasil dibuat! Silakan lakukan pembayaran sesuai metode yang dipilih dan upload bukti pembayaran.');
+            ->with('success', 'Pemesanan donasi berhasil! Silakan lakukan pembayaran dan upload bukti transfer.');
     }
 
     public function uploadProof(Request $request, $order_id)
@@ -213,7 +185,8 @@ class DonationController extends Controller
                 'status' => 'PENDING_VERIFICATION'  // This means it's added to history and waiting admin verification
             ]);
 
-            return redirect()->back()->with('success', 'Bukti transfer berhasil diupload. Status donasi Anda saat ini: PENDING_VERIFICATION');
+            return redirect()->route('donation.success', ['order_id' => $order_id, 'amount' => $transaction->amount])
+                ->with('success', 'Bukti transfer berhasil diupload. Mohon tunggu verifikasi admin.');
         }
 
         return redirect()->back()->with('error', 'Gagal mengupload bukti transfer');

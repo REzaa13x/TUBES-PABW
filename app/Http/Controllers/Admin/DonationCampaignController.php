@@ -54,6 +54,11 @@ class DonationCampaignController extends Controller
             // Set user_id to currently authenticated admin
             $validated['user_id'] = auth()->id();
 
+            // Generate verification token if status is Pending (case-insensitive)
+            if (strtolower($validated['status']) === 'pending') {
+                $validated['verification_token'] = Str::uuid()->toString();
+            }
+
             // Simpan ke Database
             Campaign::create($validated);
 
@@ -108,6 +113,11 @@ class DonationCampaignController extends Controller
             } else {
                 // Don't update the slug if title hasn't changed
                 unset($validated['slug']);
+            }
+
+            // Generate verification token if status is set to Pending (case-insensitive) and token is missing
+            if (strtolower($validated['status']) === 'pending' && !$campaign->verification_token) {
+                $validated['verification_token'] = Str::uuid()->toString();
             }
 
             // Update Database
