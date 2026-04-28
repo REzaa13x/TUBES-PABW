@@ -82,14 +82,6 @@
                 <a href="{{ route('volunteer.landing') }}" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Relawan</a>
                 <a href="{{ url('/') }}#cara-kerja" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Cara Kerja</a>
 
-                {{-- Sidebar Menu Tambah Donasi --}}
-                <a href="{{ route('donation.create') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
-                    <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-primary flex items-center justify-center mr-3 transition-colors">
-                        <i class="fas fa-plus-circle"></i>
-                    </div>
-                    Tambah Donasi
-                </a>
-
                 <div class="h-6 w-px bg-slate-200 mx-2"></div>
 
                 {{-- NOTIFICATION BELL SYSTEM (HANYA JIKA LOGIN) --}}

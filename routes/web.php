@@ -182,3 +182,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/donation/create', [DonationController::class, 'create'])->name('donation.create');
     Route::post('/donation/store', [DonationController::class, 'store'])->name('donation.store');
 });
+require __DIR__ . '/donasi-profile.php';

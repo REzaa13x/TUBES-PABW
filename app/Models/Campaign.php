@@ -27,6 +27,10 @@ class Campaign extends Model
         'validator_name',
         'verified_at',
         'validator_user_id',
+        'penyaluran',
+        'lokasi',
+        'jenis_penerima',
+        'whatsapp',
     ];
 
     protected $casts = [
