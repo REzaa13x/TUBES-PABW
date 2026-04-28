@@ -45,7 +45,6 @@ Route::get('/v1/me-debug', function (Request $request) {
     ]);
 });
 
-// Bungkus semua rute dengan prefix v1
 Route::prefix('v1')->middleware('cors')->group(function () {
     // API resource untuk volunteer campaigns
     Route::apiResource('volunteer-campaigns', \App\Http\Controllers\Api\VolunteerCampaignController::class);

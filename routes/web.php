@@ -176,3 +176,9 @@ Route::middleware(['auth'])->group(function () {
 // Route untuk testing gambar
 Route::get('/test-image/{folder}/{filename}', [App\Http\Controllers\TestImageController::class, 'testImage']);
 });
+
+// Route untuk halaman tambah donasi
+Route::middleware(['auth'])->group(function () {
+    Route::get('/donation/create', [DonationController::class, 'create'])->name('donation.create');
+    Route::post('/donation/store', [DonationController::class, 'store'])->name('donation.store');
+});

@@ -65,6 +65,11 @@
                 </div>
             </div>
 
+            <div class="flex justify-end mb-4">
+                <button id="btnTambahDonasi" class="flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all">
+                    <i class="fas fa-plus"></i> Tambah Donasi
+                </button>
+            </div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 
                 {{-- 2. SIDEBAR MENU --}}
@@ -108,8 +113,249 @@
 
                 {{-- 3. KONTEN TAB --}}
                 <div class="lg:col-span-9">
+                    <!-- Modal Tambah Donasi Baru -->
+                    <div id="modalTambahDonasi" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden">
+                        <div class="bg-white rounded-2xl shadow-lg max-w-2xl w-full p-8 relative animate-fade-in">
+                            <button onclick="closeModalDonasi()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 text-xl"><i class="fas fa-times"></i></button>
+                            <h2 class="text-xl font-bold text-slate-800 mb-4">Tambah Donasi Baru</h2>
+                            <form id="formTambahDonasi" enctype="multipart/form-data" autocomplete="off" onsubmit="return false;">
+                                <!-- Stepper Navigation -->
+                                <div class="flex items-center justify-center gap-2 mb-6">
+                                    <div id="step-indicator-1" class="w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-blue-500 bg-blue-500 text-white">1</div>
+                                    <div class="h-1 w-8 bg-blue-200"></div>
+                                    <div id="step-indicator-2" class="w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-blue-200 bg-white text-blue-500">2</div>
+                                    <div class="h-1 w-8 bg-blue-200"></div>
+                                    <div id="step-indicator-3" class="w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-blue-200 bg-white text-blue-500">3</div>
+                                    <div class="h-1 w-8 bg-blue-200"></div>
+                                    <div id="step-indicator-4" class="w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-blue-200 bg-white text-blue-500">4</div>
+                                    <div class="h-1 w-8 bg-blue-200"></div>
+                                    <div id="step-indicator-5" class="w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-blue-200 bg-white text-blue-500">5</div>
+                                </div>
+                                <!-- Step 1: Informasi Dasar Donasi -->
+                                <div class="step-donasi" id="step-donasi-1">
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Judul Donasi / Kampanye</label>
+                                        <input type="text" name="judul" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" placeholder="Contoh: Bantuan Banjir Jakarta" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Kategori Donasi</label>
+                                        <select name="kategori" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" required>
+                                            <option value="">Pilih Kategori</option>
+                                            <option>Bencana</option>
+                                            <option>Pendidikan</option>
+                                            <option>Kesehatan</option>
+                                            <option>Sosial</option>
+                                            <option>Lainnya</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Deskripsi Donasi</label>
+                                        <textarea name="deskripsi" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" placeholder="Penjelasan lengkap tujuan donasi" required></textarea>
+                                    </div>
+                                </div>
+                                <!-- Step 2: Target & Nominal -->
+                                <div class="step-donasi hidden" id="step-donasi-2">
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Target Dana (Rp)</label>
+                                        <input type="number" name="target" min="10000" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" placeholder="Contoh: 10000000" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Minimal Donasi (opsional)</label>
+                                        <input type="number" name="minimal" min="0" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" placeholder="Contoh: 10000">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Deadline Donasi</label>
+                                        <input type="date" name="deadline" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" required>
+                                    </div>
+                                </div>
+                                <!-- Step 3: Lokasi & Penerima -->
+                                <div class="step-donasi hidden" id="step-donasi-3">
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Lokasi Donasi (Kota/Kabupaten)</label>
+                                        <input type="text" name="lokasi" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" placeholder="Contoh: Jakarta Selatan" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nama Penerima / Organisasi</label>
+                                        <input type="text" name="penerima" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Jenis Penerima</label>
+                                        <select name="jenis_penerima" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" required>
+                                            <option value="">Pilih Jenis</option>
+                                            <option>Individu</option>
+                                            <option>Yayasan</option>
+                                            <option>Komunitas</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <!-- Step 4: Media Pendukung -->
+                                <div class="step-donasi hidden" id="step-donasi-4">
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Upload Foto / Thumbnail</label>
+                                        <input type="file" name="foto" accept="image/*" class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Upload Dokumen Pendukung (opsional)</label>
+                                        <input type="file" name="dokumen" accept="application/pdf,image/*" class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500">
+                                    </div>
+                                </div>
+                                <!-- Step 5: Kontak & Validasi -->
+                                <div class="step-donasi hidden" id="step-donasi-5">
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nomor WhatsApp</label>
+                                        <input type="text" name="whatsapp" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" placeholder="08xxxxxxxxxx" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Email</label>
+                                        <input type="email" name="email" value="{{ $user->email }}" readonly class="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-100 text-slate-500 cursor-not-allowed">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Metode Penyaluran</label>
+                                        <select name="penyaluran" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500" required>
+                                            <option value="">Pilih Metode</option>
+                                            <option>Langsung</option>
+                                            <option>Melalui Validator</option>
+                                            <option>Platform</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4 flex items-center gap-2">
+                                        <input type="checkbox" name="validasi_data" id="validasi_data" required>
+                                        <label for="validasi_data" class="text-xs text-slate-600">Saya menyatakan data ini benar</label>
+                                    </div>
+                                    <div class="mb-4 flex items-center gap-4">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" name="publik" id="publik" class="accent-blue-600">
+                                            <span class="text-xs text-slate-600">Tampilkan sebagai publik</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" name="relawan" id="relawan" class="accent-blue-600">
+                                            <span class="text-xs text-slate-600">Butuh bantuan relawan?</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- Navigasi Step -->
+                                <div class="flex items-center justify-between mt-8">
+                                    <button type="button" id="btnPrevStep" class="px-6 py-2 rounded-lg bg-slate-100 text-slate-500 font-bold hover:bg-slate-200" disabled>Kembali</button>
+                                    <button type="button" id="btnNextStep" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all">Lanjut</button>
+                                    <button type="submit" id="btnSubmitDonasi" class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg shadow-green-500/30 transition-all hidden">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                     
                     {{-- Alert Success --}}
+                    <script>
+                        // Modal logic
+                        const btnTambahDonasi = document.getElementById('btnTambahDonasi');
+                        const modalTambahDonasi = document.getElementById('modalTambahDonasi');
+                        function openModalDonasi() {
+                            modalTambahDonasi.classList.remove('hidden');
+                        }
+                        function closeModalDonasi() {
+                            modalTambahDonasi.classList.add('hidden');
+                        }
+                        btnTambahDonasi.addEventListener('click', openModalDonasi);
+
+                        // Multi-step logic
+                        let currentStep = 1;
+                        const totalStep = 5;
+                        const stepEls = [];
+                        for (let i = 1; i <= totalStep; i++) {
+                            stepEls.push(document.getElementById('step-donasi-' + i));
+                        }
+                        const stepIndicators = [];
+                        for (let i = 1; i <= totalStep; i++) {
+                            stepIndicators.push(document.getElementById('step-indicator-' + i));
+                        }
+                        const btnPrevStep = document.getElementById('btnPrevStep');
+                        const btnNextStep = document.getElementById('btnNextStep');
+                        const btnSubmitDonasi = document.getElementById('btnSubmitDonasi');
+
+                        function showStep(step) {
+                            stepEls.forEach((el, idx) => {
+                                if (idx === step - 1) el.classList.remove('hidden');
+                                else el.classList.add('hidden');
+                            });
+                            stepIndicators.forEach((el, idx) => {
+                                if (idx < step - 1) {
+                                    el.classList.add('bg-blue-500', 'text-white', 'border-blue-500');
+                                    el.classList.remove('bg-white', 'text-blue-500', 'border-blue-200');
+                                } else if (idx === step - 1) {
+                                    el.classList.add('bg-blue-500', 'text-white', 'border-blue-500');
+                                    el.classList.remove('bg-white', 'text-blue-500', 'border-blue-200');
+                                } else {
+                                    el.classList.remove('bg-blue-500', 'text-white', 'border-blue-500');
+                                    el.classList.add('bg-white', 'text-blue-500', 'border-blue-200');
+                                }
+                            });
+                            btnPrevStep.disabled = step === 1;
+                            btnNextStep.classList.toggle('hidden', step === totalStep);
+                            btnSubmitDonasi.classList.toggle('hidden', step !== totalStep);
+                        }
+                        btnPrevStep.addEventListener('click', () => {
+                            if (currentStep > 1) {
+                                currentStep--;
+                                showStep(currentStep);
+                            }
+                        });
+                        btnNextStep.addEventListener('click', () => {
+                            // Validasi sederhana per step
+                            const form = document.getElementById('formTambahDonasi');
+                            const stepFields = stepEls[currentStep - 1].querySelectorAll('input,select,textarea');
+                            let valid = true;
+                            stepFields.forEach(f => {
+                                if (f.hasAttribute('required') && !f.value) {
+                                    f.classList.add('border-red-500');
+                                    valid = false;
+                                } else {
+                                    f.classList.remove('border-red-500');
+                                }
+                            });
+                            if (!valid) return;
+                            if (currentStep < totalStep) {
+                                currentStep++;
+                                showStep(currentStep);
+                            }
+                        });
+
+                        // Submit logic
+                        const formTambahDonasi = document.getElementById('formTambahDonasi');
+                        formTambahDonasi.addEventListener('submit', async function (e) {
+                            e.preventDefault();
+                            const formData = new FormData(formTambahDonasi);
+                            try {
+                                const response = await fetch('{{ route('donation.store') }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: formData
+                                });
+                                if (response.ok) {
+                                    alert('Donasi berhasil ditambahkan!');
+                                    closeModalDonasi();
+                                    location.reload();
+                                } else {
+                                    alert('Gagal menambahkan donasi. Silakan coba lagi.');
+                                }
+                            } catch (error) {
+                                console.error('Error:', error);
+                                alert('Terjadi kesalahan. Silakan coba lagi.');
+                            }
+                        });
+                        // Reset step saat modal dibuka
+                        function resetDonasiForm() {
+                            currentStep = 1;
+                            showStep(currentStep);
+                            // Reset field error
+                            stepEls.forEach(step => {
+                                step.querySelectorAll('input,select,textarea').forEach(f => f.classList.remove('border-red-500'));
+                            });
+                        }
+                        btnTambahDonasi.addEventListener('click', resetDonasiForm);
+                        // Inisialisasi awal
+                        showStep(currentStep);
+                    </script>
                     @if(session('success'))
                         <div class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3 text-emerald-700 text-sm shadow-sm animate-fade-in">
                             <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0"><i class="fas fa-check text-xs"></i></div>
