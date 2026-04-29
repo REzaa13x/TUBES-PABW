@@ -25,7 +25,7 @@ class AdminController extends Controller
 
         // Total campaigns
         $totalCampaigns = Campaign::count();
-        $activeCampaigns = Campaign::where('status', 'Active')->count();
+        $activeCampaigns = Campaign::where('status', 'verified')->count();
 
         // Total donations
         $totalDonations = DonationTransaction::count();
@@ -90,7 +90,7 @@ class AdminController extends Controller
             ->get();
 
         // Active campaigns by end date (closest to ending)
-        $activeCampaigns = Campaign::where('status', 'Active')
+        $activeCampaigns = Campaign::where('status', 'verified')
             ->with(['user:id,name']) // Include user info
             ->select('id', 'title', 'description', 'target_amount', 'current_amount', 'image', 'end_date', 'user_id', 'status', 'kategori')
             ->orderBy('end_date', 'asc')

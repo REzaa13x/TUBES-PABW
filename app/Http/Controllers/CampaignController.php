@@ -24,7 +24,8 @@ class CampaignController extends Controller
     // Menampilkan SEMUA kampanye donasi dengan pagination
     public function index(Request $request)
     {
-        $query = \App\Models\Campaign::where('status', 'Active');
+        $query = \App\Models\Campaign::where('status', 'verified')
+            ->where('end_date', '>=', now());
 
         // Filter berdasarkan kategori jika disediakan
         if ($request->filled('kategori')) {
@@ -56,6 +57,7 @@ class CampaignController extends Controller
     public function volunteerIndex()
     {
         $campaigns = \App\Models\VolunteerCampaign::where('status', 'Aktif')
+            ->where('tanggal_selesai', '>=', now())
             ->latest()
             ->paginate(9); // Gunakan pagination agar rapi
 
@@ -111,7 +113,7 @@ class CampaignController extends Controller
             \Log::info('API Campaign Index called');
 
             $campaigns = Campaign::with('user')
-                ->where('status', 'Active')
+                ->where('status', 'verified')
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -170,6 +172,23 @@ class CampaignController extends Controller
             $imagePath = null;
             if ($request->hasFile('foto')) {
                 $imagePath = $request->file('foto')->store('campaigns', 'public');
+            }
+
+            // --- PERBAIKAN: CEK DUPLIKASI (IDEMPOTENCY) ---
+            $existing = Campaign::where('user_id', auth()->id())
+                ->where('title', $request->judul)
+                ->where('created_at', '>=', now()->subMinutes(1))
+                ->first();
+
+            if ($existing) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Kampanye sudah dibuat!',
+                        'redirect' => route('profiles.campaign.history')
+                    ]);
+                }
+                return redirect()->route('profiles.campaign.history')->with('success', 'Kampanye sudah berhasil dibuat!');
             }
 
             $campaign = Campaign::create([

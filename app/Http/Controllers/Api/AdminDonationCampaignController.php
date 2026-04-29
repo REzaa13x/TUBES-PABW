@@ -77,7 +77,7 @@ class AdminDonationCampaignController extends Controller
             'end_date' => 'required|date|after_or_equal:today',
             'kategori' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|in:Active,Inactive,Completed',
+            'status' => 'required|in:pending,verified,rejected',
             'user_id' => 'required|exists:users,id'
         ]);
 
@@ -134,7 +134,7 @@ class AdminDonationCampaignController extends Controller
             'end_date' => 'required|date|after_or_equal:today',
             'kategori' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|in:Active,Inactive,Completed',
+            'status' => 'required|in:pending,verified,rejected',
             'user_id' => 'required|exists:users,id'
         ]);
 

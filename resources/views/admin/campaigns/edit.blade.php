@@ -38,10 +38,9 @@
                 <div>
                     <label class="block text-sm text-gray-700 font-bold mb-2">Status</label>
                     <select name="status" class="w-full border px-3 py-2 rounded-lg">
-                        <option value="Active" {{ $campaign->status == 'Active' ? 'selected' : '' }}>Active</option>
-                        <option value="Inactive" {{ $campaign->status == 'Inactive' ? 'selected' : '' }}>Inactive</option>
-                        <option value="Completed" {{ $campaign->status == 'Completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="Pending" {{ $campaign->status == 'Pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="verified" {{ $campaign->status == 'verified' ? 'selected' : '' }}>Verified</option>
+                        <option value="pending" {{ $campaign->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="rejected" {{ $campaign->status == 'rejected' ? 'selected' : '' }}>Rejected</option>
                     </select>
                 </div>
                 <div>

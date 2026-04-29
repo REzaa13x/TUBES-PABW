@@ -16,7 +16,7 @@ class CampaignFactory extends Factory
             'description' => $this->faker->paragraph(3),
             'target_amount' => $this->faker->randomElement([5000000, 10000000, 15000000, 20000000, 25000000]),
             'current_amount' => $this->faker->numberBetween(0, 5000000),
-            'status' => $this->faker->randomElement(['Active', 'Completed', 'Inactive']),
+            'status' => $this->faker->randomElement(['pending', 'verified', 'rejected']),
             'image' => 'campaigns/default.jpg',
             'end_date' => $this->faker->dateTimeBetween('+1 month', '+6 months'),
         ];

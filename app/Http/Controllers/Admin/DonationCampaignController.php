@@ -33,7 +33,7 @@ class DonationCampaignController extends Controller
                 'description'     => 'required',
                 'target_amount'   => 'required|numeric|min:1',
                 'current_amount'  => 'nullable|numeric|min:0',
-                'status'          => 'required|in:Active,Completed,Inactive,Pending',
+                'status'          => 'required|in:pending,verified,rejected',
                 'kategori'        => 'required|in:Lingkungan,Kesehatan,Pendidikan,Sosial Kemanusiaan,Bencana Alam',
                 'yayasan'         => 'nullable|string|max:255',
                 'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -57,6 +57,17 @@ class DonationCampaignController extends Controller
             // Generate verification token if status is Pending (case-insensitive)
             if (strtolower($validated['status']) === 'pending') {
                 $validated['verification_token'] = Str::uuid()->toString();
+            }
+
+            // --- PERBAIKAN: CEK DUPLIKASI (IDEMPOTENCY) ---
+            $existing = Campaign::where('user_id', auth()->id())
+                ->where('title', $request->title)
+                ->where('created_at', '>=', now()->subMinutes(1))
+                ->first();
+
+            if ($existing) {
+                return redirect()->route('admin.campaigns.index')
+                    ->with('success', 'Kampanye sudah diterbitkan sebelumnya.');
             }
 
             // Simpan ke Database
@@ -90,7 +101,7 @@ class DonationCampaignController extends Controller
                 'description'     => 'required',
                 'target_amount'   => 'required|numeric|min:1',
                 'current_amount'  => 'nullable|numeric|min:0',
-                'status'          => 'required|in:Active,Completed,Inactive,Pending',
+                'status'          => 'required|in:pending,verified,rejected',
                 'kategori'        => 'required|in:Lingkungan,Kesehatan,Pendidikan,Sosial Kemanusiaan,Bencana Alam',
                 'yayasan'         => 'nullable|string|max:255',
                 'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',

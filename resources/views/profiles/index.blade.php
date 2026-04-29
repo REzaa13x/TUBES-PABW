@@ -229,10 +229,10 @@
 
                             if (formCampaign) {
                                 formCampaign.addEventListener('submit', async function (e) {
-                                    e.preventDefault();
+                                    e.preventDefault(); e.stopPropagation();
                                     
                                     const btnSubmit = document.getElementById('btnSubmitDonasi');
-                                    if (!btnSubmit) return;
+                                    if (!btnSubmit || btnSubmit.disabled) return;
                                     
                                     const originalText = btnSubmit.innerHTML;
                                     btnSubmit.disabled = true;

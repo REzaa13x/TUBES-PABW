@@ -57,9 +57,8 @@
                         <td class="px-4 py-3 text-sm">Rp {{ number_format($campaign->current_amount, 0, ',', '.') }}</td>
                         <td class="px-4 py-3 text-xs">
                             <span class="px-2 py-1 font-semibold leading-tight rounded-full
-                                @if($campaign->status == 'Active') text-green-700 bg-green-100
-                                @elseif($campaign->status == 'Completed') text-blue-700 bg-blue-100
-                                @elseif($campaign->status == 'Inactive') text-red-700 bg-red-100
+                                @if($campaign->status == 'verified') text-green-700 bg-green-100
+                                @elseif($campaign->status == 'rejected') text-red-700 bg-red-100
                                 @else text-yellow-700 bg-yellow-100 @endif">
                                 {{ $campaign->status }}
                             </span>

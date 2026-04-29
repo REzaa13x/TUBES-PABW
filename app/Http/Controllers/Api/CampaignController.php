@@ -70,7 +70,7 @@ class CampaignController extends Controller
             'kategori' => 'required|string|in:Lingkungan,Kesehatan,Pendidikan,Sosial Kemanusiaan,Bencana Alam',
             'yayasan' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'sometimes|string|in:Active,Inactive,Completed',
+            'status' => 'sometimes|string|in:pending,verified,rejected',
         ]);
 
         // Handle image upload if provided
@@ -136,7 +136,7 @@ class CampaignController extends Controller
             'kategori' => 'sometimes|required|string|in:Lingkungan,Kesehatan,Pendidikan,Sosial Kemanusiaan,Bencana Alam',
             'yayasan' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'sometimes|string|in:Active,Inactive,Completed',
+            'status' => 'sometimes|string|in:pending,verified,rejected',
         ]);
 
         // Handle image upload if provided
@@ -203,7 +203,7 @@ class CampaignController extends Controller
      */
     public function urgent(Request $request): AnonymousResourceCollection
     {
-        $query = \App\Models\Campaign::where('status', 'Active');
+        $query = \App\Models\Campaign::where('status', 'verified');
 
         // For SQLite compatibility, using julianday for date calculation
         $query->whereRaw('DATEDIFF(end_date, NOW()) <= 3')

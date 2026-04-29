@@ -22,7 +22,7 @@ class VerificationController extends Controller
         // Jika kampanye tidak ditemukan ATAU sudah diverifikasi (status sudah bukan pending)
         if (!$campaign || strtolower($campaign->status) !== 'pending') {
             // Jika kampanye ditemukan tapi sudah aktif, arahkan ke halaman riwayat saja
-            if ($campaign && in_array(strtolower($campaign->status), ['active', 'verified'])) {
+            if ($campaign && in_array(strtolower($campaign->status), ['verified'])) {
                 return redirect()->route('verify.success')->with('success', 'Kampanye ini sudah berhasil diverifikasi.');
             }
             return redirect('/')->with('error', 'Link verifikasi tidak valid atau sudah kadaluarsa.');
@@ -32,7 +32,7 @@ class VerificationController extends Controller
         
         // Ambil riwayat campaign yang pernah diverifikasi oleh user ini secara resmi
         $history = Campaign::where('validator_user_id', $user->id)
-            ->whereIn('status', ['Verified', 'active'])
+            ->whereIn('status', ['Verified', 'verified'])
             ->latest('verified_at')
             ->get();
 
@@ -53,14 +53,14 @@ class VerificationController extends Controller
             ->firstOrFail();
 
         $campaign->update([
-            'status' => 'active', // Langsung aktifkan kampanye setelah verifikasi
+            'status' => 'verified', // Langsung aktifkan kampanye setelah verifikasi
             'validator_name' => $user->name,
             'validator_user_id' => $user->id,
             'verified_at' => Carbon::now(),
             'verification_token' => null, // Token hangus setelah digunakan (sekali pakai)
         ]);
 
-        return redirect()->route('verify.success')->with('success', 'Verifikasi Berhasil! Kampanye telah resmi diverifikasi dan kini berstatus Active.');
+        return redirect()->route('verify.success')->with('success', 'Verifikasi Berhasil! Kampanye telah resmi diverifikasi dan kini berstatus verified.');
     }
 
     public function success()
@@ -69,7 +69,7 @@ class VerificationController extends Controller
         
         // Ambil semua kampanye yang pernah diverifikasi oleh user ini secara resmi
         $history = Campaign::where('validator_user_id', $user->id)
-            ->whereIn('status', ['Verified', 'active'])
+            ->whereIn('status', ['Verified', 'verified'])
             ->latest('verified_at')
             ->get();
 
