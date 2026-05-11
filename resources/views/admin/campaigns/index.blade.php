@@ -42,13 +42,24 @@
                                     <p class="font-semibold">{{ $campaign->title }}</p>
                                     <div class="flex flex-col gap-0.5 mt-1">
                                         <p class="text-[10px] text-gray-500">
+                                            <i class="fas fa-user-edit mr-1"></i> Pembuat: {{ $campaign->user->name ?? 'Admin' }}
+                                        </p>
+                                        <p class="text-[10px] text-gray-500">
                                             <i class="far fa-calendar-alt mr-1"></i> Berakhir: {{ \Carbon\Carbon::parse($campaign->end_date)->format('d M Y') }}
                                         </p>
-                                        @if($campaign->validator_name)
-                                        <p class="text-[10px] text-blue-600 font-black uppercase tracking-tighter">
-                                            <i class="fas fa-check-circle mr-1"></i> Verified by: {{ $campaign->validator_name }}
-                                        </p>
-                                        @endif
+                                        <div id="validator-info-{{ $campaign->id }}">
+                                            @if($campaign->validator_name)
+                                                @if(strtolower($campaign->status) == 'pending')
+                                                    <p class="text-[10px] text-orange-500 font-bold uppercase italic">
+                                                        <i class="fas fa-user-clock mr-1"></i> Menunggu Verifikasi: {{ $campaign->validator_name }}
+                                                    </p>
+                                                @else
+                                                    <p class="text-[10px] text-blue-600 font-black uppercase tracking-tighter">
+                                                        <i class="fas fa-user-check mr-1"></i> Diverifikasi Oleh: {{ $campaign->validator_name }}
+                                                    </p>
+                                                @endif
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -65,29 +76,46 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center space-x-2 text-sm">
-                                @if(strtolower($campaign->status) == 'pending' && $campaign->verification_token)
-                                    {{-- Tombol Bagikan Link Verifikasi --}}
-                                    <button type="button" 
-                                            onclick="shareVerificationLink('{{ route('verify.show', $campaign->verification_token) }}')" 
-                                            class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-blue-600 rounded-lg focus:outline-none focus:shadow-outline-gray" 
-                                            title="Bagikan Link Verifikasi">
-                                        <i class="fas fa-share-nodes"></i>
-                                    </button>
-                                @endif
-
                                 {{-- Tombol Edit --}}
                                 <a href="{{ route('admin.campaigns.edit', $campaign->id) }}" class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg focus:outline-none focus:shadow-outline-gray" aria-label="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
 
                                 {{-- Tombol Delete --}}
-                                <form action="{{ route('admin.campaigns.destroy', $campaign->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus kampanye donasi ini?');">
+                                <form action="{{ route('admin.campaigns.destroy', $campaign->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus kampanye donasi ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-red-600 rounded-lg focus:outline-none focus:shadow-outline-gray" aria-label="Delete">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
+
+                                {{-- Tombol Link Portal Validator (Unified) --}}
+                                <button type="button" 
+                                        onclick="showValidatorSelection({{ $campaign->id }}, '{{ $campaign->title }}')"
+                                        class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-blue-600 rounded-lg focus:outline-none focus:shadow-outline-gray" 
+                                        title="Buka Portal Validator">
+                                    <i class="fas fa-shield-halved"></i>
+                                </button>
+                                
+                                {{-- Form Tersembunyi untuk Generate Link --}}
+                                <form id="form-generate-link-{{ $campaign->id }}" action="{{ route('admin.campaigns.generateLink', $campaign->id) }}" method="POST" class="hidden">
+                                    @csrf
+                                    <input type="hidden" name="validator_id" id="selected-validator-{{ $campaign->id }}">
+                                </form>
+                                
+                                @if($campaign->distribution_token)
+                                    <button type="button" 
+                                            data-url="{{ route('validator.dashboard', $campaign->distribution_token) }}"
+                                            data-title="{{ $campaign->title }}"
+                                            data-validator="{{ $campaign->validator_name }}"
+                                            data-phone="{{ $campaign->validator_phone }}"
+                                            onclick="handleShareClick(this)"
+                                            class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-green-500 rounded-lg focus:outline-none focus:shadow-outline-gray" 
+                                            title="Bagikan Link Portal Validator">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </button>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -174,6 +202,151 @@
                 });
             }
         }
+    }
+
+    async function showValidatorSelection(campaignId, campaignTitle) {
+        const validators = {!! json_encode($validators->keyBy('id')) !!};
+        
+        let options = '<option value="">-- Lewati (Validator Tamu) --</option>';
+        for (const [id, contact] of Object.entries(validators)) {
+            options += `<option value="${id}">${contact.name} (${contact.phone})</option>`;
+        }
+
+        const { value: validatorId } = await Swal.fire({
+            title: 'Pilih Validator',
+            text: `Tentukan penanggung jawab untuk: ${campaignTitle}`,
+            html: `<select id="validator-select" class="swal2-input">${options}</select>`,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Generate Link',
+            cancelButtonText: 'Batal',
+            preConfirm: () => {
+                return document.getElementById('validator-select').value;
+            }
+        });
+
+        if (validatorId !== undefined) {
+            // Tampilkan loading
+            Swal.fire({
+                title: 'Sedang membuat link...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Kirim via AJAX
+            fetch(`/admin/campaigns/${campaignId}/generate-link`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({
+                    'validator_id': validatorId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update UI secara instan
+                    const infoDiv = document.getElementById(`validator-info-${campaignId}`);
+                    if (infoDiv) {
+                        infoDiv.innerHTML = `
+                            <p class="text-[10px] text-orange-500 font-bold uppercase italic">
+                                <i class="fas fa-user-clock mr-1"></i> Menunggu Verifikasi: ${data.validator_name}
+                            </p>
+                        `;
+                    }
+
+                    // Lanjut proses share link
+                    shareDistributionLink(data.link, campaignTitle, data.validator_name, data.validator_phone);
+                } else {
+                    Swal.fire('Error', 'Gagal membuat link. Silakan coba lagi.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+            });
+        }
+    }
+
+    function handleShareClick(btn) {
+        const url = btn.getAttribute('data-url');
+        const title = btn.getAttribute('data-title');
+        const validator = btn.getAttribute('data-validator');
+        const phone = btn.getAttribute('data-phone');
+        shareDistributionLink(url, title, validator, phone);
+    }
+
+    async function shareDistributionLink(finalUrl, campaignTitle, validatorName, validatorPhone) {
+        let phoneNumber = validatorPhone;
+        const validators = {!! json_encode($validators->keyBy('id')) !!};
+
+        // Jika nomor belum terdaftar, tampilkan LIST (Dropdown) bukan input manual
+        if (!phoneNumber) {
+            let options = '<option value="">-- Pilih dari Daftar --</option>';
+            for (const [id, contact] of Object.entries(validators)) {
+                options += `<option value="${contact.phone}">${contact.name} (${contact.phone})</option>`;
+            }
+
+            const { value: selectedPhone } = await Swal.fire({
+                title: 'Pilih Tujuan Pengiriman',
+                text: `Pilih validator untuk kampanye: ${campaignTitle}`,
+                html: `
+                    <div class="text-left mb-2 text-sm text-gray-500">Nomor WhatsApp ${validatorName || 'Validator'} belum terdaftar.</div>
+                    <select id="swal-validator-select" class="swal2-input w-full">
+                        ${options}
+                    </select>
+                    <div class="mt-4 text-[10px] text-gray-400 italic">Atau masukkan manual di bawah jika tidak ada di daftar:</div>
+                    <input id="swal-manual-phone" class="swal2-input" placeholder="62812345xxx">
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Kirim via WhatsApp',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#25D366',
+                preConfirm: () => {
+                    const dropdownVal = document.getElementById('swal-validator-select').value;
+                    const manualVal = document.getElementById('swal-manual-phone').value;
+                    return manualVal || dropdownVal;
+                }
+            });
+            phoneNumber = selectedPhone;
+        }
+
+        // Jika user memilih nomor atau mengisi manual
+        if (phoneNumber) {
+            // Bersihkan nomor dari karakter non-angka
+            let cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
+            
+            // Otomatis ubah 08xxx menjadi 628xxx (Indonesia)
+            if (cleanNumber.startsWith('0')) {
+                cleanNumber = '62' + cleanNumber.substring(1);
+            }
+
+            const greeting = validatorName ? `Halo *${validatorName}*` : 'Halo';
+            const message = `${greeting}, berikut adalah link Portal Validator khusus untuk kampanye *${campaignTitle}*:\n\n${finalUrl}\n\nMelalui link ini, Anda dapat menyetujui kampanye dan mengunggah bukti penyaluran. Terima kasih!`;
+            
+            // Gunakan format wa.me yang lebih stabil
+            const waUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+            window.open(waUrl, '_blank').focus();
+        }
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Link Berhasil Disalin!',
+                text: 'Link telah siap di clipboard Anda.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        });
     }
 </script>
 @endpush

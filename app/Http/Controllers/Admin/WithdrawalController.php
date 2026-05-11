@@ -14,10 +14,12 @@ class WithdrawalController extends Controller
     // Menampilkan Dashboard Keuangan (Neraca Saldo)
     public function index()
     {
-        // PERBAIKAN 1: Hitung pengeluaran berdasarkan status 'approved' DAN 'completed'
-        // Ini memastikan data lama dan data baru tetap terhitung
+        // Hitung pengeluaran per kampanye: Withdrawals + Verified Distribution Reports
         $campaigns = Campaign::withSum(['withdrawals' => function($query) {
             $query->whereIn('status', ['approved', 'completed']);
+        }], 'amount')
+        ->withSum(['distributionReports' => function($query) {
+            $query->where('status', 'verified');
         }], 'amount')
         ->latest()
         ->paginate(10); 
@@ -25,9 +27,11 @@ class WithdrawalController extends Controller
         // Hitung Total Aset Yayasan (Global Stats)
         $totalDonasiMasuk = Campaign::sum('current_amount');
         
-        // PERBAIKAN 2: Sinkronisasi rumus total pengeluaran global
-        $totalPengeluaran = Withdrawal::whereIn('status', ['approved', 'completed'])->sum('amount');
+        // Total Pengeluaran = Withdrawal Manual + Laporan Validator Verified
+        $totalWithdrawal = \App\Models\Withdrawal::whereIn('status', ['approved', 'completed'])->sum('amount');
+        $totalValidatorReport = \App\Models\DistributionReport::where('status', 'verified')->sum('amount');
         
+        $totalPengeluaran = $totalWithdrawal + $totalValidatorReport;
         $totalSaldoTersedia = $totalDonasiMasuk - $totalPengeluaran;
 
         return view('admin.withdrawals.index', compact('campaigns', 'totalDonasiMasuk', 'totalPengeluaran', 'totalSaldoTersedia'));
@@ -51,13 +55,19 @@ class WithdrawalController extends Controller
             $finalCategory = $request->custom_category;
         }
 
-        $usedFunds = $campaign->withdrawals()
+        // HITUNG SALDO ASLI (Donasi - Penarikan Manual - Penyaluran Validator)
+        $usedManual = $campaign->withdrawals()
             ->whereIn('status', ['approved', 'completed'])
             ->sum('amount'); 
-        $currentBalance = $campaign->current_amount - $usedFunds;
+        
+        $usedValidator = $campaign->distributionReports()
+            ->where('status', 'verified')
+            ->sum('amount');
 
-        if ($request->amount > $currentBalance) {
-            return back()->with('error', 'Gagal! Saldo kampanye tidak mencukupi.');
+        $actualBalance = $campaign->current_amount - ($usedManual + $usedValidator);
+
+        if ($request->amount > $actualBalance) {
+            return back()->with('error', 'Gagal! Saldo kampanye tidak mencukupi. Sisa saldo saat ini adalah Rp ' . number_format($actualBalance, 0, ',', '.'));
         }
 
         $proofPath = null;
@@ -83,15 +93,23 @@ class WithdrawalController extends Controller
     // Menampilkan Riwayat Transaksi Per Kampanye
     public function history($id)
     {
-        $campaign = Campaign::with(['withdrawals' => function($query) {
-            $query->whereIn('status', ['approved', 'completed'])->latest();
-        }])->findOrFail($id);
+        $campaign = Campaign::with([
+            'withdrawals' => function($query) {
+                $query->whereIn('status', ['approved', 'completed'])->latest();
+            },
+            'distributionReports' => function($query) {
+                $query->where('status', 'verified')->latest();
+            }
+        ])->findOrFail($id);
 
-        // Hitung ulang saldo spesifik kampanye ini
+        // Hitung ulang saldo: Masuk - (Withdrawal Manual + Laporan Validator)
         $totalIn = $campaign->current_amount;
-        $totalOut = $campaign->withdrawals->sum('amount');
+        $totalOutManual = $campaign->withdrawals->sum('amount');
+        $totalOutValidator = $campaign->distributionReports->where('status', 'verified')->sum('amount');
+        
+        $totalOut = $totalOutManual + $totalOutValidator;
         $balance = $totalIn - $totalOut;
 
-        return view('admin.withdrawals.history', compact('campaign', 'totalIn', 'totalOut', 'balance'));
+        return view('admin.withdrawals.history', compact('campaign', 'totalIn', 'totalOut', 'balance', 'totalOutManual', 'totalOutValidator'));
     }
 }

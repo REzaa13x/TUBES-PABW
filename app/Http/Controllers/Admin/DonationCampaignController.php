@@ -14,7 +14,8 @@ class DonationCampaignController extends Controller
     public function index()
     {
         $campaigns = Campaign::latest()->paginate(10);
-        return view('admin.campaigns.index', compact('campaigns'));
+        $validators = \App\Models\ValidatorContact::all();
+        return view('admin.campaigns.index', compact('campaigns', 'validators'));
     }
 
     // 2. CREATE (Menampilkan Form Tambah)

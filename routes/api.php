@@ -128,12 +128,7 @@ Route::prefix('v1')->middleware('cors')->group(function () {
             // Donation Campaigns management
             Route::apiResource('donation-campaigns', AdminDonationCampaignController::class);
 
-            // Validator API Routes
-            Route::prefix('validator')->group(function () {
-                Route::get('/campaign/{token}', [\App\Http\Controllers\Api\ValidatorController::class, 'showCampaign']);
-                Route::post('/verify/{token}', [\App\Http\Controllers\Api\ValidatorController::class, 'verifyCampaign']);
-                Route::get('/history', [\App\Http\Controllers\Api\ValidatorController::class, 'getHistory']);
-            });
+
 
             // User management
             Route::get('/users', [App\Http\Controllers\Api\AdminController::class, 'getUsers']);
@@ -148,10 +143,34 @@ Route::prefix('v1')->middleware('cors')->group(function () {
 
             // Dashboard overview
             Route::get('/dashboard/overview', [App\Http\Controllers\Api\AdminController::class, 'dashboardOverview']);
+
+            // NEW: Distribution & Validator Contact Management API
+            Route::prefix('distribution')->group(function () {
+                Route::get('/reports', [App\Http\Controllers\Api\AdminDistributionController::class, 'indexReports']);
+                Route::get('/reports/{id}', [App\Http\Controllers\Api\AdminDistributionController::class, 'showReport']);
+                Route::put('/reports/{id}', [App\Http\Controllers\Api\AdminDistributionController::class, 'updateReport']);
+                Route::post('/campaigns/{id}/generate-link', [App\Http\Controllers\Admin\DistributionController::class, 'generateLink']);
+            });
+            
+            Route::apiResource('validator-contacts', App\Http\Controllers\Api\AdminDistributionController::class)
+                ->except(['index', 'store', 'update', 'destroy']); // We'll map manual methods if needed or use custom names
+            
+            Route::get('/validator-contacts', [App\Http\Controllers\Api\AdminDistributionController::class, 'indexContacts']);
+            Route::post('/validator-contacts', [App\Http\Controllers\Api\AdminDistributionController::class, 'storeContact']);
+            Route::put('/validator-contacts/{id}', [App\Http\Controllers\Api\AdminDistributionController::class, 'updateContact']);
+            Route::delete('/validator-contacts/{id}', [App\Http\Controllers\Api\AdminDistributionController::class, 'destroyContact']);
         });
 
         // Volunteer Campaigns API endpoints
         Route::apiResource('volunteer-campaigns', VolunteerCampaignController::class);
         Route::apiResource('volunteer-applications', VolunteerApplicationController::class);
+    });
+
+    // NEW: Public Validator Portal API (Token-based, No Login)
+    Route::prefix('validator/{token}')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Api\ValidatorPortalController::class, 'dashboard']);
+        Route::post('/verify', [\App\Http\Controllers\Api\ValidatorPortalController::class, 'verifyCampaign']);
+        Route::post('/report', [\App\Http\Controllers\Api\ValidatorPortalController::class, 'storeReport']);
+        Route::get('/history', [\App\Http\Controllers\Api\ValidatorPortalController::class, 'history']);
     });
 });

@@ -31,6 +31,8 @@ class Campaign extends Model
         'lokasi',
         'jenis_penerima',
         'whatsapp',
+        'distribution_token',
+        'validator_phone',
     ];
 
     protected $casts = [
@@ -127,6 +129,12 @@ class Campaign extends Model
         $verifiedDonations = $this->donations()->where('status', 'paid')->sum('amount');
 
         return $verifiedTransactions + $verifiedDonations;
+    }
+
+    // Relationship: Campaign has many distribution reports
+    public function distributionReports()
+    {
+        return $this->hasMany(\App\Models\DistributionReport::class, 'campaign_id');
     }
 
     // Method to recalculate and update current amount

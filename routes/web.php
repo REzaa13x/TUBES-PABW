@@ -15,10 +15,19 @@ use App\Http\Controllers\VolunteerApplicationController;
 use App\Http\Controllers\CampaignController as FrontendCampaignController;
 use App\Http\Controllers\VerificationController;
 
-// Verification Public Route (Tanpa Login)
-Route::get('/verify/{token}', [VerificationController::class, 'show'])->name('verify.show');
-Route::post('/verify/{token}', [VerificationController::class, 'verify'])->name('verify.confirm');
-Route::get('/verify-success', [VerificationController::class, 'success'])->name('verify.success');
+
+
+// --- Validator Distribution Routes (Tanpa Login, Menggunakan Token) ---
+use App\Http\Controllers\ValidatorDistributionController;
+Route::prefix('validator/{token}')->name('validator.')->group(function () {
+    Route::get('/dashboard', [ValidatorDistributionController::class, 'dashboard'])->name('dashboard');
+    Route::post('/verify', [ValidatorDistributionController::class, 'verifyCampaign'])->name('verify');
+    Route::get('/campaign', [ValidatorDistributionController::class, 'campaign'])->name('campaign');
+    Route::get('/upload', [ValidatorDistributionController::class, 'upload'])->name('upload');
+    Route::post('/upload', [ValidatorDistributionController::class, 'store'])->name('store');
+    Route::get('/history', [ValidatorDistributionController::class, 'history'])->name('history');
+    Route::get('/status', [ValidatorDistributionController::class, 'status'])->name('status');
+});
 
 // --- 2. CONTROLLERS ADMIN ---
 use App\Http\Controllers\Admin\NotifikasiController;
@@ -26,6 +35,9 @@ use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
 use App\Http\Controllers\Admin\VolunteerVerificationController;
 use App\Http\Controllers\Admin\VolunteerAdminController; 
 use App\Http\Controllers\Admin\WithdrawalController;
+use App\Http\Controllers\Admin\DistributionController as AdminDistributionController;
+use App\Http\Controllers\Admin\ValidatorContactController;
+use App\Http\Controllers\Admin\DonationCampaignController as AdminDonationCampaignController;
 
 
 // Halaman Utama
@@ -131,7 +143,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('relawan', AdminCampaignController::class);
 
         // Manajemen Kampanye Donasi (Resource)
-        Route::resource('campaigns', \App\Http\Controllers\Admin\DonationCampaignController::class);
+        Route::resource('campaigns', AdminDonationCampaignController::class);
+        Route::resource('validator-contacts', ValidatorContactController::class);
 
         // Manajemen Notifikasi & Relawan (Master Data)
         Route::resource('notifications', NotifikasiController::class);
@@ -143,6 +156,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('donation-transactions/{order_id}/invoice', [DonationController::class, 'showInvoiceForAdmin'])->name('donations.invoice');
         Route::put('donation-transactions/{order_id}/status', [DonationController::class, 'updateStatus'])->name('donations.updateStatus');
         Route::delete('donation-transactions/{order_id}', [DonationController::class, 'destroy'])->name('donations.destroy');
+
+        // Manajemen Penyaluran Dana (Distribution)
+        Route::get('distribution', [AdminDistributionController::class, 'index'])->name('distribution.index');
+        Route::get('distribution/{id}', [AdminDistributionController::class, 'show'])->name('distribution.show');
+        Route::put('distribution/{id}', [AdminDistributionController::class, 'update'])->name('distribution.update');
+        Route::post('campaigns/{id}/generate-link', [AdminDistributionController::class, 'generateLink'])->name('campaigns.generateLink');
 
         // API Verifikasi Donasi untuk Admin
         Route::prefix('api')->name('api.')->group(function () {

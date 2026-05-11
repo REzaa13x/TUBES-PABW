@@ -136,23 +136,8 @@
                     </div>
 
                     <form id="registerForm" class="space-y-4">
-                        {{-- Pilihan Role --}}
-                        <div class="grid grid-cols-2 gap-3 mb-6">
-                            <label class="relative cursor-pointer group">
-                                <input type="radio" name="role" value="user" checked class="peer sr-only">
-                                <div class="p-3 text-center border-2 border-slate-100 rounded-2xl group-hover:border-indigo-100 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition-all">
-                                    <i class="fas fa-user text-slate-400 group-hover:text-indigo-400 peer-checked:text-indigo-600 mb-1 block text-lg"></i>
-                                    <span class="text-[10px] font-black uppercase text-slate-500 peer-checked:text-indigo-700">User</span>
-                                </div>
-                            </label>
-                            <label class="relative cursor-pointer group">
-                                <input type="radio" name="role" value="validator" class="peer sr-only">
-                                <div class="p-3 text-center border-2 border-slate-100 rounded-2xl group-hover:border-indigo-100 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition-all">
-                                    <i class="fas fa-user-shield text-slate-400 group-hover:text-indigo-400 peer-checked:text-indigo-600 mb-1 block text-lg"></i>
-                                    <span class="text-[10px] font-black uppercase text-slate-500 peer-checked:text-indigo-700">Validator</span>
-                                </div>
-                            </label>
-                        </div>
+                        {{-- Hidden Role (Default to User) --}}
+                        <input type="hidden" name="role" value="user">
 
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Nama Lengkap</label>
