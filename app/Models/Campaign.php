@@ -23,12 +23,23 @@ class Campaign extends Model
         'status',
         'kategori',
         'yayasan',
+        'verification_token',
+        'validator_name',
+        'verified_at',
+        'validator_user_id',
+        'penyaluran',
+        'lokasi',
+        'jenis_penerima',
+        'whatsapp',
+        'distribution_token',
+        'validator_phone',
     ];
 
     protected $casts = [
         'target_amount' => 'decimal:2',
         'current_amount' => 'decimal:2',
         'end_date' => 'date',
+        'verified_at' => 'datetime',
         'status' => 'string',
         'kategori' => 'string',
     ];
@@ -118,6 +129,12 @@ class Campaign extends Model
         $verifiedDonations = $this->donations()->where('status', 'paid')->sum('amount');
 
         return $verifiedTransactions + $verifiedDonations;
+    }
+
+    // Relationship: Campaign has many distribution reports
+    public function distributionReports()
+    {
+        return $this->hasMany(\App\Models\DistributionReport::class, 'campaign_id');
     }
 
     // Method to recalculate and update current amount

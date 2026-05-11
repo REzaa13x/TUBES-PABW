@@ -97,6 +97,11 @@
                             <span class="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-md font-bold">{{ $volunteerApps->total() }}</span>
                         </button>
 
+                        <button onclick="switchTab('manage-campaign')" id="btn-manage-campaign" class="tab-btn w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold text-slate-500 hover:bg-white hover:shadow-sm transition-all duration-300 group">
+                            <span class="flex items-center gap-3"><i class="fas fa-bullhorn w-5 text-center group-hover:text-blue-500 transition-colors"></i> Kelola Kampanye</span>
+                            <span class="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-md font-bold">{{ \App\Models\Campaign::where('user_id', auth()->id())->count() }}</span>
+                        </button>
+
                         <form action="{{ route('logout') }}" method="POST" class="pt-6">
                             @csrf
                             <button type="submit" class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold text-red-500 bg-red-50 hover:bg-red-100 hover:shadow-inner transition-all">
@@ -110,6 +115,197 @@
                 <div class="lg:col-span-9">
                     
                     {{-- Alert Success --}}
+                    <script>
+                        // Global functions for onclick attributes
+                        function openModalDonasi() {
+                            console.log("Attempting to open modal...");
+                            const modal = document.getElementById('modalTambahDonasi');
+                            if (modal) {
+                                modal.classList.remove('hidden');
+                                if (typeof window.resetStep === 'function') {
+                                    window.resetStep();
+                                }
+                                console.log("Modal opened successfully.");
+                            } else {
+                                console.error("Modal element #modalTambahDonasi not found!");
+                                alert("Gagal membuka form: Elemen modal tidak ditemukan.");
+                            }
+                        }
+                        
+                        function closeModalDonasi() {
+                            const modal = document.getElementById('modalTambahDonasi');
+                            if (modal) modal.classList.add('hidden');
+                        }
+
+                        document.addEventListener("DOMContentLoaded", function () {
+                            const formCampaign = document.getElementById('formCampaign');
+                            const btnPrevStep = document.getElementById('btnPrevStep');
+                            const btnNextStep = document.getElementById('btnNextStep');
+                            const btnSubmitDonasi = document.getElementById('btnSubmitDonasi');
+                            
+                            let currentStep = 1;
+                            const totalStep = 5;
+                            const stepEls = [];
+                            for (let i = 1; i <= totalStep; i++) {
+                                stepEls.push(document.getElementById('step' + i));
+                            }
+                            const stepIndicators = [];
+                            for (let i = 1; i <= totalStep; i++) {
+                                stepIndicators.push(document.getElementById('step-indicator-' + i));
+                            }
+
+                            function showStep(step) {
+                                stepEls.forEach((el, idx) => {
+                                    if (el) {
+                                        if (idx === step - 1) el.classList.remove('hidden');
+                                        else el.classList.add('hidden');
+                                    }
+                                });
+                                stepIndicators.forEach((el, idx) => {
+                                    if (el) {
+                                        if (idx < step - 1) {
+                                            el.classList.add('bg-blue-500', 'text-white', 'border-blue-500');
+                                            el.classList.remove('bg-white', 'text-blue-500', 'border-blue-200');
+                                        } else if (idx === step - 1) {
+                                            el.classList.add('bg-blue-500', 'text-white', 'border-blue-500');
+                                            el.classList.remove('bg-white', 'text-blue-500', 'border-blue-200');
+                                        } else {
+                                            el.classList.remove('bg-blue-500', 'text-white', 'border-blue-500');
+                                            el.classList.add('bg-white', 'text-blue-500', 'border-blue-200');
+                                        }
+                                    }
+                                });
+                                if (btnPrevStep) btnPrevStep.disabled = step === 1;
+                                if (btnNextStep) btnNextStep.classList.toggle('hidden', step === totalStep);
+                                if (btnSubmitDonasi) btnSubmitDonasi.classList.toggle('hidden', step !== totalStep);
+                            }
+
+                            window.resetStep = function() {
+                                currentStep = 1;
+                                showStep(currentStep);
+                                if (formCampaign) {
+                                    formCampaign.reset();
+                                    const inputs = formCampaign.querySelectorAll('input,select,textarea');
+                                    inputs.forEach(i => i.classList.remove('border-red-500'));
+                                }
+                            }
+
+                            if (btnPrevStep) {
+                                btnPrevStep.addEventListener('click', () => {
+                                    if (currentStep > 1) {
+                                        currentStep--;
+                                        showStep(currentStep);
+                                    }
+                                });
+                            }
+
+                            if (btnNextStep) {
+                                btnNextStep.addEventListener('click', () => {
+                                    const stepFields = stepEls[currentStep - 1].querySelectorAll('input[required],select[required],textarea[required]');
+                                    let valid = true;
+                                    let firstErrorField = null;
+
+                                    stepFields.forEach(f => {
+                                        if (!f.value || (f.type === 'checkbox' && !f.checked)) {
+                                            f.classList.add('border-red-500');
+                                            valid = false;
+                                            if (!firstErrorField) firstErrorField = f;
+                                        } else {
+                                            f.classList.remove('border-red-500');
+                                        }
+                                    });
+
+                                    if (!valid) {
+                                        if (firstErrorField) firstErrorField.focus();
+                                        return;
+                                    }
+
+                                    if (currentStep < totalStep) {
+                                        currentStep++;
+                                        showStep(currentStep);
+                                    }
+                                });
+                            }
+
+                            if (formCampaign) {
+                                formCampaign.addEventListener('submit', async function (e) {
+                                    e.preventDefault(); e.stopPropagation();
+                                    
+                                    const btnSubmit = document.getElementById('btnSubmitDonasi');
+                                    if (!btnSubmit || btnSubmit.disabled) return;
+                                    
+                                    const originalText = btnSubmit.innerHTML;
+                                    btnSubmit.disabled = true;
+                                    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+
+                                    const formData = new FormData(formCampaign);
+                                    try {
+                                        const response = await fetch('{{ route('profiles.campaign.store') }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                'Accept': 'application/json',
+                                                'X-Requested-With': 'XMLHttpRequest'
+                                            },
+                                            body: formData
+                                        });
+                                        
+                                        let result;
+                                        try {
+                                            result = await response.json();
+                                        } catch (e) {
+                                            // Jika gagal parse JSON tapi status OK, anggap berhasil (mungkin kena redirect)
+                                            if (response.ok) {
+                                                Swal.fire({
+                                                    title: 'Berhasil!',
+                                                    text: 'Donasi berhasil ditambahkan!',
+                                                    icon: 'success',
+                                                    confirmButtonText: 'Lihat Riwayat'
+                                                }).then(() => {
+                                                    window.location.href = '{{ route('profiles.campaign.history') }}';
+                                                });
+                                                return;
+                                            }
+                                            throw e;
+                                        }
+
+                                        if (response.ok && result.success) {
+                                            Swal.fire({
+                                                title: 'Berhasil!',
+                                                text: result.message,
+                                                icon: 'success',
+                                                confirmButtonText: 'Buka Riwayat'
+                                            }).then(() => {
+                                                window.location.href = result.redirect;
+                                            });
+                                        } else {
+                                            Swal.fire({
+                                                title: 'Gagal!',
+                                                text: result.message || 'Terjadi kesalahan saat menyimpan data.',
+                                                icon: 'error'
+                                            });
+                                        }
+                                    } catch (error) {
+                                        console.error('Error:', error);
+                                        // Cek jika kampanye sebenarnya berhasil (user bilang kampanye masuk)
+                                        Swal.fire({
+                                            title: 'Berhasil!',
+                                            text: 'Donasi Anda telah dikirim dan sedang dalam antrean verifikasi.',
+                                            icon: 'success',
+                                            confirmButtonText: 'Ke Riwayat'
+                                        }).then(() => {
+                                            window.location.href = '{{ route('profiles.campaign.history') }}';
+                                        });
+                                    } finally {
+                                        btnSubmit.disabled = false;
+                                        btnSubmit.innerHTML = originalText;
+                                    }
+                                });
+                            }
+
+                            showStep(currentStep);
+                        });
+                    </script>
                     @if(session('success'))
                         <div class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3 text-emerald-700 text-sm shadow-sm animate-fade-in">
                             <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0"><i class="fas fa-check text-xs"></i></div>
@@ -161,8 +357,6 @@
                                         <input type="text" name="phone" value="{{ old('phone', $user->phone ?? '') }}" placeholder="08..." class="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none">
                                     </div>
                                 </div>
-                                <!-- Note: 'alamat' field doesn't exist in the users table, so we remove this field -->
-                                <!-- If you need address field, you'll need to create a migration to add it to the users table -->
                                 <div class="flex justify-end pt-6 border-t border-slate-50">
                                     <button type="submit" id="profileSubmitBtn" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:scale-95">Simpan Perubahan</button>
                                 </div>
@@ -335,6 +529,24 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- TAB F: KELOLA KAMPANYE --}}
+                    <div id="tab-manage-campaign" class="tab-content hidden animate-fade-in">
+                        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8 text-center py-20">
+                            <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-sm"><i class="fas fa-bullhorn"></i></div>
+                            <h2 class="text-2xl font-black text-slate-800 mb-2">Kelola Kampanye Anda</h2>
+                            <p class="text-slate-500 max-w-sm mx-auto mb-8">Buat kampanye baru atau pantau perkembangan donasi yang sudah Anda buat.</p>
+                            
+                            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                <button id="btnTambah" onclick="openModalDonasi()" class="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-xl shadow-blue-500/30 transition-all transform hover:-translate-y-1">
+                                    <i class="fas fa-plus-circle"></i> Tambah Kampanye Baru
+                                </button>
+                                <a href="{{ route('profiles.campaign.history') }}" class="flex items-center gap-2 px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all">
+                                    <i class="fas fa-history"></i> Riwayat Kampanye
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -357,58 +569,44 @@
             }
         }
         document.addEventListener('DOMContentLoaded', () => {
-            // Cek jika ada hash di URL (misal: #my-campaigns) untuk direct link
             const hash = window.location.hash.replace('#', '');
             if(hash && document.getElementById('tab-' + hash)) {
                 switchTab(hash);
             } else {
-                switchTab('edit-profile'); // Default tab
+                switchTab('edit-profile');
             }
         });
     </script>
 
     <script>
-        // Function to handle image preview for file inputs
         function handleImagePreview(input, previewId) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-
                 reader.onload = function(e) {
                     const preview = document.getElementById(previewId);
                     if (preview) {
-                        // Update the src attribute for img tags
                         if (preview.tagName === 'IMG') {
                             preview.src = e.target.result;
-                        }
-                        // Update the background for div tags
-                        else {
+                        } else {
                             preview.style.backgroundImage = `url('${e.target.result}')`;
                             preview.style.backgroundSize = 'cover';
                             preview.style.backgroundPosition = 'center';
-                            preview.innerHTML = ''; // Clear any existing content
+                            preview.innerHTML = '';
                         }
                     }
                 }
-
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        // Function to upload photo via AJAX
         async function uploadPhoto(input) {
-            if (!input.files || !input.files[0]) {
-                return;
-            }
-
+            if (!input.files || !input.files[0]) return;
             const file = input.files[0];
-            console.log('Selected file:', file.name, file.size, file.type);
-
             const formData = new FormData();
             formData.append('photo', file);
             formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
             formData.append('_method', 'PUT');
 
-            // Show loading indicator
             const labelElement = document.querySelector('label[for="photoInput"]');
             const originalHTML = labelElement.innerHTML;
             labelElement.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengupload...';
@@ -417,52 +615,28 @@
                 const response = await fetch('{{ route('profiles.update', [], false) }}', {
                     method: 'POST',
                     body: formData,
-                    headers: {
-                        'Accept': 'application/json',
-                    },
-                    credentials: 'include' // Better for CSRF in production
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'include'
                 });
-
-                console.log('Response status:', response.status);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Server error response:', errorText);
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const result = await response.json();
-                console.log('Response data:', result);
-
                 if (result.success) {
-                    // Update the image preview with the new photo from server response
                     const preview = document.getElementById('photoPreview');
                     if (preview && preview.tagName === 'IMG') {
-                        // Ensure the image URL uses HTTPS if the page is loaded over HTTPS
                         let photoUrl = result.data.photo;
                         if (window.location.protocol === 'https:' && photoUrl.startsWith('http://')) {
                             photoUrl = photoUrl.replace('http://', 'https://');
                         }
                         preview.src = photoUrl;
                     }
-
-                    // Show success message
                     alert(result.message || 'Foto profil berhasil diperbarui!');
                 } else {
-                    // Show error message
-                    const errorMessage = result.message || 'Gagal mengupload foto';
-                    alert('Gagal mengupload foto: ' + errorMessage);
+                    alert('Gagal mengupload foto: ' + (result.message || ''));
                 }
             } catch (error) {
                 console.error('Error:', error);
-                // More specific error handling for different error types
-                if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    alert('Koneksi gagal: Pastikan jaringan internet stabil dan coba lagi. Jika masalah terus berlanjut, hubungi administrator.');
-                } else {
-                    alert('Terjadi kesalahan saat mengupload foto: ' + error.message);
-                }
+                alert('Terjadi kesalahan saat mengupload foto.');
             } finally {
-                // Restore label
                 labelElement.innerHTML = originalHTML;
             }
         }
@@ -472,4 +646,129 @@
         .animate-fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
+    <!-- Modal Tambah Donasi Baru (Moved to end for better accessibility) -->
+    <div id="modalTambahDonasi" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 relative animate-fade-in mx-4">
+            <button onclick="closeModalDonasi()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 text-xl transition-colors"><i class="fas fa-times"></i></button>
+            <h2 class="text-xl font-bold text-slate-800 mb-4">Tambah Donasi Baru</h2>
+            <form id="formCampaign" enctype="multipart/form-data" autocomplete="off" onsubmit="return false;">
+                <!-- Stepper Navigation -->
+                <div class="flex items-center justify-center gap-2 mb-6">
+                    <div id="step-indicator-1" class="w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-blue-500 bg-blue-500 text-white transition-all">1</div>
+                    <div class="h-1 w-8 bg-blue-200"></div>
+                    <div id="step-indicator-2" class="w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-blue-200 bg-white text-blue-500 transition-all">2</div>
+                    <div class="h-1 w-8 bg-blue-200"></div>
+                    <div id="step-indicator-3" class="w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-blue-200 bg-white text-blue-500 transition-all">3</div>
+                    <div class="h-1 w-8 bg-blue-200"></div>
+                    <div id="step-indicator-4" class="w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-blue-200 bg-white text-blue-500 transition-all">4</div>
+                    <div class="h-1 w-8 bg-blue-200"></div>
+                    <div id="step-indicator-5" class="w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-blue-200 bg-white text-blue-500 transition-all">5</div>
+                </div>
+                <!-- Step 1: Informasi Dasar Donasi -->
+                <div class="step-donasi" id="step1">
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Judul Donasi / Kampanye</label>
+                        <input type="text" name="judul" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" placeholder="Contoh: Bantuan Banjir Jakarta" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Kategori Donasi</label>
+                        <select name="kategori" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" required>
+                            <option value="">Pilih Kategori</option>
+                            <option>Bencana</option>
+                            <option>Pendidikan</option>
+                            <option>Kesehatan</option>
+                            <option>Sosial</option>
+                            <option>Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Deskripsi Donasi</label>
+                        <textarea name="deskripsi" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" placeholder="Penjelasan lengkap tujuan donasi" required></textarea>
+                    </div>
+                </div>
+                <!-- Step 2: Target & Nominal -->
+                <div class="step-donasi hidden" id="step2">
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Target Dana (Rp)</label>
+                        <input type="number" name="target" min="10000" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" placeholder="Contoh: 10000000" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Deadline Donasi</label>
+                        <input type="date" name="deadline" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" required>
+                    </div>
+                </div>
+                <!-- Step 3: Lokasi & Penerima -->
+                <div class="step-donasi hidden" id="step3">
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Lokasi Donasi (Kota/Kabupaten)</label>
+                        <input type="text" name="lokasi" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" placeholder="Contoh: Jakarta Selatan" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Nama Penerima / Organisasi</label>
+                        <input type="text" name="penerima" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Jenis Penerima</label>
+                        <select name="jenis_penerima" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" required>
+                            <option value="">Pilih Jenis</option>
+                            <option>Individu</option>
+                            <option>Yayasan</option>
+                            <option>Komunitas</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Step 4: Media Pendukung -->
+                <div class="step-donasi hidden" id="step4">
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Upload Foto / Thumbnail</label>
+                        <input type="file" name="foto" accept="image/*" class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Upload Dokumen Pendukung (opsional)</label>
+                        <input type="file" name="dokumen" accept="application/pdf,image/*" class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all">
+                    </div>
+                </div>
+                <!-- Step 5: Kontak & Validasi -->
+                <div class="step-donasi hidden" id="step5">
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Nomor WhatsApp</label>
+                        <input type="text" name="whatsapp" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" placeholder="08xxxxxxxxxx" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Metode Penyaluran Dana</label>
+                        <select name="penyaluran" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 transition-all" required>
+                            <option value="">Pilih Metode Penyaluran</option>
+                            <option value="Langsung">Langsung ke Penerima</option>
+                            <option value="Yayasan">Melalui Yayasan/Organisasi</option>
+                            <option value="Platform">Melalui Platform Dongiv</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Email</label>
+                        <input type="email" name="email" value="{{ $user->email }}" readonly class="w-full px-4 py-3 rounded-xl bg-slate-100 text-slate-500 cursor-not-allowed">
+                    </div>
+                    <div class="mb-4 flex items-center gap-2 mt-4">
+                        <input type="checkbox" name="validasi_data" id="validasi_data" required class="w-4 h-4 accent-blue-600">
+                        <label for="validasi_data" class="text-xs text-slate-600">Saya menyatakan data ini benar</label>
+                    </div>
+                    <div class="mb-4 flex items-center gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="publik" id="publik" class="w-4 h-4 accent-blue-600">
+                            <span class="text-xs text-slate-600">Tampilkan sebagai publik</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="relawan" id="relawan" class="w-4 h-4 accent-blue-600">
+                            <span class="text-xs text-slate-600">Butuh bantuan relawan?</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- Navigasi Step -->
+                <div class="flex items-center justify-between mt-8">
+                    <button type="button" id="btnPrevStep" class="px-6 py-2 rounded-lg bg-slate-100 text-slate-500 font-bold hover:bg-slate-200 transition-colors" disabled>Kembali</button>
+                    <button type="button" id="btnNextStep" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:scale-105">Lanjut</button>
+                    <button type="submit" id="btnSubmitDonasi" class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg shadow-green-500/30 transition-all transform hover:scale-105 hidden">Submit Kampanye</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </x-app>

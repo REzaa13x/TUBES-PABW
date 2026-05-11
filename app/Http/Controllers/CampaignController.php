@@ -24,7 +24,8 @@ class CampaignController extends Controller
     // Menampilkan SEMUA kampanye donasi dengan pagination
     public function index(Request $request)
     {
-        $query = \App\Models\Campaign::where('status', 'Active');
+        $query = \App\Models\Campaign::where('status', 'verified')
+            ->where('end_date', '>=', now());
 
         // Filter berdasarkan kategori jika disediakan
         if ($request->filled('kategori')) {
@@ -56,6 +57,7 @@ class CampaignController extends Controller
     public function volunteerIndex()
     {
         $campaigns = \App\Models\VolunteerCampaign::where('status', 'Aktif')
+            ->where('tanggal_selesai', '>=', now())
             ->latest()
             ->paginate(9); // Gunakan pagination agar rapi
 
@@ -111,7 +113,7 @@ class CampaignController extends Controller
             \Log::info('API Campaign Index called');
 
             $campaigns = Campaign::with('user')
-                ->where('status', 'Active')
+                ->where('status', 'verified')
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -137,5 +139,149 @@ class CampaignController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    // FUNGSI: Riwayat Kampanye User
+    public function history()
+    {
+        $campaigns = Campaign::where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('profiles.riwayat_kampanye', compact('campaigns'));
+    }
+
+    // FUNGSI: Simpan Kampanye Baru
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'judul' => 'required|string|max:255',
+                'deskripsi' => 'required|string',
+                'target' => 'required|numeric|min:10000',
+                'deadline' => 'required|date|after:today',
+                'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+                'kategori' => 'required|string',
+                'lokasi' => 'required|string',
+                'penerima' => 'required|string',
+                'jenis_penerima' => 'required|string',
+                'whatsapp' => 'required|string',
+                'penyaluran' => 'required|string',
+            ]);
+
+            $imagePath = null;
+            if ($request->hasFile('foto')) {
+                $imagePath = $request->file('foto')->store('campaigns', 'public');
+            }
+
+            // --- PERBAIKAN: CEK DUPLIKASI (IDEMPOTENCY) ---
+            $existing = Campaign::where('user_id', auth()->id())
+                ->where('title', $request->judul)
+                ->where('created_at', '>=', now()->subMinutes(1))
+                ->first();
+
+            if ($existing) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Kampanye sudah dibuat!',
+                        'redirect' => route('profiles.campaign.history')
+                    ]);
+                }
+                return redirect()->route('profiles.campaign.history')->with('success', 'Kampanye sudah berhasil dibuat!');
+            }
+
+            $campaign = Campaign::create([
+                'title' => $request->judul,
+                'description' => $request->deskripsi,
+                'target_amount' => $request->target,
+                'end_date' => $request->deadline,
+                'image' => $imagePath,
+                'kategori' => $request->kategori,
+                'user_id' => auth()->id(),
+                'status' => 'pending', 
+                'yayasan' => $request->penerima, 
+                'penyaluran' => $request->penyaluran,
+                'lokasi' => $request->lokasi,
+                'jenis_penerima' => $request->jenis_penerima,
+                'whatsapp' => $request->whatsapp,
+                'slug' => \Illuminate\Support\Str::slug($request->judul) . '-' . time(),
+            ]);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Kampanye berhasil dibuat dan sedang menunggu verifikasi!',
+                    'redirect' => route('profiles.campaign.history')
+                ]);
+            }
+
+            return redirect()->route('profiles.campaign.history')->with('success', 'Kampanye berhasil dibuat!');
+        } catch (\Exception $e) {
+            \Log::error('Campaign Store Error: ' . $e->getMessage());
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 422);
+            }
+
+            return back()->with('error', 'Terjadi kesalahan saat menyimpan kampanye.')->withInput();
+        }
+    }
+
+    public function edit($id)
+    {
+        $campaign = Campaign::where('user_id', auth()->id())->findOrFail($id);
+
+        if (!in_array($campaign->status, ['pending', 'rejected'])) {
+            return redirect()->back()->with('error', 'Kampanye yang sudah diverifikasi tidak dapat diedit.');
+        }
+
+        return view('profiles.campaign_edit', compact('campaign'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $campaign = Campaign::where('user_id', auth()->id())->findOrFail($id);
+
+        if (!in_array($campaign->status, ['pending', 'rejected'])) {
+            return redirect()->back()->with('error', 'Kampanye yang sudah diverifikasi tidak dapat diubah.');
+        }
+
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'target' => 'required|numeric|min:10000',
+            'deadline' => 'required|date|after:today',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'kategori' => 'required|string',
+        ]);
+
+        $data = [
+            'title' => $request->judul,
+            'description' => $request->deskripsi,
+            'target_amount' => $request->target,
+            'end_date' => $request->deadline,
+            'kategori' => $request->kategori,
+            'status' => 'pending', // Reset status to pending after edit
+        ];
+
+        if ($request->hasFile('foto')) {
+            $data['image'] = $request->file('foto')->store('campaigns', 'public');
+        }
+
+        $campaign->update($data);
+
+        return redirect()->route('profiles.campaign.history')->with('success', 'Kampanye berhasil diperbarui!');
+    }
+
+    public function destroy($id)
+    {
+        $campaign = Campaign::where('user_id', auth()->id())->findOrFail($id);
+        $campaign->delete();
+
+        return redirect()->route('profiles.campaign.history')->with('success', 'Kampanye berhasil dihapus!');
     }
 }

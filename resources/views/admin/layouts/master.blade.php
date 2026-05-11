@@ -140,6 +140,16 @@
                 <span>Kampanye Donasi</span>
             </a>
 
+            <a href="{{ route('admin.distribution.index') }}" class="nav-item {{ request()->routeIs('admin.distribution.*') ? 'active' : '' }}">
+                <i class="fas fa-clipboard-check w-6 text-center text-lg mr-2"></i>
+                <span>Laporan Penyaluran</span>
+            </a>
+
+            <a href="{{ route('admin.validator-contacts.index') }}" class="nav-item {{ request()->routeIs('admin.validator-contacts.*') ? 'active' : '' }}">
+                <i class="fas fa-address-book w-6 text-center text-lg mr-2"></i>
+                <span>Data Validator</span>
+            </a>
+
             <div class="nav-label">Manajemen Relawan</div>
             <a href="{{ route('admin.relawan.index') }}" class="nav-item {{ request()->routeIs('admin.volunteers.*') ? 'active' : '' }}">                <i class="fas fa-hands-helping w-6 text-center text-lg mr-2"></i>
                 <span>Kampanye Relawan</span>
@@ -175,9 +185,11 @@
         </div>
     </main>
 
-    {{-- Bootstrap & ChartJS --}}
+    {{-- Bootstrap, ChartJS & SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @stack('scripts')
 </body>
 
 </html>

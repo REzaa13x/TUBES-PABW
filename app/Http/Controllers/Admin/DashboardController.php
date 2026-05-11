@@ -22,9 +22,13 @@ class DashboardController extends Controller
         $totalVolunteers = Volunteer::count();
         $totalUsers = User::count();
 
-        // Active campaigns
-        $activeCampaigns = Campaign::where('status', 'Active')->count();
-        $activeVolunteerCampaigns = VolunteerCampaign::where('status', 'Aktif')->count();
+        // Active campaigns (Verified and not expired)
+        $activeCampaigns = Campaign::where('status', 'verified')
+            ->where('end_date', '>=', now())
+            ->count();
+        $activeVolunteerCampaigns = VolunteerCampaign::where('status', 'Aktif')
+            ->where('tanggal_selesai', '>=', now())
+            ->count();
 
         // Recent activities
         $recentDonations = DonationTransaction::with('campaign', 'user')

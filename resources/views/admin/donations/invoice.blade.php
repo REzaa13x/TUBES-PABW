@@ -63,66 +63,79 @@
             <div class="bg-white rounded-[2.5rem] invoice-box border border-slate-100 overflow-hidden print-shadow-none">
                 
                 <!-- Invoice Header Section -->
-                <div class="p-10 md:p-14 border-b border-slate-100 relative">
-                    <!-- Status Stamp -->
-                    <div class="absolute top-10 right-10 text-right">
-                        <div class="inline-block px-5 py-2 rounded-2xl font-black text-xs uppercase tracking-[0.2em] mb-3
-                            {{ $transaction->status === 'VERIFIED' ? 'bg-green-100 text-green-700 border border-green-200' :
-                               ($transaction->status === 'CANCELLED' ? 'bg-red-100 text-red-700 border border-red-200' : 
-                               'bg-amber-100 text-amber-700 border border-amber-200') }}">
-                            {{ $transaction->status_label }}
+                <div class="p-10 md:p-14 border-b border-slate-100">
+                    <div class="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
+                        <!-- Left: Brand Info -->
+                        <div class="flex-1">
+                            <div class="flex items-center gap-4 mb-6">
+                                <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonGiv Logo" class="h-14 w-auto object-contain">
+                            </div>
+                            <p class="text-sm text-slate-500 font-semibold leading-relaxed">
+                                Sistem Verifikasi Kebaikan Digital<br>
+                                Gedung Sinergi Lt. 5, Jakarta Selatan<br>
+                                <span class="text-blue-600">dongiv@gmail.com</span> | +62 21 4455 6677
+                            </p>
                         </div>
-                        <h1 class="text-4xl font-black text-slate-900 tracking-tighter uppercase">Invoice</h1>
-                        <p class="text-slate-400 font-bold text-xs mt-1">NO. #{{ $transaction->order_id }}</p>
-                    </div>
 
-                    <!-- Brand Info with Actual Logo (Text removed) -->
-                    <div class="mb-12">
-                        <div class="flex items-center gap-4 mb-4">
-                            <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonGiv Logo" class="h-14 w-auto object-contain">
+                        <!-- Right: Status & Invoice Title -->
+                        <div class="text-right">
+                            <div class="inline-block px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-wider mb-4
+                                {{ $transaction->status === 'VERIFIED' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                   ($transaction->status === 'CANCELLED' ? 'bg-red-100 text-red-700 border border-red-200' : 
+                                   'bg-amber-100 text-amber-700 border border-amber-200') }}">
+                                {{ $transaction->status_label }}
+                            </div>
+                            <h1 class="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">Invoice</h1>
+                            <p class="text-slate-400 font-bold text-sm mt-2 tracking-widest">#{{ $transaction->order_id }}</p>
                         </div>
-                        <p class="text-sm text-slate-500 font-medium leading-relaxed">
-                            Sistem Verifikasi Kebaikan Digital<br>
-                            Gedung Sinergi Lt. 5, Jakarta Selatan<br>
-                            dongiv@gmail.com | +62 21 4455 6677
-                        </p>
                     </div>
 
                     <!-- Billing Grid -->
-                    <div class="grid grid-cols-2 gap-10">
-                        <div>
-                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Ditujukan Untuk:</h4>
-                            <div class="space-y-1">
-                                <p class="text-lg font-extrabold text-slate-900">{{ $transaction->donor_name }}</p>
-                                <p class="text-sm text-slate-500 font-medium">{{ $transaction->donor_email }}</p>
-                                <p class="text-sm text-slate-500 font-medium">{{ $transaction->donor_phone ?? '-' }}</p>
-                                <div class="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-500">
-                                    <i class="fas fa-user-secret"></i>
-                                    {{ $transaction->anonymous ? 'ANONIM' : 'NAMA TERLIHAT' }}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-14">
+                        <!-- Left Card: Donor -->
+                        <div class="group bg-slate-50 hover:bg-white p-8 rounded-[2rem] border border-slate-100 hover:border-blue-200 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 relative overflow-hidden">
+                            <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors"></div>
+                            <h4 class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <i class="fas fa-user-circle"></i> Ditujukan Untuk
+                            </h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-2xl font-black text-slate-900 tracking-tight mb-1">{{ $transaction->donor_name }}</p>
+                                    <p class="text-sm text-slate-500 font-medium flex items-center gap-2">
+                                        <i class="fas fa-envelope text-slate-300 text-[10px]"></i> {{ $transaction->donor_email }}
+                                    </p>
+                                    @if($transaction->donor_phone)
+                                    <p class="text-sm text-slate-500 font-medium flex items-center gap-2 mt-1">
+                                        <i class="fas fa-phone text-slate-300 text-[10px]"></i> {{ $transaction->donor_phone }}
+                                    </p>
+                                    @endif
+                                </div>
+                                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                                    <i class="fas fa-shield-halved {{ $transaction->anonymous ? 'text-amber-400' : 'text-blue-400' }}"></i>
+                                    Status: {{ $transaction->anonymous ? 'Profil Anonim' : 'Nama Publik' }}
                                 </div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Detail Transaksi:</h4>
-                            <div class="space-y-2">
-                                <div class="flex justify-end gap-4">
-                                    <span class="text-sm text-slate-400 font-medium">Tanggal Invoice</span>
-                                    <span class="text-sm text-slate-900 font-bold">{{ $transaction->created_at->format('d/m/Y') }}</span>
+
+                        <!-- Right Card: Transaction Details -->
+                        <div class="bg-slate-900 p-8 rounded-[2rem] text-white shadow-xl shadow-slate-200/50 relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+                            <h4 class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <i class="fas fa-receipt"></i> Detail Transaksi
+                            </h4>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                                    <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Tanggal</span>
+                                    <span class="text-sm text-white font-black">{{ $transaction->created_at->format('d M Y') }}</span>
                                 </div>
-                                <div class="flex justify-end gap-4">
-                                    <span class="text-sm text-slate-400 font-medium">Metode Pembayaran</span>
-                                    <span class="text-sm text-slate-900 font-bold uppercase">{{ str_replace('_', ' ', $transaction->payment_method) }}</span>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                                    <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Metode</span>
+                                    <span class="text-sm text-blue-400 font-black uppercase">{{ str_replace('_', ' ', $transaction->payment_method) }}</span>
                                 </div>
                                 @if($transaction->transfer_deadline)
-                                <div class="flex justify-end gap-4">
-                                    <span class="text-sm text-slate-400 font-medium">Batas Waktu</span>
-                                    <span class="text-sm text-red-600 font-bold">
-                                        @if($transaction->transfer_deadline)
-                                            {{ $transaction->transfer_deadline->format('d/m/Y H:i') }}
-                                        @else
-                                            -
-                                        @endif
-                                    </span>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Batas Waktu</span>
+                                    <span class="text-sm text-red-400 font-black">{{ $transaction->transfer_deadline->format('d/m/Y H:i') }}</span>
                                 </div>
                                 @endif
                             </div>
@@ -131,17 +144,32 @@
                 </div>
 
                 <!-- Content Body -->
-                <div class="p-10 md:p-14">
+                <div class="p-10 md:p-14 bg-white">
                     
-                    <!-- Campaign Info Card -->
+                    <!-- Campaign Info Card (Premium Redesign) -->
                     @if($transaction->campaign)
-                    <div class="mb-10 bg-blue-50/50 rounded-3xl p-6 border border-blue-100 flex items-start gap-5">
-                        <div class="w-12 h-12 rounded-2xl bg-white flex flex-shrink-0 items-center justify-center text-blue-600 shadow-sm border border-blue-100">
-                            <i class="fas fa-bullhorn text-lg"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-black text-slate-900 mb-1 tracking-tight">{{ $transaction->campaign->title }}</h3>
-                            <p class="text-xs text-slate-500 leading-relaxed italic line-clamp-2">"{{ $transaction->campaign->description }}"</p>
+                    <div class="mb-12 group relative overflow-hidden rounded-[2.5rem]">
+                        <!-- Animated Gradient Background -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 opacity-90 transition-transform duration-500 group-hover:scale-105"></div>
+                        <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                        <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-blue-400/20 rounded-full blur-3xl"></div>
+                        
+                        <div class="relative p-8 text-white flex flex-col md:flex-row items-center gap-8 rounded-[2.5rem] backdrop-blur-sm border border-white/10 shadow-2xl shadow-blue-200/50">
+                            <div class="w-20 h-20 rounded-3xl bg-white/10 flex flex-shrink-0 items-center justify-center text-blue-100 shadow-inner border border-white/20 transition-transform duration-500 group-hover:rotate-6">
+                                <i class="fas fa-hand-holding-heart text-3xl"></i>
+                            </div>
+                            <div class="flex-1 text-center md:text-left">
+                                <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[9px] font-black uppercase tracking-[0.2em] mb-3 border border-white/5">
+                                    <span class="w-2 h-2 rounded-full bg-blue-300 animate-pulse"></span>
+                                    Target Kampanye Sosial
+                                </div>
+                                <h3 class="text-2xl font-black leading-tight tracking-tight mb-2">{{ $transaction->campaign->title }}</h3>
+                                <p class="text-blue-100/70 text-xs font-medium italic line-clamp-1">"{{ $transaction->campaign->description }}"</p>
+                            </div>
+                            <div class="flex flex-shrink-0 flex-col items-center md:items-end gap-1">
+                                <p class="text-[10px] font-black text-blue-200 uppercase tracking-widest">ID Kampanye</p>
+                                <p class="text-sm font-mono font-bold opacity-50 tracking-tighter">#CMP-{{ $transaction->campaign->id }}</p>
+                            </div>
                         </div>
                     </div>
                     @endif
@@ -224,47 +252,56 @@
             </div>
 
             <!-- ADMIN ACTION PANEL (NO PRINT) -->
-            <div class="no-print mt-10 space-y-6">
-                <div class="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-slate-300">
-                    <div class="flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div>
-                            <h3 class="text-xl font-black mb-2 flex items-center gap-3">
-                                <i class="fas fa-user-shield text-blue-400"></i>
-                                Panel Kontrol Verifikasi
-                            </h3>
-                            <p class="text-sm text-slate-400">Lakukan perubahan status transaksi setelah melakukan pengecekan manual.</p>
+            <div class="no-print mt-12 mb-12">
+                <div class="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-xl">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-10">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-200">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Kontrol Verifikasi</h3>
+                            </div>
+                            <p class="text-sm text-slate-500 font-medium">Validasi pembayaran donatur setelah melakukan pengecekan mutasi manual.</p>
                         </div>
                         
-                        <div class="flex flex-wrap gap-4 justify-center">
+                        <div class="flex flex-wrap gap-4 justify-center md:justify-end">
                             @if($transaction->status === 'PENDING_VERIFICATION')
                                 <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST">
                                     @csrf @method('PUT')
                                     <input type="hidden" name="status" value="VERIFIED">
-                                    <button type="submit" class="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-900/20 active:scale-95 flex items-center gap-2" onclick="return confirm('Verifikasi pembayaran ini?')">
-                                        <i class="fas fa-check-double"></i> Terima Donasi
+                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-green-200 active:scale-95 flex items-center gap-3" onclick="return confirm('Verifikasi pembayaran ini? Dana akan masuk ke target campaign.')">
+                                        <i class="fas fa-check-circle text-lg"></i> Terima & Verifikasi
                                     </button>
                                 </form>
 
                                 <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST">
                                     @csrf @method('PUT')
                                     <input type="hidden" name="status" value="CANCELLED">
-                                    <button type="submit" class="bg-red-600 hover:bg-red-500 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-red-900/20 active:scale-95 flex items-center gap-2" onclick="return confirm('Tolak pembayaran ini?')">
-                                        <i class="fas fa-times"></i> Tolak Donasi
+                                    <button type="submit" class="bg-white hover:bg-red-50 text-red-600 border-2 border-red-100 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center gap-3" onclick="return confirm('Tolak pembayaran ini?')">
+                                        <i class="fas fa-times-circle text-lg"></i> Tolak Donasi
                                     </button>
                                 </form>
                             @else
-                                <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="flex items-center gap-3 bg-white/5 p-3 rounded-2xl border border-white/10">
-                                    @csrf @method('PUT')
-                                    <select name="status" class="bg-slate-800 border-none rounded-xl text-xs font-bold py-3 pr-10 focus:ring-blue-500">
-                                        <option value="AWAITING_TRANSFER" {{ $transaction->status === 'AWAITING_TRANSFER' ? 'selected' : '' }}>Pending</option>
-                                        <option value="PENDING_VERIFICATION" {{ $transaction->status === 'PENDING_VERIFICATION' ? 'selected' : '' }}>Waiting</option>
-                                        <option value="VERIFIED" {{ $transaction->status === 'VERIFIED' ? 'selected' : '' }}>Paid</option>
-                                        <option value="CANCELLED" {{ $transaction->status === 'CANCELLED' ? 'selected' : '' }}>Rejected</option>
-                                    </select>
-                                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all">
-                                        Update
-                                    </button>
-                                </form>
+                                <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-[2rem] border border-slate-200">
+                                    <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST" class="flex items-center gap-4">
+                                        @csrf @method('PUT')
+                                        <div class="relative">
+                                            <select name="status" class="bg-white border-slate-200 rounded-xl text-xs font-black py-4 pl-6 pr-12 focus:ring-blue-500 focus:border-blue-500 appearance-none uppercase tracking-widest cursor-pointer">
+                                                <option value="AWAITING_TRANSFER" {{ $transaction->status === 'AWAITING_TRANSFER' ? 'selected' : '' }}>Pending</option>
+                                                <option value="PENDING_VERIFICATION" {{ $transaction->status === 'PENDING_VERIFICATION' ? 'selected' : '' }}>Waiting</option>
+                                                <option value="VERIFIED" {{ $transaction->status === 'VERIFIED' ? 'selected' : '' }}>Paid/Verified</option>
+                                                <option value="CANCELLED" {{ $transaction->status === 'CANCELLED' ? 'selected' : '' }}>Rejected</option>
+                                            </select>
+                                            <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <i class="fas fa-chevron-down text-[10px]"></i>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg shadow-slate-200">
+                                            Simpan Perubahan
+                                        </button>
+                                    </form>
+                                </div>
                             @endif
                         </div>
                     </div>

@@ -136,6 +136,9 @@
                     </div>
 
                     <form id="registerForm" class="space-y-4">
+                        {{-- Hidden Role (Default to User) --}}
+                        <input type="hidden" name="role" value="user">
+
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Nama Lengkap</label>
                             <div class="relative">
@@ -345,6 +348,7 @@
                     body: JSON.stringify({
                         name: name,
                         email: email,
+                        role: formData.get('role'),
                         password: password,
                         password_confirmation: password_confirmation
                     })

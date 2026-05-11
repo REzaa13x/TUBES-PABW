@@ -18,20 +18,17 @@ class NotifikasiController extends Controller
         });
     }
 
-    // 🟦 Tampilkan semua notifikasi
     public function index()
     {
         $notifications = Notification::orderBy('created_at', 'desc')->get();
         return view('admin.notifications.index', compact('notifications'));
     }
 
-    // 🟩 Form tambah notifikasi
     public function create()
     {
         return view('admin.notifications.create');
     }
 
-    // 🟨 Simpan notifikasi baru
     public function store(Request $request)
     {
         $request->validate([
@@ -48,7 +45,6 @@ class NotifikasiController extends Controller
                          ->with('success', 'Notifikasi berhasil ditambahkan!');
     }
 
-    // 🟧 Form edit notifikasi
     public function edit($id)
     {
         $notification = Notification::findOrFail($id);
@@ -56,7 +52,6 @@ class NotifikasiController extends Controller
         return view('admin.notifications.edit', compact('notification'));
     }
 
-    // 🟪 Update notifikasi
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -74,7 +69,6 @@ class NotifikasiController extends Controller
                          ->with('success', 'Notifikasi berhasil diperbarui!');
     }
 
-    // 🟥 Hapus notifikasi
     public function destroy($id)
     {
         $notification = Notification::findOrFail($id);

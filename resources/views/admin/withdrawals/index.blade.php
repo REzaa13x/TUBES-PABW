@@ -93,7 +93,9 @@
                         @forelse($campaigns as $campaign)
                             @php
                                 $totalIn = $campaign->current_amount;
-                                $totalOut = $campaign->withdrawals_sum_amount ?? 0;
+                                $totalOutManual = $campaign->withdrawals_sum_amount ?? 0;
+                                $totalOutValidator = $campaign->distribution_reports_sum_amount ?? 0;
+                                $totalOut = $totalOutManual + $totalOutValidator;
                                 $balance = $totalIn - $totalOut;
                             @endphp
                             <tr class="hover:bg-gray-50/80 transition-colors">
@@ -202,9 +204,12 @@
                         <div class="relative">
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Nominal (Rp)</label>
                             <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-gray-400 font-bold text-sm">Rp</span></div>
-                                <input type="number" name="amount" id="modal_amount" min="1000" required class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl leading-5 bg-white font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition-shadow" placeholder="0">
+                                <input type="number" name="amount" id="modal_amount" min="1000" required oninput="validateAmount()"
+                                    class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl leading-5 bg-white font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition-shadow" placeholder="0">
                             </div>
+                            <p id="amount_warning" class="hidden text-[10px] font-bold text-red-500 mt-1 ml-1 animate-pulse">
+                                <i class="fas fa-exclamation-triangle mr-1"></i> Saldo tidak mencukupi!
+                            </p>
                         </div>
 
                         {{-- REVISI 2: Kategori dengan Logic Lainnya --}}
@@ -242,7 +247,7 @@
                 </div>
                 
                 <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse gap-3 rounded-b-2xl">
-                    <button type="submit" class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl border border-transparent shadow-lg shadow-red-200 px-5 py-2.5 bg-red-600 text-sm font-bold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all transform hover:-translate-y-0.5">
+                    <button type="submit" id="submitBtn" class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl border border-transparent shadow-lg shadow-red-200 px-5 py-2.5 bg-red-600 text-sm font-bold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all transform hover:-translate-y-0.5">
                         <i class="fas fa-save mr-2"></i> Simpan
                     </button>
                     <button type="button" onclick="closeExpenseModal()" class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl border border-gray-300 shadow-sm px-5 py-2.5 bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all">
@@ -255,12 +260,34 @@
 </div>
 
 <script>
+    let currentBalance = 0;
+
     function openExpenseModal(id, title, balance) {
+        currentBalance = balance;
         document.getElementById('modal_campaign_id').value = id;
         document.getElementById('modal_campaign_title').innerText = title;
         document.getElementById('modal_max_balance').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(balance);
-        document.getElementById('modal_amount').max = balance;
+        document.getElementById('modal_amount').value = '';
+        document.getElementById('amount_warning').classList.add('hidden');
+        document.getElementById('submitBtn').disabled = false;
         document.getElementById('expenseModal').classList.remove('hidden');
+    }
+
+    function validateAmount() {
+        const input = document.getElementById('modal_amount');
+        const warning = document.getElementById('amount_warning');
+        const btn = document.getElementById('submitBtn');
+        const val = parseFloat(input.value) || 0;
+
+        if (val > currentBalance) {
+            warning.classList.remove('hidden');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            warning.classList.add('hidden');
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
     }
 
     function closeExpenseModal() {

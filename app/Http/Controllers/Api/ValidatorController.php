@@ -60,7 +60,10 @@ class ValidatorController extends Controller
         }
 
         $campaign->update([
+
             'status' => 'active',
+            'status' => 'verified',
+
             'validator_name' => $user->name,
             'validator_user_id' => $user->id,
             'verified_at' => Carbon::now(),
@@ -69,7 +72,11 @@ class ValidatorController extends Controller
 
         return response()->json([
             'status' => 'success',
+
             'message' => 'Verifikasi Berhasil! Kampanye kini berstatus Active.',
+
+            'message' => 'Verifikasi Berhasil! Kampanye kini berstatus verified.',
+
             'data' => $campaign
         ]);
     }
@@ -82,7 +89,11 @@ class ValidatorController extends Controller
         $user = auth()->user();
 
         $history = Campaign::where('validator_user_id', $user->id)
+
             ->whereIn('status', ['Verified', 'active'])
+
+            ->whereIn('status', ['Verified', 'verified'])
+
             ->latest('verified_at')
             ->get();
 

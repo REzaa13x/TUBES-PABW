@@ -25,7 +25,7 @@ class AdminController extends Controller
 
         // Total campaigns
         $totalCampaigns = Campaign::count();
-        $activeCampaigns = Campaign::where('status', 'Active')->count();
+        $activeCampaigns = Campaign::where('status', 'verified')->count();
 
         // Total donations
         $totalDonations = DonationTransaction::count();
@@ -90,7 +90,7 @@ class AdminController extends Controller
             ->get();
 
         // Active campaigns by end date (closest to ending)
-        $activeCampaigns = Campaign::where('status', 'Active')
+        $activeCampaigns = Campaign::where('status', 'verified')
             ->with(['user:id,name']) // Include user info
             ->select('id', 'title', 'description', 'target_amount', 'current_amount', 'image', 'end_date', 'user_id', 'status', 'kategori')
             ->orderBy('end_date', 'asc')
@@ -155,17 +155,12 @@ class AdminController extends Controller
     public function getNotifications(Request $request)
     {
         $user = auth()->user();
-
-        // Jika role admin, bisa melihat semua notifikasi
-        // Jika bukan admin, hanya bisa melihat notifikasi sendiri
         if ($user->role === 'admin') {
-            // Dalam konteks admin API, kita mungkin ingin mengambil notifikasi untuk user tertentu
             $userId = $request->query('user_id');
             if ($userId) {
                 $userNotifications = \App\Models\User::findOrFail($userId);
                 $notifications = $userNotifications->notifications()->paginate(10);
             } else {
-                // Secara default, kembalikan notifikasi milik admin itu sendiri
                 $notifications = $user->notifications()->paginate(10);
             }
         } else {

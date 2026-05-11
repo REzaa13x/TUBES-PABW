@@ -26,7 +26,9 @@ class DonationTransaction extends Model
         'bank_name',
         'proof_of_transfer_path',
         'transfer_completed_at',
-        'verified_at'
+        'verified_at',
+        'snap_token',
+        'prayer'
     ];
 
     protected $casts = [

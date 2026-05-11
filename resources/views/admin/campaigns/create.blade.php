@@ -59,10 +59,9 @@
                 <label class="block text-sm">
                     <span class="text-gray-700">Status</span>
                     <select name="status" class="block w-full mt-1 text-sm border-gray-300 rounded-md focus:border-purple-400 focus:outline-none focus:shadow-outline-purple form-select">
-                        <option value="Active">Active</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Inactive">Inactive</option>
-                        <option value="Pending">Pending</option>
+                        <option value="verified">Verified</option>
+                        <option value="pending">Pending</option>
+                        <option value="rejected">Rejected</option>
                     </select>
                 </label>
 

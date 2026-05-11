@@ -49,38 +49,73 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($campaign->withdrawals as $log)
+                    @php
+                        // Gabungkan dua koleksi: Withdrawals dan DistributionReports
+                        $manualLogs = $campaign->withdrawals->map(function($item) {
+                            $item->log_type = 'manual';
+                            $item->log_date = $item->transferred_at;
+                            return $item;
+                        });
+
+                        $validatorLogs = $campaign->distributionReports->map(function($item) {
+                            $item->log_type = 'validator';
+                            $item->log_date = $item->created_at;
+                            return $item;
+                        });
+
+                        $combinedLogs = $manualLogs->concat($validatorLogs)->sortByDesc('log_date');
+                    @endphp
+
+                    @forelse($combinedLogs as $log)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ \Carbon\Carbon::parse($log->transferred_at)->format('d M Y, H:i') }}
+                                {{ \Carbon\Carbon::parse($log->log_date)->format('d M Y, H:i') }}
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 mb-1">
-                                    {{ $log->account_number }} {{-- Kategori disimpan di sini --}}
-                                </span>
-                                <p class="text-sm text-gray-900 font-medium">{{ $log->account_holder_name }}</p> {{-- Keterangan disimpan di sini --}}
+                                @if($log->log_type == 'manual')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-700 uppercase tracking-widest mb-1">
+                                        <i class="fas fa-user-tie mr-1"></i> Manual Admin
+                                    </span>
+                                    <p class="text-sm text-gray-900 font-bold">{{ $log->account_holder_name }}</p>
+                                    <p class="text-[10px] text-gray-500 italic">{{ $log->account_number }}</p>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-100 text-purple-700 uppercase tracking-widest mb-1">
+                                        <i class="fas fa-user-shield mr-1"></i> Laporan Validator
+                                    </span>
+                                    <p class="text-sm text-gray-900 font-bold">{{ $log->description }}</p>
+                                @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-red-600">
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-red-600">
                                 - Rp {{ number_format($log->amount, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                @if($log->proof_file)
-                                    <a href="{{ asset('storage/' . $log->proof_file) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline flex justify-center items-center gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                        Lihat Foto
+                                @php 
+                                    $imagePath = $log->log_type == 'manual' ? $log->proof_file : $log->proof_image; 
+                                @endphp
+                                @if($imagePath)
+                                    <a href="{{ asset('storage/' . $imagePath) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline flex justify-center items-center gap-1">
+                                        <i class="fas fa-image"></i>
+                                        Lihat Bukti
                                     </a>
                                 @else
-                                    <span class="text-gray-400 text-xs italic">Tidak ada bukti</span>
+                                    <span class="text-gray-400 text-[10px] font-bold uppercase">No Proof</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $log->user ? $log->user->name : 'Admin' }}
+                            <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-500">
+                                @if($log->log_type == 'manual')
+                                    {{ $log->user ? $log->user->name : 'Admin' }}
+                                @else
+                                    {{ $campaign->validator_name ?: 'Validator Lapangan' }}
+                                @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">
-                                Belum ada pengeluaran dana untuk kampanye ini.
+                            <td colspan="5" class="px-6 py-16 text-center">
+                                <div class="flex flex-col items-center justify-center opacity-30">
+                                    <i class="fas fa-receipt text-5xl mb-4"></i>
+                                    <p class="font-bold text-sm">Belum ada riwayat pengeluaran dana.</p>
+                                </div>
                             </td>
                         </tr>
                     @endforelse

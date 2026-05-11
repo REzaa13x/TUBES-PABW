@@ -13,6 +13,21 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VolunteerApplicationController;
 // Alias Frontend
 use App\Http\Controllers\CampaignController as FrontendCampaignController;
+use App\Http\Controllers\VerificationController;
+
+
+
+// --- Validator Distribution Routes (Tanpa Login, Menggunakan Token) ---
+use App\Http\Controllers\ValidatorDistributionController;
+Route::prefix('validator/{token}')->name('validator.')->group(function () {
+    Route::get('/dashboard', [ValidatorDistributionController::class, 'dashboard'])->name('dashboard');
+    Route::post('/verify', [ValidatorDistributionController::class, 'verifyCampaign'])->name('verify');
+    Route::get('/campaign', [ValidatorDistributionController::class, 'campaign'])->name('campaign');
+    Route::get('/upload', [ValidatorDistributionController::class, 'upload'])->name('upload');
+    Route::post('/upload', [ValidatorDistributionController::class, 'store'])->name('store');
+    Route::get('/history', [ValidatorDistributionController::class, 'history'])->name('history');
+    Route::get('/status', [ValidatorDistributionController::class, 'status'])->name('status');
+});
 
 // --- 2. CONTROLLERS ADMIN ---
 use App\Http\Controllers\Admin\NotifikasiController;
@@ -20,6 +35,9 @@ use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
 use App\Http\Controllers\Admin\VolunteerVerificationController;
 use App\Http\Controllers\Admin\VolunteerAdminController; 
 use App\Http\Controllers\Admin\WithdrawalController;
+use App\Http\Controllers\Admin\DistributionController as AdminDistributionController;
+use App\Http\Controllers\Admin\ValidatorContactController;
+use App\Http\Controllers\Admin\DonationCampaignController as AdminDonationCampaignController;
 
 
 // Halaman Utama
@@ -58,6 +76,9 @@ Route::get('/donation-success', function () {
 Route::get('/donation-success/{order_id}', function ($order_id) {
     return view('donation-success', ['order_id' => $order_id]);
 })->name('donation.success.with.order');
+
+// Midtrans Callback
+Route::post('/midtrans/callback', [App\Http\Controllers\MidtransController::class, 'callback'])->name('midtrans.callback');
 
 // Relawan (Frontend Public)
 // 1. Landing Page Relawan
@@ -122,7 +143,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('relawan', AdminCampaignController::class);
 
         // Manajemen Kampanye Donasi (Resource)
-        Route::resource('campaigns', \App\Http\Controllers\Admin\DonationCampaignController::class);
+        Route::resource('campaigns', AdminDonationCampaignController::class);
+        Route::resource('validator-contacts', ValidatorContactController::class);
 
         // Manajemen Notifikasi & Relawan (Master Data)
         Route::resource('notifications', NotifikasiController::class);
@@ -134,6 +156,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('donation-transactions/{order_id}/invoice', [DonationController::class, 'showInvoiceForAdmin'])->name('donations.invoice');
         Route::put('donation-transactions/{order_id}/status', [DonationController::class, 'updateStatus'])->name('donations.updateStatus');
         Route::delete('donation-transactions/{order_id}', [DonationController::class, 'destroy'])->name('donations.destroy');
+
+        // Manajemen Penyaluran Dana (Distribution)
+        Route::get('distribution', [AdminDistributionController::class, 'index'])->name('distribution.index');
+        Route::get('distribution/{id}', [AdminDistributionController::class, 'show'])->name('distribution.show');
+        Route::put('distribution/{id}', [AdminDistributionController::class, 'update'])->name('distribution.update');
+        Route::post('campaigns/{id}/generate-link', [AdminDistributionController::class, 'generateLink'])->name('campaigns.generateLink');
 
         // API Verifikasi Donasi untuk Admin
         Route::prefix('api')->name('api.')->group(function () {
@@ -167,3 +195,10 @@ Route::middleware(['auth'])->group(function () {
 // Route untuk testing gambar
 Route::get('/test-image/{folder}/{filename}', [App\Http\Controllers\TestImageController::class, 'testImage']);
 });
+
+// Route untuk halaman tambah donasi
+Route::middleware(['auth'])->group(function () {
+    Route::get('/donation/create', [DonationController::class, 'create'])->name('donation.create');
+    Route::post('/donation/store', [DonationController::class, 'store'])->name('donation.store');
+});
+require __DIR__ . '/donasi-profile.php';
