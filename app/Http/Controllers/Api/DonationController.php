@@ -83,7 +83,6 @@ class DonationController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Donation created successfully',
             'data' => $transaction
         ], 201);
     }
@@ -155,15 +154,12 @@ class DonationController extends Controller
      */
     public function getUserDonations(Request $request): JsonResponse
     {
-        $user = $request->user();
-        
-        $donations = DonationTransaction::where('user_id', $user->id)
+        $donations = $request->user()->donations()
             ->with('campaign')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->get();
 
         return response()->json([
-            'message' => 'User donations retrieved successfully',
             'data' => $donations
         ]);
     }
@@ -199,19 +195,16 @@ class DonationController extends Controller
     {
         $user = $request->user();
         
-        // Check if user is admin
+        // If not admin, return only user's donations
         if ($user->role !== 'admin') {
-            return response()->json([
-                'message' => 'Unauthorized access'
-            ], 403);
+            return $this->getUserDonations($request);
         }
 
         $donations = DonationTransaction::with(['user', 'campaign'])
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->get();
 
         return response()->json([
-            'message' => 'Donations retrieved successfully',
             'data' => $donations
         ]);
     }

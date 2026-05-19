@@ -12,6 +12,7 @@ class DistributionReport extends Model
     protected $fillable = [
         'campaign_id',
         'amount',
+        'recipient',
         'description',
         'proof_image',
         'status',

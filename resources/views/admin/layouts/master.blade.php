@@ -107,7 +107,7 @@
 
 <body class="flex h-screen overflow-hidden">
 
-    <aside class="bright-sidebar w-72 flex-shrink-0 flex flex-col z-20 text-white">
+    <aside class="bright-sidebar w-72 h-screen fixed left-0 top-0 flex flex-col z-50 text-white">
 
         <div class="h-24 flex flex-col justify-center px-8">
             <h1 class="text-3xl font-extrabold tracking-tight flex items-center gap-2">
@@ -151,7 +151,7 @@
             </a>
 
             <div class="nav-label">Manajemen Relawan</div>
-            <a href="{{ route('admin.relawan.index') }}" class="nav-item {{ request()->routeIs('admin.volunteers.*') ? 'active' : '' }}">                <i class="fas fa-hands-helping w-6 text-center text-lg mr-2"></i>
+            <a href="{{ route('admin.relawan.index') }}" class="nav-item {{ request()->routeIs('admin.relawan.*') ? 'active' : '' }}">                <i class="fas fa-hands-helping w-6 text-center text-lg mr-2"></i>
                 <span>Kampanye Relawan</span>
             </a>
             <a href="{{ route('admin.verifikasi-relawan.index') }}" class="nav-item {{ request()->routeIs('admin.verifikasi-relawan.*') ? 'active' : '' }}">
@@ -179,10 +179,8 @@
 
     </aside>
 
-    <main class="flex-1 overflow-x-hidden overflow-y-auto">
-        <div class="p-8">
-            @yield('content')
-        </div>
+    <main class="flex-1 ml-72 overflow-x-hidden overflow-y-auto p-8">
+        @yield('content')
     </main>
 
     {{-- Bootstrap, ChartJS & SweetAlert2 --}}

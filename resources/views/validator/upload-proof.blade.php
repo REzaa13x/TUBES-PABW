@@ -3,7 +3,14 @@
 @section('title', 'Upload Bukti Penyaluran')
 
 @section('content')
-<div class="max-w-2xl mx-auto">
+<div class="max-w-2xl mx-auto space-y-6">
+    <!-- Back Button -->
+    <div class="flex items-center justify-between">
+        <a href="{{ route('validator.campaign', $token) }}" class="inline-flex items-center gap-2 text-[10px] font-black text-slate-500 hover:text-blue-600 bg-white border border-slate-200/60 px-4 py-2.5 rounded-xl transition-all shadow-xs">
+            <i class="fas fa-arrow-left"></i> Kembali ke Detail Kampanye
+        </a>
+    </div>
+
     <div class="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100">
         <div class="text-center mb-10">
             <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 text-3xl shadow-sm">
@@ -37,6 +44,15 @@
                            class="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-600 focus:ring-0 transition-all font-black text-slate-800">
                 </div>
                 @error('amount') <p class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</p> @enderror
+            </div>
+
+            <!-- Recipient -->
+            <div class="space-y-3">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Disalurkan Kepada / Penerima Manfaat</label>
+                <input type="text" name="recipient" required placeholder="Contoh: Warga Terdampak Banjir RW 05 Bojongsoang / Panti Asuhan"
+                       value="{{ old('recipient') }}"
+                       class="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-600 focus:ring-0 transition-all font-bold text-slate-800">
+                @error('recipient') <p class="text-xs text-red-500 mt-1 font-bold">{{ $message }}</p> @enderror
             </div>
 
             <!-- Description -->

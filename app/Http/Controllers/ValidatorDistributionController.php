@@ -43,11 +43,22 @@ class ValidatorDistributionController extends Controller
         $campaign = $this->getCampaign($token);
         if (!$campaign) return redirect()->route('home')->with('error', 'Token tidak valid.');
 
-        $data = $this->getValidatorData($campaign);
-        $totalPenyaluran = $campaign->distributionReports()->where('status', 'verified')->sum('amount');
-        $reports = $campaign->distributionReports()->latest()->get();
+        if (strtolower($campaign->status) === 'pending') {
+            // Step 1: Halaman khusus untuk verifikasi kampanye baru yang terfokus
+            return view('validator.verify-pending', compact('campaign', 'token'));
+        }
 
-        return view('validator.dashboard', array_merge($data, compact('campaign', 'totalPenyaluran', 'reports', 'token')));
+        // Step 2: Halaman daftar riwayat seluruh kampanye yang dikelola/diverifikasi oleh validator ini
+        $myCampaigns = [];
+        if ($campaign->validator_phone) {
+            $myCampaigns = Campaign::where('validator_phone', $campaign->validator_phone)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $myCampaigns = [$campaign];
+        }
+
+        return view('validator.my-campaigns', compact('campaign', 'myCampaigns', 'token'));
     }
 
     // Fitur Baru: Verifikasi Kampanye via Portal (Tanpa Login)
@@ -74,66 +85,63 @@ class ValidatorDistributionController extends Controller
         if (!$campaign) return redirect()->route('home')->with('error', 'Token tidak valid.');
         
         $data = $this->getValidatorData($campaign);
-        return view('validator.campaign-detail', array_merge($data, compact('campaign', 'token')));
+        
+        // Pemasukan (Donasi Terverifikasi)
+        $donations = $campaign->donationTransactions()
+            ->where('status', 'VERIFIED')
+            ->latest()
+            ->get();
+            
+        // Pengeluaran 1: Penarikan Dana Manual oleh Pembuat
+        $withdrawals = $campaign->withdrawals()
+            ->whereIn('status', ['approved', 'completed'])
+            ->latest()
+            ->get();
+            
+        // Pengeluaran 2: Laporan Penyaluran oleh Validator
+        $distributions = $campaign->distributionReports()
+            ->where('status', 'verified')
+            ->latest()
+            ->get();
+
+        return view('validator.campaign-detail', array_merge($data, compact(
+            'campaign', 
+            'token', 
+            'donations', 
+            'withdrawals', 
+            'distributions'
+        )));
     }
 
     public function upload($token)
     {
-        $campaign = $this->getCampaign($token);
-        
-        if (strtolower($campaign->status) === 'pending') {
-            return redirect()->route('validator.dashboard', $token)->with('error', 'Kampanye harus disetujui terlebih dahulu sebelum melaporkan penyaluran.');
-        }
-
-        $data = $this->getValidatorData($campaign);
-        return view('validator.upload-proof', array_merge($data, compact('campaign', 'token')));
+        // Validator hanya berperan sebagai pengawas transparansi, bukan pelapor penyaluran
+        return redirect()->route('validator.campaign', $token)
+            ->with('info', 'Validator hanya dapat memantau transparansi aliran dana. Form penyaluran dikelola oleh admin sistem.');
     }
 
     public function store(Request $request, $token)
     {
-        $campaign = $this->getCampaign($token);
-
-        $request->validate([
-            'amount' => 'required|numeric|min:1',
-            'description' => 'required|string',
-            'proof_image' => 'required|image|max:5120',
-        ]);
-
-        // HITUNG SALDO ASLI sebelum SIMPAN LAPORAN
-        $usedManual = $campaign->withdrawals()
-            ->whereIn('status', ['approved', 'completed'])
-            ->sum('amount'); 
-        
-        $usedValidator = $campaign->distributionReports()
-            ->where('status', 'verified')
-            ->sum('amount');
-
-        $actualBalance = $campaign->current_amount - ($usedManual + $usedValidator);
-
-        if ($request->amount > $actualBalance) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Saldo tidak mencukupi! Dana yang tersedia untuk disalurkan saat ini adalah Rp ' . number_format($actualBalance, 0, ',', '.'));
-        }
-
-        $path = $request->file('proof_image')->store('distribution-proofs', 'public');
-
-        DistributionReport::create([
-            'campaign_id' => $campaign->id,
-            'amount' => $request->amount,
-            'description' => $request->description,
-            'proof_image' => $path,
-            'status' => 'pending',
-        ]);
-
-        return redirect()->route('validator.history', $token)->with('success', 'Laporan penyaluran berhasil dikirim.');
+        // Validator tidak diperkenankan mengajukan laporan penyaluran
+        return redirect()->route('validator.campaign', $token)
+            ->with('info', 'Validator hanya dapat memantau transparansi aliran dana. Form penyaluran dikelola oleh admin sistem.');
     }
 
     public function history($token)
     {
         $campaign = $this->getCampaign($token);
-        $reports = $campaign->distributionReports()->latest()->get();
-        return view('validator.history', compact('campaign', 'reports', 'token'));
+        
+        // Tampilkan semua kampanye yang diawasi validator ini (berdasarkan nomor HP validator)
+        $myCampaigns = collect();
+        if ($campaign->validator_phone) {
+            $myCampaigns = Campaign::where('validator_phone', $campaign->validator_phone)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $myCampaigns = collect([$campaign]);
+        }
+        
+        return view('validator.history', compact('campaign', 'myCampaigns', 'token'));
     }
 
     public function status($token)

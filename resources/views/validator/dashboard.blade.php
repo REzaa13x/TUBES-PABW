@@ -87,11 +87,8 @@
                         </div>
                         <h4 class="text-xl font-black leading-tight mb-4">{{ $campaign->title }}</h4>
                         <div class="flex items-center gap-4 mt-auto pt-4 border-t border-white/10">
-                            <a href="{{ route('validator.campaign', $token) }}" class="flex-1 text-center py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                                <i class="fas fa-info-circle mr-1"></i> Detail
-                            </a>
-                            <a href="{{ route('validator.upload', $token) }}" class="flex-1 text-center py-3 bg-white text-blue-600 hover:bg-blue-50 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg">
-                                <i class="fas fa-plus-circle mr-1"></i> Lapor
+                            <a href="{{ route('validator.campaign', $token) }}" class="flex-1 text-center py-3 bg-white text-blue-600 hover:bg-blue-50 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg">
+                                <i class="fas fa-eye mr-1"></i> Lihat Detail & Dana
                             </a>
                         </div>
                     </div>
@@ -107,11 +104,8 @@
                         </div>
                         <h4 class="text-lg font-black text-slate-800 leading-tight mb-4 group-hover:text-blue-600 transition-colors">{{ $task->title }}</h4>
                         <div class="flex items-center gap-4 mt-auto pt-4 border-t border-slate-50">
-                            <a href="{{ route('validator.dashboard', $task->distribution_token) }}" class="flex-1 text-center py-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 transition-all">
-                                <i class="fas fa-info-circle mr-1"></i> Detail
-                            </a>
-                            <a href="{{ route('validator.upload', $task->distribution_token) }}" class="flex-1 text-center py-3 bg-blue-50 hover:bg-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-600 transition-all">
-                                <i class="fas fa-plus-circle mr-1"></i> Lapor
+                            <a href="{{ route('validator.campaign', $task->distribution_token) }}" class="flex-1 text-center py-3 bg-blue-50 hover:bg-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-600 transition-all">
+                                <i class="fas fa-eye mr-1"></i> Lihat Detail & Dana
                             </a>
                         </div>
                     </div>
@@ -119,6 +113,39 @@
                 @endforeach
             </div>
         </div>
+
+        @if(count($completedTasks) > 0)
+        <!-- Riwayat Kampanye yang Diverifikasi -->
+        <div class="space-y-6 mt-8">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-black text-slate-800 tracking-tight">Riwayat Kampanye yang Anda Verifikasi</h3>
+                <span class="px-3 py-1 bg-emerald-100 text-emerald-600 text-[10px] font-black uppercase rounded-full">
+                    {{ count($completedTasks) }} Kampanye Terverifikasi
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                @foreach($completedTasks as $task)
+                <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-emerald-100 hover:shadow-xl hover:shadow-emerald-500/5 transition-all group relative overflow-hidden flex flex-col h-full">
+                    <div class="relative z-10 flex flex-col h-full">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[8px] font-black uppercase rounded-full">Telah Diverifikasi</span>
+                        </div>
+                        <h4 class="text-lg font-black text-slate-800 leading-tight mb-4 group-hover:text-emerald-600 transition-colors">{{ $task->title }}</h4>
+                        <p class="text-[11px] text-slate-400 font-bold mb-4">
+                            Target Tercapai: Rp {{ number_format($task->current_amount, 0, ',', '.') }} / Rp {{ number_format($task->target_amount, 0, ',', '.') }}
+                        </p>
+                        <div class="flex items-center gap-4 mt-auto pt-4 border-t border-slate-50">
+                            <a href="{{ route('validator.dashboard', $task->distribution_token) }}" class="flex-1 text-center py-3 bg-emerald-50 hover:bg-emerald-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-600 transition-all">
+                                <i class="fas fa-eye mr-1"></i> Lihat Detail
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
 
         <!-- Recent Activity -->
         <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
@@ -158,26 +185,32 @@
 
     <!-- Sidebar Stats -->
     <div class="space-y-8">
-        <!-- Quick Actions -->
+        <!-- Role Info -->
         <div class="bg-blue-600 rounded-[2.5rem] p-8 text-white shadow-xl shadow-blue-500/20">
-            <h3 class="text-lg font-black mb-6 tracking-tight">Aksi Cepat</h3>
-            <div class="space-y-4">
-                <a href="{{ route('validator.upload', $token) }}" class="flex items-center gap-4 p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all border border-white/10 group">
-                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-black">Upload Bukti</p>
-                        <p class="text-[10px] text-white/60">Lapor penyaluran dana</p>
-                    </div>
-                </a>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">
+                    <i class="fas fa-shield-check"></i>
+                </div>
+                <h3 class="text-lg font-black tracking-tight">Peran Validator</h3>
+            </div>
+            <p class="text-blue-100 text-sm font-medium leading-relaxed mb-6">Anda bertugas sebagai <strong>pengawas transparansi</strong> dana kampanye ini. Pantau aliran dana masuk (donasi) dan keluar (penyaluran) secara real-time.</p>
+            <div class="space-y-3">
                 <a href="{{ route('validator.campaign', $token) }}" class="flex items-center gap-4 p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all border border-white/10 group">
                     <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-info-circle"></i>
+                        <i class="fas fa-chart-line"></i>
                     </div>
                     <div>
-                        <p class="text-sm font-black">Detail Kebutuhan</p>
-                        <p class="text-[10px] text-white/60">Info kampanye lengkap</p>
+                        <p class="text-sm font-black">Lihat Aliran Dana</p>
+                        <p class="text-[10px] text-white/60">Pemasukan &amp; Pengeluaran</p>
+                    </div>
+                </a>
+                <a href="{{ route('validator.history', $token) }}" class="flex items-center gap-4 p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all border border-white/10 group">
+                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-black">Riwayat Verifikasi</p>
+                        <p class="text-[10px] text-white/60">Kampanye yang pernah diawasi</p>
                     </div>
                 </a>
             </div>

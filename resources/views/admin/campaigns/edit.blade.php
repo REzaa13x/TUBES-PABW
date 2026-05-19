@@ -79,11 +79,31 @@
             </div>
 
             {{-- Buttons --}}
-            <div class="flex gap-2">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition">Update Kampanye Donasi</button>
-                <a href="{{ route('admin.campaigns.index') }}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Batal</a>
+            <div class="flex justify-between items-center pt-4 border-t border-gray-100 mt-6">
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition">Update Kampanye Donasi</button>
+                    <a href="{{ route('admin.campaigns.index') }}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Batal</a>
+                </div>
+                
+                {{-- Tombol Hapus --}}
+                <button type="button" onclick="confirmDeleteCampaign()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fas fa-trash-alt text-sm"></i> Hapus Kampanye
+                </button>
             </div>
         </form>
+
+        <form id="delete-campaign-form" action="{{ route('admin.campaigns.destroy', $campaign->id) }}" method="POST" class="hidden">
+            @csrf
+            @method('DELETE')
+        </form>
+
+        <script>
+            function confirmDeleteCampaign() {
+                if (confirm('Apakah Anda yakin ingin menghapus kampanye donasi ini secara permanen? Semua data transaksi dan penyaluran terkait juga akan terhapus.')) {
+                    document.getElementById('delete-campaign-form').submit();
+                }
+            }
+        </script>
     </div>
 </div>
 @endsection

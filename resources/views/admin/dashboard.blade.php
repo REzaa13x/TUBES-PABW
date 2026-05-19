@@ -111,11 +111,36 @@
 
             @forelse($recentDonations as $donation)
             <div class="flex gap-4 relative">
-                <div class="w-8 h-8 rounded-full bg-green-100 border-2 border-white shadow-sm flex items-center justify-center shrink-0 z-10">
-                    <i class="fas fa-check text-green-600 text-xs"></i>
-                </div>
+                @if($donation->status === 'VERIFIED')
+                    <div class="w-8 h-8 rounded-full bg-green-100 border-2 border-white shadow-sm flex items-center justify-center shrink-0 z-10" title="Diverifikasi">
+                        <i class="fas fa-check text-green-600 text-xs"></i>
+                    </div>
+                @elseif($donation->status === 'PENDING_VERIFICATION')
+                    <div class="w-8 h-8 rounded-full bg-amber-100 border-2 border-white shadow-sm flex items-center justify-center shrink-0 z-10" title="Menunggu Verifikasi">
+                        <i class="fas fa-clock text-amber-600 text-xs"></i>
+                    </div>
+                @elseif($donation->status === 'AWAITING_TRANSFER')
+                    <div class="w-8 h-8 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center shrink-0 z-10" title="Menunggu Transfer">
+                        <i class="fas fa-hourglass-half text-blue-600 text-xs"></i>
+                    </div>
+                @else
+                    <div class="w-8 h-8 rounded-full bg-red-100 border-2 border-white shadow-sm flex items-center justify-center shrink-0 z-10" title="Ditolak / Batal">
+                        <i class="fas fa-times text-red-600 text-xs"></i>
+                    </div>
+                @endif
                 <div>
-                    <p class="text-sm font-bold text-slate-800">Donasi {{ $donation->order_id }} Diverifikasi</p>
+                    <p class="text-sm font-bold text-slate-800">
+                        Donasi {{ $donation->order_id }} 
+                        @if($donation->status === 'VERIFIED')
+                            <span class="text-green-600 font-bold text-xs bg-green-50 px-1.5 py-0.5 rounded">Paid</span>
+                        @elseif($donation->status === 'PENDING_VERIFICATION')
+                            <span class="text-amber-600 font-bold text-xs bg-amber-50 px-1.5 py-0.5 rounded">Waiting</span>
+                        @elseif($donation->status === 'AWAITING_TRANSFER')
+                            <span class="text-blue-600 font-bold text-xs bg-blue-50 px-1.5 py-0.5 rounded">Pending</span>
+                        @else
+                            <span class="text-red-600 font-bold text-xs bg-red-50 px-1.5 py-0.5 rounded">Rejected</span>
+                        @endif
+                    </p>
                     <p class="text-xs text-slate-500 mt-0.5">Rp {{ number_format($donation->amount, 0, ',', '.') }} • {{ $donation->created_at->diffForHumans() }}</p>
                 </div>
             </div>

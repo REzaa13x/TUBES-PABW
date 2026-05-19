@@ -24,6 +24,12 @@
                     <p class="text-xl font-black text-blue-600">Rp {{ number_format($report->amount, 0, ',', '.') }}</p>
                 </div>
                 <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Disalurkan Kepada / Penerima Manfaat</p>
+                    <p class="text-sm font-black text-emerald-600 flex items-center gap-1">
+                        <i class="fas fa-user-tag text-xs"></i> {{ $report->recipient ?: '-' }}
+                    </p>
+                </div>
+                <div>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Keterangan</p>
                     <p class="text-sm text-gray-600 leading-relaxed italic">"{{ $report->description }}"</p>
                 </div>

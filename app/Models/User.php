@@ -86,8 +86,7 @@ class User extends Authenticatable
      */
     public function donations()
     {
-        // Pastikan Anda sudah punya model Donation di App\Models\Donation
-        return $this->hasMany(Donation::class);
+        return $this->hasMany(\App\Models\DonationTransaction::class);
     }
 
     /**

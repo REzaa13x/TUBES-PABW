@@ -52,7 +52,7 @@ class DonationVerificationController extends Controller
                 'payment_method' => $transaction->payment_method,
                 'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),
                 'proof_of_transfer_path' => $transaction->proof_of_transfer_path,
-                'proof_url' => $transaction->proof_of_transfer_path ? asset('storage/' . $transaction->proof_of_transfer_path) : null,
+                'proof_url' => $transaction->proof_of_transfer_path,
                 'campaign' => $transaction->campaign ? [
                     'id' => $transaction->campaign->id,
                     'title' => $transaction->campaign->title,
@@ -156,7 +156,7 @@ class DonationVerificationController extends Controller
                 'status_label' => $transaction->status_label,
                 'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),
                 'proof_of_transfer_path' => $transaction->proof_of_transfer_path,
-                'proof_url' => $transaction->proof_of_transfer_path ? asset('storage/' . $transaction->proof_of_transfer_path) : null,
+                'proof_url' => $transaction->proof_of_transfer_path,
                 'campaign' => $transaction->campaign ? [
                     'id' => $transaction->campaign->id,
                     'title' => $transaction->campaign->title,

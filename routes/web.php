@@ -201,4 +201,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/donation/create', [DonationController::class, 'create'])->name('donation.create');
     Route::post('/donation/store', [DonationController::class, 'store'])->name('donation.store');
 });
+
+// Route public image proxy untuk melayani gambar kampanye di model getImageAttribute()
+Route::get('/api/images/{folder}/{filename}', [App\Http\Controllers\TestImageController::class, 'testImage']);
+
 require __DIR__ . '/donasi-profile.php';

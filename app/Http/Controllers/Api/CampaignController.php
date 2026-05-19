@@ -203,13 +203,11 @@ class CampaignController extends Controller
      */
     public function urgent(Request $request): AnonymousResourceCollection
     {
-        $query = \App\Models\Campaign::where('status', 'verified');
-
-        // For SQLite compatibility, using julianday for date calculation
-        $query->whereRaw('DATEDIFF(end_date, NOW()) <= 3')
-              ->whereRaw('(current_amount / target_amount) >= 0.5')
-              ->orderByRaw('DATEDIFF(end_date, NOW()) ASC')
-              ->orderByRaw('(current_amount / target_amount) DESC');
+        // Ambil semua kampanye yang sudah diverifikasi dan belum berakhir
+        $query = Campaign::with('user')
+            ->where('status', 'verified')
+            ->where('end_date', '>=', now())
+            ->orderBy('end_date', 'asc'); // Urutkan dari yang paling dekat deadline-nya
 
         $urgentCampaigns = $query->paginate(10);
 

@@ -7,13 +7,12 @@
     <div class="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <div>
-                <h1 class="text-2xl font-black text-slate-800 tracking-tight">Riwayat Penyaluran Dana</h1>
-                <p class="text-slate-400 text-sm font-medium">Daftar semua laporan yang telah Anda kirimkan.</p>
+                <h1 class="text-2xl font-black text-slate-800 tracking-tight">Riwayat Kampanye Terverifikasi</h1>
+                <p class="text-slate-400 text-sm font-medium">Daftar kampanye yang pernah Anda awasi dan verifikasi transparansinya.</p>
             </div>
-            <a href="{{ route('validator.upload', $token) }}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2">
-                <i class="fas fa-plus"></i>
-                Laporan Baru
-            </a>
+            <div class="inline-flex items-center gap-2 px-5 py-3 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl text-xs font-black uppercase tracking-widest">
+                <i class="fas fa-shield-check"></i> Mode Pengawas
+            </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -53,11 +52,11 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-20 text-center">
+                            <td colspan="4" class="py-20 text-center">
                                 <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
                                     <i class="fas fa-folder-open text-3xl text-slate-200"></i>
                                 </div>
-                                <p class="text-slate-400 font-bold">Belum ada riwayat penyaluran.</p>
+                                <p class="text-slate-400 font-bold">Belum ada riwayat kampanye terverifikasi.</p>
                             </td>
                         </tr>
                     @endforelse

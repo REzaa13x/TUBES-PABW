@@ -5,7 +5,7 @@
 @section('content')
 <div class="min-h-screen pb-20">
     <!-- HEADER & STATS -->
-    <div class="mb-10">
+    <div class="mb-10 animate-fade-in">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
             <div>
                 <h2 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
@@ -29,7 +29,7 @@
 
         <!-- QUICK STATS -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5">
+            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5 hover:scale-[1.02] transition-all duration-300">
                 <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl shadow-inner">
                     <i class="fas fa-file-invoice-dollar"></i>
                 </div>
@@ -38,7 +38,7 @@
                     <h4 class="text-2xl font-black text-slate-900">{{ number_format($transactions->count()) }}</h4>
                 </div>
             </div>
-            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5">
+            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5 hover:scale-[1.02] transition-all duration-300">
                 <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl shadow-inner">
                     <i class="fas fa-clock"></i>
                 </div>
@@ -47,7 +47,7 @@
                     <h4 class="text-2xl font-black text-slate-900">{{ number_format($transactions->where('status', 'PENDING_VERIFICATION')->count()) }}</h4>
                 </div>
             </div>
-            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5">
+            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5 hover:scale-[1.02] transition-all duration-300">
                 <div class="w-14 h-14 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center text-2xl shadow-inner">
                     <i class="fas fa-check-double"></i>
                 </div>
@@ -108,8 +108,8 @@
                                 Rp {{ number_format($transaction->amount, 0, ',', '.') }}
                             </div>
                         </td>
-                        <td class="px-8 py-6">
-                            <div class="flex flex-col items-center gap-2">
+                        <td class="px-8 py-6 text-center">
+                            <div class="flex flex-col items-center gap-1.5 justify-center">
                                 <div class="px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-tighter border border-slate-200">
                                     {{ str_replace('_', ' ', $transaction->payment_method) }}
                                 </div>
@@ -133,74 +133,26 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="px-8 py-6">
-                            <div class="flex items-center justify-end gap-2">
-                                <!-- Proof View -->
-                                @if($transaction->proof_of_transfer_path)
-                                <a href="{{ asset('storage/' . $transaction->proof_of_transfer_path) }}" target="_blank" 
-                                   class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                                   title="Lihat Bukti Transfer">
-                                    <i class="fas fa-image"></i>
-                                </a>
-                                @endif
-
-                                <!-- Invoice -->
-                                <a href="{{ route('admin.donations.invoice', $transaction->order_id) }}" 
-                                   class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                                   title="Buka Invoice">
-                                    <i class="fas fa-file-invoice"></i>
-                                </a>
-
-                                <!-- Verification Aksi Cepat -->
-                                @if($transaction->status === 'PENDING_VERIFICATION')
-                                <div class="flex gap-1">
-                                    <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST">
-                                        @csrf @method('PUT')
-                                        <input type="hidden" name="status" value="VERIFIED">
-                                        <button type="submit" class="w-10 h-10 rounded-xl bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-all shadow-lg shadow-green-200"
-                                                onclick="return confirm('Verifikasi pembayaran ini?')">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                    </form>
-                                    <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST">
-                                        @csrf @method('PUT')
-                                        <input type="hidden" name="status" value="CANCELLED">
-                                        <button type="submit" class="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-all shadow-lg shadow-red-200"
-                                                onclick="return confirm('Tolak pembayaran ini?')">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                                @else
-                                <div class="relative">
-                                    <!-- Ikon diganti menjadi Clipboard Check untuk representasi Verifikasi -->
-                                    <button onclick="toggleDropdown('{{ $transaction->id }}')" 
-                                            class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center hover:bg-slate-700 transition-all shadow-lg"
-                                            id="statusDropdown{{ $transaction->id }}">
-                                        <i class="fas fa-clipboard-check"></i>
-                                    </button>
-                                    <!-- Dropdown Menu -->
-                                    <div id="dropdownMenu{{ $transaction->id }}" class="hidden absolute right-0 mt-3 w-48 bg-white shadow-2xl rounded-2xl py-2 z-50 border border-slate-100 overflow-hidden">
-                                        @foreach(['VERIFIED' => 'Set Paid', 'CANCELLED' => 'Set Rejected', 'PENDING_VERIFICATION' => 'Set Waiting', 'AWAITING_TRANSFER' => 'Set Pending'] as $status => $label)
-                                        <form action="{{ route('admin.donations.updateStatus', $transaction->order_id) }}" method="POST">
-                                            @csrf @method('PUT')
-                                            <input type="hidden" name="status" value="{{ $status }}">
-                                            <button type="submit" class="w-full px-5 py-3 text-left text-xs font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors uppercase tracking-tight">
-                                                {{ $label }}
-                                            </button>
-                                        </form>
-                                        @endforeach
-                                        <div class="h-[1px] bg-slate-50 my-1"></div>
-                                        <form action="{{ route('admin.donations.destroy', $transaction->order_id) }}" method="POST">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="w-full px-5 py-3 text-left text-xs font-bold text-red-500 hover:bg-red-50 transition-colors uppercase tracking-tight"
-                                                    onclick="return confirm('Hapus data transaksi secara permanen?')">
-                                                <i class="fas fa-trash-alt mr-2"></i> Hapus Data
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                                @endif
+                        <td class="px-8 py-6 text-right">
+                            <div class="flex items-center justify-end">
+                                <button onclick="openVerifyModal(this)" 
+                                        data-transaction="{{ json_encode([
+                                            'order_id' => $transaction->order_id,
+                                            'donor_name' => $transaction->donor_name,
+                                            'donor_email' => $transaction->donor_email,
+                                            'campaign_title' => $transaction->campaign ? $transaction->campaign->title : 'Donasi Umum',
+                                            'amount' => number_format($transaction->amount, 0, ',', '.'),
+                                            'payment_method' => str_replace('_', ' ', $transaction->payment_method),
+                                            'status' => $transaction->status,
+                                            'created_at' => $transaction->created_at->format('d M Y, H:i'),
+                                            'proof_url' => $transaction->proof_of_transfer_path,
+                                            'update_url' => route('admin.donations.updateStatus', $transaction->order_id),
+                                            'invoice_url' => route('admin.donations.invoice', $transaction->order_id),
+                                        ]) }}"
+                                        class="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-md shadow-blue-100 hover:shadow-lg hover:-translate-y-0.5">
+                                    <i class="fas fa-eye text-xs"></i>
+                                    <span>Tinjau</span>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -223,6 +175,120 @@
     </div>
 </div>
 
+<!-- MODAL VERIFIKASI DONASI PREMIUM -->
+<div id="verifyDonationModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm overflow-y-auto h-full w-full hidden z-50 transition-all duration-300 flex items-center justify-center p-4">
+    <div class="relative mx-auto border-0 w-full max-w-4xl shadow-2xl rounded-[2.5rem] bg-white overflow-hidden animate-in fade-in zoom-in duration-200">
+        
+        <!-- Header Modal -->
+        <div class="px-8 py-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-slate-900 tracking-tight">Pemeriksaan Transaksi Donasi</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5" id="modalOrderId">#DONGIV-ORDERID</p>
+                </div>
+            </div>
+            
+            <button onclick="closeVerifyModal()" class="w-10 h-10 rounded-full bg-white hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 transition-all shadow-xs">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Info Section -->
+                <div class="space-y-6">
+                    <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nama Donatur</p>
+                            <p class="text-sm font-black text-slate-800" id="modalDonorName">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Donatur</p>
+                            <p class="text-sm font-bold text-slate-500" id="modalDonorEmail">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Kampanye Tujuan</p>
+                            <p class="text-sm font-black text-blue-600 line-clamp-2 leading-snug" id="modalCampaignTitle">-</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-5 bg-blue-50/50 rounded-3xl border border-blue-100/60">
+                            <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Nominal Donasi</p>
+                            <p class="text-xl font-black text-slate-900 tracking-tighter" id="modalAmount">Rp 0</p>
+                        </div>
+                        <div class="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Metode & Status</p>
+                            <div class="flex flex-col gap-1.5 mt-1 items-start">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-slate-200 text-slate-700 text-[9px] font-black uppercase tracking-wider" id="modalPaymentMethod">-</span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase" id="modalStatusBadge">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tanggal Transaksi</p>
+                        <p class="text-xs font-bold text-slate-500" id="modalCreatedAt">-</p>
+                    </div>
+                </div>
+
+                <!-- Proof of Payment Image Section -->
+                <div class="space-y-3">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Bukti Pembayaran</p>
+                    <div id="modalProofContainer" class="rounded-[2rem] overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-3 min-h-[250px] relative group">
+                        <img id="modalProofImage" src="" class="max-w-full max-h-[240px] rounded-2xl object-contain shadow-xs transition-transform duration-500 group-hover:scale-105" alt="Bukti Transfer">
+                        <div id="modalNoProof" class="hidden text-center p-8 space-y-3">
+                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-slate-300 mx-auto shadow-xs border border-slate-100">
+                                <i class="fas fa-file-invoice text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-500">Bukti Transfer Belum Tersedia</p>
+                                <p class="text-[10px] text-slate-400 mt-1">Donatur belum mengunggah bukti pembayaran fisik.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <a id="modalFullImageLink" href="#" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline pl-1">
+                        <i class="fas fa-external-link-alt text-[10px]"></i> Buka Gambar Ukuran Penuh
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Action Buttons -->
+        <div class="px-8 py-6 bg-slate-50 border-t border-slate-100 flex flex-wrap gap-3 justify-between items-center">
+            <!-- Invoice Link -->
+            <a id="modalInvoiceLink" href="#" target="_blank" class="px-5 py-3.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shadow-xs">
+                <i class="fas fa-file-invoice"></i> Buka Invoice
+            </a>
+
+            <!-- Action Forms -->
+            <div id="modalVerificationForm" class="flex gap-2">
+                <!-- Reject Form -->
+                <form id="modalRejectForm" action="" method="POST" class="inline">
+                    @csrf @method('PUT')
+                    <input type="hidden" name="status" value="CANCELLED">
+                    <button type="submit" class="px-6 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-red-200 flex items-center gap-2">
+                        <i class="fas fa-times-circle"></i> Tolak Donasi
+                    </button>
+                </form>
+
+                <!-- Verify Form -->
+                <form id="modalVerifyForm" action="" method="POST" class="inline">
+                    @csrf @method('PUT')
+                    <input type="hidden" name="status" value="VERIFIED">
+                    <button type="submit" class="px-6 py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-green-200 flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i> Verifikasi & Terima
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 <script>
     // Search Functionality
     document.getElementById('searchInput').addEventListener('keyup', function() {
@@ -239,22 +305,85 @@
         });
     });
 
-    // Dropdown Logic
-    function toggleDropdown(id) {
-        const menu = document.getElementById('dropdownMenu' + id);
-        const allMenus = document.querySelectorAll('[id^="dropdownMenu"]');
+    // Verification Modal Controllers
+    function openVerifyModal(button) {
+        const data = JSON.parse(button.getAttribute('data-transaction'));
         
-        allMenus.forEach(m => {
-            if(m.id !== 'dropdownMenu' + id) m.classList.add('hidden');
-        });
+        document.getElementById('modalOrderId').textContent = '#' + data.order_id;
+        document.getElementById('modalDonorName').textContent = data.donor_name;
+        document.getElementById('modalDonorEmail').textContent = data.donor_email;
+        document.getElementById('modalCampaignTitle').textContent = data.campaign_title;
+        document.getElementById('modalAmount').textContent = 'Rp ' + data.amount;
+        document.getElementById('modalPaymentMethod').textContent = data.payment_method;
+        document.getElementById('modalCreatedAt').textContent = data.created_at;
+
+        // Image container and trigger
+        const img = document.getElementById('modalProofImage');
+        const noProof = document.getElementById('modalNoProof');
+        const fullLink = document.getElementById('modalFullImageLink');
         
-        menu.classList.toggle('hidden');
+        if (data.proof_url) {
+            img.src = data.proof_url;
+            img.classList.remove('hidden');
+            noProof.classList.add('hidden');
+            fullLink.href = data.proof_url;
+            fullLink.classList.remove('hidden');
+        } else {
+            img.classList.add('hidden');
+            noProof.classList.remove('hidden');
+            fullLink.classList.add('hidden');
+        }
+
+        // Action routing updates
+        document.getElementById('modalInvoiceLink').href = data.invoice_url;
+        document.getElementById('modalRejectForm').action = data.update_url;
+        document.getElementById('modalVerifyForm').action = data.update_url;
+
+        // Form confirmations trigger
+        document.getElementById('modalRejectForm').onsubmit = function() {
+            return confirm(`Yakin ingin menolak pembayaran #${data.order_id} dari ${data.donor_name}?`);
+        };
+        document.getElementById('modalVerifyForm').onsubmit = function() {
+            return confirm(`Yakin ingin memverifikasi pembayaran #${data.order_id} sebesar Rp ${data.amount} sebagai lunas?`);
+        };
+
+        // Status dynamic pill update
+        const badge = document.getElementById('modalStatusBadge');
+        badge.textContent = data.status;
+        badge.className = "px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border ";
+        if (data.status === 'VERIFIED') {
+            badge.classList.add('bg-green-100', 'text-green-700', 'border-green-200');
+        } else if (data.status === 'PENDING_VERIFICATION') {
+            badge.classList.add('bg-amber-100', 'text-amber-700', 'border-amber-200');
+        } else if (data.status === 'AWAITING_TRANSFER') {
+            badge.classList.add('bg-blue-100', 'text-blue-700', 'border-blue-200');
+        } else {
+            badge.classList.add('bg-red-100', 'text-red-700', 'border-red-200');
+        }
+
+        // Display the modal
+        const modal = document.getElementById('verifyDonationModal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // prevent background scrolling
     }
 
-    // Close on click outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('[id^="statusDropdown"]') && !e.target.closest('[id^="dropdownMenu"]')) {
-            document.querySelectorAll('[id^="dropdownMenu"]').forEach(m => m.classList.add('hidden'));
+    function closeVerifyModal() {
+        const modal = document.getElementById('verifyDonationModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = ''; // restore background scrolling
+    }
+
+    // Close modal on escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeVerifyModal();
+        }
+    });
+
+    // Close on click outside modal content container
+    document.getElementById('verifyDonationModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeVerifyModal();
         }
     });
 </script>

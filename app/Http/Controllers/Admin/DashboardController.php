@@ -58,7 +58,7 @@ class DashboardController extends Controller
             ->get();
 
         // Pending transactions that need verification
-        $pendingTransactions = DonationTransaction::where('status', 'PENDING')->count();
+        $pendingTransactions = DonationTransaction::where('status', 'PENDING_VERIFICATION')->count();
 
         // Monthly trend data for charts
         $monthlyDonationData = $this->getMonthlyDonationData();
