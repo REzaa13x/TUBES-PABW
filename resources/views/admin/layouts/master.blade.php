@@ -10,6 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    @stack('styles')
 
     <script>
         tailwind.config = {
@@ -102,10 +103,21 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.4);
         }
+
+        body.galaxy-theme {
+            background-color: #f8faff;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 10% 5%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 50% at 90% 8%, rgba(217, 70, 239, 0.10) 0%, transparent 55%),
+                radial-gradient(ellipse 80% 60% at 15% 75%, rgba(139, 92, 246, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 50% at 85% 85%, rgba(37, 99, 235, 0.12) 0%, transparent 60%),
+                linear-gradient(180deg, #f0f4ff 0%, #faf5ff 35%, #f0f9ff 70%, #f5f3ff 100%);
+            background-attachment: fixed;
+        }
     </style>
 </head>
 
-<body class="flex h-screen overflow-hidden">
+<body class="galaxy-theme flex h-screen overflow-hidden">
 
     <aside class="bright-sidebar w-72 h-screen fixed left-0 top-0 flex flex-col z-50 text-white">
 
@@ -160,6 +172,14 @@
             </a>
 
             <div class="nav-label">Sistem & Akun</div>
+            <a href="{{ route('admin.notifications.index') }}" class="nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
+                <i class="fas fa-bell w-6 text-center text-lg mr-2"></i>
+                <span>Notifikasi</span>
+                @php $unreadAdminNotif = \App\Models\AdminNotification::where('is_read', false)->count(); @endphp
+                @if($unreadAdminNotif > 0)
+                    <span style="background:#ef4444;color:#fff;border-radius:999px;font-size:.68rem;padding:.05rem .45rem;margin-left:auto;font-weight:700;">{{ $unreadAdminNotif }}</span>
+                @endif
+            </a>
             <a href="{{ route('admin.profiles.index') }}" class="nav-item {{ request()->routeIs('admin.profiles.*') ? 'active' : '' }}">
                 <i class="fas fa-user-circle w-6 text-center text-lg mr-2"></i>
                 <span>Kelola User</span>

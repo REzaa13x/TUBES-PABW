@@ -13,37 +13,23 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Ambil Data Pagination (Untuk Tab Riwayat)
-        // Old donations from the donations table
-        $donations = $user->donations()
-            ->latest()
-            ->paginate(5, ['*'], 'donations_page');
-
+        // 1. Ambil Data Donasi (Untuk Tab Riwayat Donasi Terpadu)
         // New donation transactions (including manual transfers that need proof upload)
-        $donationTransactions = \App\Models\DonationTransaction::where('user_id', $user->id)
+        $donationTransactionsList = \App\Models\DonationTransaction::where('user_id', $user->id)
             ->with(['campaign'])
             ->latest()
-            ->paginate(5, ['*'], 'donation_transactions_page');
+            ->get();
 
-        // Combined history for unified view - merge both collections and sort by date
+        // Old donations from the donations table (if any)
+        $legacyDonationsList = \App\Models\Donation::where('user_id', $user->id)
+            ->with(['campaign'])
+            ->latest()
+            ->get();
+
+        // Combined history for unified view - merge both collections without duplicate order_id
         $allDonations = collect();
 
-        // Add old donations
-        foreach($donations as $donation) {
-            $allDonations->push([
-                'id' => $donation->id,
-                'order_id' => $donation->order_id,
-                'amount' => $donation->amount,
-                'campaign' => $donation->campaign ?? null,
-                'status' => $donation->status,
-                'created_at' => $donation->created_at,
-                'type' => 'legacy',
-                'model' => $donation
-            ]);
-        }
-
-        // Add new donation transactions
-        foreach($donationTransactions as $transaction) {
+        foreach($donationTransactionsList as $transaction) {
             $allDonations->push([
                 'id' => $transaction->id,
                 'order_id' => $transaction->order_id,
@@ -56,8 +42,28 @@ class ProfileController extends Controller
             ]);
         }
 
+        $existingOrderIds = $donationTransactionsList->pluck('order_id')->toArray();
+        foreach($legacyDonationsList as $donation) {
+            if (!in_array($donation->order_id, $existingOrderIds)) {
+                $allDonations->push([
+                    'id' => $donation->id,
+                    'order_id' => $donation->order_id,
+                    'amount' => $donation->amount,
+                    'campaign' => $donation->campaign ?? null,
+                    'status' => $donation->status,
+                    'created_at' => $donation->created_at,
+                    'type' => 'legacy',
+                    'model' => $donation
+                ]);
+            }
+        }
+
         // Sort by created_at descending
         $allDonations = $allDonations->sortByDesc('created_at')->values();
+
+        // Pagination instances for compatibility
+        $donations = \App\Models\Donation::where('user_id', $user->id)->latest()->paginate(5, ['*'], 'donations_page');
+        $donationTransactions = \App\Models\DonationTransaction::where('user_id', $user->id)->with(['campaign'])->latest()->paginate(5, ['*'], 'donation_transactions_page');
 
         $volunteerApps = $user->volunteerApplications()
             ->with('campaign')
@@ -114,12 +120,26 @@ class ProfileController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        // --- PERBAIKAN DI SINI ---
-        // Pindahkan logika ini SEBELUM return view
+        $selectedPreferences = $user->categoryPreferences()
+            ->where('is_preferred', true)
+            ->pluck('category')
+            ->toArray();
+
+        $autoDiscoveredPreferences = $user->categoryPreferences()
+            ->where('auto_discovered', true)
+            ->get();
+
+        // Ambil kampanye donasi yang dibuat oleh user ini
         $myCampaigns = \App\Models\Campaign::where('user_id', $user->id)
-            ->with('withdrawals') 
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Ambil sertifikat milik user ini
+        $certificates = \App\Models\VolunteerCertificate::where('volunteer_id', $user->id)
+            ->with('campaign')
             ->latest()
             ->get();
+
 
         return view('profiles.index', compact(
             'user',
@@ -132,7 +152,10 @@ class ProfileController extends Controller
             'donationTransactions',
             'legacyDonations',
             'allDonations',
-            'myCampaigns' // <-- Variable ini sekarang sudah ada isinya
+            'myCampaigns', // <-- Variable ini sekarang sudah ada isinya
+            'selectedPreferences',
+            'autoDiscoveredPreferences',
+            'certificates'
         ));
     }
 
@@ -263,6 +286,40 @@ class ProfileController extends Controller
             }
         }  // Closes the else block
     }  // Closes the update method
+
+    public function updatePreferences(Request $request)
+    {
+        $request->validate([
+            'categories' => 'nullable|array',
+            'categories.*' => 'string|in:Pendidikan,Kesehatan,Sosial,Lingkungan,Bencana,Keagamaan'
+        ]);
+
+        $user = Auth::user();
+        $newCategories = $request->input('categories', []);
+
+        // Hapus preferensi manual lama (yang bukan auto_discovered)
+        $user->categoryPreferences()->where('auto_discovered', false)->delete();
+        
+        // Reset status is_preferred untuk yang auto_discovered
+        $user->categoryPreferences()->where('auto_discovered', true)->update(['is_preferred' => false]);
+
+        // Tambah/Update preferensi baru
+        foreach ($newCategories as $category) {
+            \App\Models\VolunteerCategoryPreference::updateOrCreate(
+                ['user_id' => $user->id, 'category' => $category],
+                [
+                    'is_preferred' => true,
+                    'auto_discovered' => false,
+                ]
+            );
+        }
+
+        // Jalankan auto-discovery dari riwayat juga agar selalu sinkron
+        $recController = new \App\Http\Controllers\Api\VolunteerRecommendationController();
+        $recController->autoDiscoverCategories($user);
+
+        return back()->with('success', 'Preferensi minat relawan berhasil disimpan!');
+    }
 
     public function showTransactionHistory()
     {

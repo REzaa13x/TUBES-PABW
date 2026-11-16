@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use App\Models\AdminNotification;
 use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
@@ -43,6 +44,29 @@ class AuthController extends Controller
             'phone' => $request->phone,
             'birth_date' => $request->birth_date,
         ]);
+
+        // Notifikasi ke Admin: Pengguna Baru Terdaftar dari Mobile
+        try {
+            AdminNotification::create([
+                'title'           => '👤 Pengguna Baru Terdaftar',
+                'message'         => 'Pengguna baru bernama "' . $user->name . '" (' . $user->role . ') telah mendaftar melalui aplikasi mobile.',
+                'category'        => 'sistem',
+                'priority'        => 'low',
+                'icon'            => '👤',
+                'type'            => 'user_registered',
+                'action_label'    => 'Lihat Profil',
+                'action_url'      => route('admin.profiles.show', $user->id),
+                'related_user_id' => $user->id,
+                'metadata'        => [
+                    'name'   => $user->name,
+                    'email'  => $user->email,
+                    'role'   => $user->role,
+                    'source' => 'mobile',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create admin notification for new user registration: ' . $e->getMessage());
+        }
 
         // Authenticate user for web session as well
         Auth::login($user);

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\VolunteerApplication;
 use App\Models\VolunteerCampaign;
+use App\Models\AdminNotification;
 use Illuminate\Support\Facades\Auth;
 
 class VolunteerApplicationController extends Controller
@@ -90,6 +91,33 @@ class VolunteerApplicationController extends Controller
             'skills' => $request->skills,
             'status' => 'pending' // Default status
         ]);
+
+        // Notifikasi ke Admin: Relawan baru mendaftar dari mobile
+        try {
+            $vcampaign = VolunteerCampaign::find($request->volunteer_campaign_id);
+            AdminNotification::create([
+                'title'               => '🤝 Pendaftar Relawan Baru (Mobile)',
+                'message'             => $user->name . ' mendaftar sebagai relawan' .
+                    ($vcampaign ? ' untuk kampanye "' . ($vcampaign->name ?? $vcampaign->judul ?? 'Unknown') . '"' : '') . ' melalui aplikasi mobile.',
+                'category'            => 'relawan',
+                'priority'            => 'medium',
+                'icon'                => '🤝',
+                'type'                => 'volunteer_registered',
+                'action_label'        => 'Lihat Pendaftar',
+                'action_url'          => route('admin.verifikasi-relawan.show', $application->id),
+                'related_volunteer_id' => $application->id,
+                'related_campaign_id'  => $request->volunteer_campaign_id,
+                'related_user_id'      => $user->id,
+                'metadata'             => [
+                    'applicant_name' => $user->name,
+                    'campaign_name'  => $vcampaign ? ($vcampaign->name ?? $vcampaign->judul ?? null) : null,
+                    'skills'         => $request->skills,
+                    'source'         => 'mobile',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create admin notification for volunteer application: ' . $e->getMessage());
+        }
 
         return response()->json([
             'message' => 'Volunteer application submitted successfully',

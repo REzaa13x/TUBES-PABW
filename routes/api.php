@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\VolunteerCampaignController;
 use App\Http\Controllers\Api\VolunteerApplicationController;
 use App\Http\Controllers\Api\AdminDonationCampaignController;
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\VolunteerRecommendationController;
+use App\Http\Controllers\Api\NotificationController;
 
 Route::prefix('v1')->middleware('cors')->group(function () {
 
@@ -41,6 +43,9 @@ Route::prefix('v1')->middleware('cors')->group(function () {
         Route::post('/report', [\App\Http\Controllers\Api\ValidatorPortalController::class, 'storeReport']);
         Route::get('/history', [\App\Http\Controllers\Api\ValidatorPortalController::class, 'history']);
     });
+
+    // Public certificate verification
+    Route::get('/certificate/verify/{certificateNumber}', [\App\Http\Controllers\Api\CertificateController::class, 'verify']);
 
     /*
     |--------------------------------------------------------------------------
@@ -111,6 +116,50 @@ Route::prefix('v1')->middleware('cors')->group(function () {
         */
 
         Route::apiResource('volunteer-applications', VolunteerApplicationController::class);
+
+        /*
+        |--------------------------------------------------------------------------
+        | GENERAL NOTIFICATIONS
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
+        Route::put('/notifications/{id}/mark-read', [NotificationController::class, 'markRead']);
+        Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+        Route::post('/notifications/seed-demo', [NotificationController::class, 'seedDemoNotifications']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | VOLUNTEER CERTIFICATES
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('certificates')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\CertificateController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\Api\CertificateController::class, 'show']);
+            Route::get('/{id}/download-url', [\App\Http\Controllers\Api\CertificateController::class, 'downloadUrl']);
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | VOLUNTEER RECOMMENDATIONS & PREFERENCES
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('recommendations')->group(function () {
+            // Categories
+            Route::get('/categories', [VolunteerRecommendationController::class, 'getAvailableCategories']);
+
+            // Preferences
+            Route::get('/preferences', [VolunteerRecommendationController::class, 'getMyPreferences']);
+            Route::post('/preferences', [VolunteerRecommendationController::class, 'updatePreferences']);
+
+            // Recommendations
+            Route::get('/campaigns', [VolunteerRecommendationController::class, 'getRecommendations']);
+            Route::get('/notifications', [VolunteerRecommendationController::class, 'getRecommendationNotifications']);
+            Route::put('/notifications/{notificationId}/read', [VolunteerRecommendationController::class, 'markRecommendationAsRead']);
+            Route::put('/notifications/{notificationId}/dismiss', [VolunteerRecommendationController::class, 'dismissRecommendation']);
+        });
 
         /*
         |--------------------------------------------------------------------------

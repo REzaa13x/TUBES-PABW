@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Config;
+use App\Models\VolunteerCampaign;
+use App\Observers\VolunteerCampaignObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,5 +38,8 @@ class AppServiceProvider extends ServiceProvider
     Gate::define('donatur', function ($user) {
         return $user->role === 'donatur';
     });
+
+    // Register Volunteer Campaign Observer untuk Smart Recommendation
+    VolunteerCampaign::observe(VolunteerCampaignObserver::class);
 }
 }

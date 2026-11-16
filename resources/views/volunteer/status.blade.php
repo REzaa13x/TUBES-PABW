@@ -1,7 +1,7 @@
 <x-app title="Keputusan Lamaran - {{ $campaign->title ?? $campaign->judul }}">
     
     {{-- Main Container --}}
-    <div class="min-h-screen bg-[#F8FAFC] py-12 flex items-center justify-center px-4 font-sans">
+    <div class="min-h-screen bg-transparent py-12 flex items-center justify-center px-4 font-sans">
         <div class="max-w-xl w-full">
 
             {{-- Navigation Back --}}
@@ -11,7 +11,7 @@
             </a>
 
             {{-- OFFICIAL CARD --}}
-            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white ring-1 ring-slate-100 relative">
+            <div class="bg-white/85 backdrop-blur-md rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-white/60 ring-1 ring-slate-100/50 relative">
                 
                 {{-- 1. HEADER (Gradient Modern) --}}
                 <div class="relative bg-gradient-to-br from-blue-600 to-indigo-700 h-32 overflow-hidden">
@@ -23,7 +23,7 @@
                         <div class="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/10">
                             <i class="fas fa-hand-holding-heart text-white text-sm"></i>
                         </div>
-                        <span class="text-white font-bold tracking-wide text-sm font-sans">DonasiKita</span>
+                        <span class="text-white font-bold tracking-wide text-sm font-sans">DonGiv</span>
                     </div>
                 </div>
 

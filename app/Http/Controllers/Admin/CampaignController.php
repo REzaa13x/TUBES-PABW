@@ -64,6 +64,15 @@ class CampaignController extends Controller
         return view('admin.relawan.edit', compact('campaign'));
     }
 
+    // 5. SHOW (Menampilkan Detail Kampanye Relawan)
+    public function show($id)
+    {
+        $campaign = VolunteerCampaign::with('volunteers')->findOrFail($id);
+        $verifiedCount = $campaign->volunteers->whereIn('status_verifikasi', ['disetujui', 'Terverifikasi'])->count();
+        $pendingCount = $campaign->volunteers->whereIn('status_verifikasi', ['pending', 'Menunggu Verifikasi'])->count();
+        return view('admin.relawan.show', compact('campaign', 'verifiedCount', 'pendingCount'));
+    }
+
     // 5. UPDATE (Menyimpan Perubahan)
     public function update(Request $request, $id)
     {
@@ -77,7 +86,8 @@ class CampaignController extends Controller
             'tanggal_mulai'   => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'deskripsi'       => 'required',
-            'image'           => 'nullable|image|file|max:2048' // Image nullable saat edit
+            'image'           => 'nullable|image|file|max:2048',
+            'status'          => 'nullable|in:Aktif,Nonaktif',
         ]);
 
         // Cek jika ada gambar baru yang diupload
@@ -90,7 +100,7 @@ class CampaignController extends Controller
             $validated['image'] = $request->file('image')->store('campaign-images', 'public');
         }
 
-        // --- PERBAIKAN: UPDATE SLUG JIKA JUDUL BERUBAH ---
+        // Update slug jika judul berubah
         if ($request->judul != $campaign->judul) {
             $validated['slug'] = Str::slug($request->judul) . '-' . time();
         }
@@ -98,8 +108,12 @@ class CampaignController extends Controller
         // Update Database
         $campaign->update($validated);
 
+        $message = isset($validated['status']) && $validated['status'] !== $campaign->getOriginal('status')
+            ? 'Status kampanye berhasil diubah menjadi ' . $validated['status'] . '!'
+            : 'Kampanye berhasil diperbarui!';
+
         return redirect()->route('admin.relawan.index')
-            ->with('success', 'Kampanye berhasil diperbarui!');
+            ->with('success', $message);
     }
 
     // 6. DESTROY (Menghapus Data)

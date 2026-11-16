@@ -17,4 +17,9 @@ class VolunteerApplication extends Model
     {
         return $this->belongsTo(VolunteerCampaign::class, 'volunteer_campaign_id');
     }
+
+    public function certificate()
+    {
+        return $this->hasOne(VolunteerCertificate::class, 'application_id');
+    }
 }

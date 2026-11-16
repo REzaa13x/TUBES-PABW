@@ -19,9 +19,20 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        body.galaxy-theme {
+            background-color: #f8faff;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 10% 5%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 50% at 90% 8%, rgba(217, 70, 239, 0.12) 0%, transparent 55%),
+                radial-gradient(ellipse 80% 60% at 15% 75%, rgba(139, 92, 246, 0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 50% at 85% 85%, rgba(37, 99, 235, 0.15) 0%, transparent 60%),
+                linear-gradient(180deg, #f0f4ff 0%, #faf5ff 35%, #f0f9ff 70%, #f5f3ff 100%);
+            background-attachment: fixed;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="galaxy-theme min-h-screen flex flex-col">
 
     <!-- Top Navigation Header -->
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-xs">

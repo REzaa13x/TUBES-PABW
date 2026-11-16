@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\VolunteerCampaign;
-use App\Models\Campaign; 
+use App\Models\Campaign;
+use App\Models\AdminNotification;
+
 class CampaignController extends Controller
 {
     // FUNGSI 1: Untuk Landing Page (Halaman Utama /relawan)
@@ -53,13 +55,12 @@ class CampaignController extends Controller
     }
 
     // FUNGSI 3: Untuk Halaman List Kampanye Relawan (/volunteer/campaigns)
-    // Menampilkan SEMUA kampanye relawan dengan pagination
+    // Menampilkan SEMUA kampanye relawan aktif dengan pagination
     public function volunteerIndex()
     {
         $campaigns = \App\Models\VolunteerCampaign::where('status', 'Aktif')
-            ->where('tanggal_selesai', '>=', now())
             ->latest()
-            ->paginate(9); // Gunakan pagination agar rapi
+            ->paginate(9);
 
         // Return ke file List Kampanye Relawan
         return view('volunteer.campaigns.index', compact('campaigns'));
@@ -167,6 +168,11 @@ class CampaignController extends Controller
                 'jenis_penerima' => 'required|string',
                 'whatsapp' => 'required|string',
                 'penyaluran' => 'required|string',
+                'provinsi' => 'nullable|string|max:255',
+                'kabupaten' => 'nullable|string|max:255',
+                'kecamatan' => 'nullable|string|max:255',
+                'alamat_lengkap' => 'nullable|string',
+                'kode_pos' => 'nullable|string|max:10',
             ]);
 
             $imagePath = null;
@@ -203,10 +209,41 @@ class CampaignController extends Controller
                 'yayasan' => $request->penerima, 
                 'penyaluran' => $request->penyaluran,
                 'lokasi' => $request->lokasi,
+                'provinsi' => $request->provinsi,
+                'kabupaten' => $request->kabupaten,
+                'kecamatan' => $request->kecamatan,
+                'alamat_lengkap' => $request->alamat_lengkap,
+                'kode_pos' => $request->kode_pos,
                 'jenis_penerima' => $request->jenis_penerima,
                 'whatsapp' => $request->whatsapp,
                 'slug' => \Illuminate\Support\Str::slug($request->judul) . '-' . time(),
             ]);
+
+            // === Buat Admin Notification untuk kampanye baru ===
+            try {
+                $campaign->load('user');
+                AdminNotification::create([
+                    'title'    => '📢 Kampanye Baru Menunggu Verifikasi',
+                    'message'  => 'Kampanye "' . $campaign->title . '" dibuat oleh ' . ($campaign->user->name ?? 'Pengguna') . ' dan menunggu persetujuan admin.',
+                    'category' => 'kampanye',
+                    'priority' => 'high',
+                    'icon'     => '📢',
+                    'type'     => 'campaign_pending_approval',
+                    'action_label'  => 'Lihat Detail',
+                    'action_url'    => route('admin.campaigns.show', $campaign->id),
+                    'secondary_action_label' => 'Setujui',
+                    'secondary_action_url'   => route('admin.campaigns.show', $campaign->id),
+                    'related_campaign_id' => $campaign->id,
+                    'related_user_id'     => $campaign->user_id,
+                    'metadata' => [
+                        'campaign_title' => $campaign->title,
+                        'creator_name'   => $campaign->user->name ?? '-',
+                        'target_amount'  => $campaign->target_amount,
+                    ],
+                ]);
+            } catch (\Exception $notifEx) {
+                \Log::warning('Admin notification failed: ' . $notifEx->getMessage());
+            }
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -273,6 +310,31 @@ class CampaignController extends Controller
         }
 
         $campaign->update($data);
+
+        // Notifikasi ke admin: kampanye diedit dan diajukan ulang
+        try {
+            $campaign->load('user');
+            AdminNotification::create([
+                'title'               => '✏️ Kampanye Diperbarui & Diajukan Ulang',
+                'message'             => 'Kampanye "' . $campaign->title . '" yang dibuat oleh ' .
+                    ($campaign->user->name ?? 'Pengguna') . ' telah diperbarui dan diajukan ulang untuk verifikasi.',
+                'category'            => 'kampanye',
+                'priority'            => 'high',
+                'icon'                => '✏️',
+                'type'                => 'campaign_resubmitted',
+                'action_label'        => 'Lihat Detail',
+                'action_url'          => route('admin.campaigns.show', $campaign->id),
+                'related_campaign_id' => $campaign->id,
+                'related_user_id'     => $campaign->user_id,
+                'metadata'            => [
+                    'campaign_title' => $campaign->title,
+                    'creator_name'   => $campaign->user->name ?? '-',
+                    'target_amount'  => $campaign->target_amount,
+                ],
+            ]);
+        } catch (\Exception $notifEx) {
+            \Log::warning('Admin notification for campaign resubmit failed: ' . $notifEx->getMessage());
+        }
 
         return redirect()->route('profiles.campaign.history')->with('success', 'Kampanye berhasil diperbarui!');
     }

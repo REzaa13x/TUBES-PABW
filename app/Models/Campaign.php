@@ -29,6 +29,11 @@ class Campaign extends Model
         'validator_user_id',
         'penyaluran',
         'lokasi',
+        'provinsi',
+        'kabupaten',
+        'kecamatan',
+        'alamat_lengkap',
+        'kode_pos',
         'jenis_penerima',
         'whatsapp',
         'distribution_token',
@@ -65,7 +70,7 @@ class Campaign extends Model
     public function getImageAttribute($value)
     {
         if (!$value) {
-            return null;
+            return asset('images/placeholder.jpg');
         }
 
         // If it's already a proxy URL or external URL, return as is
@@ -80,7 +85,10 @@ class Campaign extends Model
             $folder = $pathParts[0]; // e.g., 'campaigns'
             $filename = implode('/', array_slice($pathParts, 1)); // e.g., 'image.jpg' or 'subfolder/image.jpg'
 
-            // Generate proxy URL
+            // Generate proxy URL using request host/port if available to avoid hardcoded APP_URL issues
+            if (request()) {
+                return request()->getSchemeAndHttpHost() . "/api/images/{$folder}/{$filename}";
+            }
             return url("/api/images/{$folder}/{$filename}");
         }
 

@@ -27,6 +27,12 @@ class CampaignResource extends JsonResource
             'status' => $this->status,
             'kategori' => $this->kategori,
             'yayasan' => $this->yayasan,
+            'lokasi' => $this->lokasi,
+            'provinsi' => $this->provinsi,
+            'kabupaten' => $this->kabupaten,
+            'kecamatan' => $this->kecamatan,
+            'alamat_lengkap' => $this->alamat_lengkap,
+            'kode_pos' => $this->kode_pos,
             'user' => $this->whenLoaded('user', function () {
                 return [
                     'id' => $this->user->id,

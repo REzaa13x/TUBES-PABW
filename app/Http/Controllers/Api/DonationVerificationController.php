@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DonationTransaction;
+use App\Models\AdminNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -110,6 +111,32 @@ class DonationVerificationController extends Controller
         // Award coins if transaction is marked as VERIFIED (Paid) and was previously not verified
         if ($request->status === 'VERIFIED' && $oldStatus !== 'VERIFIED' && $transaction->user) {
             $transaction->user->addCoins(1, 'donation_completed');
+        }
+
+        // Notifikasi ke admin: pembayaran donasi terverifikasi
+        if ($request->status === 'VERIFIED' && $oldStatus !== 'VERIFIED') {
+            try {
+                AdminNotification::create([
+                    'title'               => '💰 Pembayaran Donasi Terverifikasi',
+                    'message'             => 'Pembayaran donasi sebesar Rp ' . number_format($transaction->amount, 0, ',', '.') . ' dari ' . $transaction->donor_name . ' telah berhasil diverifikasi.',
+                    'category'            => 'donasi',
+                    'priority'            => 'medium',
+                    'icon'                => '💰',
+                    'type'                => 'donation_payment_verified',
+                    'action_label'        => 'Lihat Transaksi',
+                    'action_url'          => route('admin.donations.show', $transaction->order_id),
+                    'related_donation_id' => $transaction->id,
+                    'related_campaign_id' => $transaction->campaign_id,
+                    'related_user_id'     => $transaction->user_id,
+                    'metadata'            => [
+                        'donor_name'     => $transaction->donor_name,
+                        'amount'         => $transaction->amount,
+                        'campaign_title' => $transaction->campaign ? $transaction->campaign->title : null,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to create admin notification for verified donation in Api\DonationVerificationController: ' . $e->getMessage());
+            }
         }
 
         // Determine success message based on status

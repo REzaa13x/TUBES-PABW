@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Campaign;
 use App\Models\DistributionReport;
+use App\Models\AdminNotification;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -90,6 +91,28 @@ class ValidatorPortalController extends Controller
             'proof_image' => $path,
             'status' => 'pending',
         ]);
+
+        // Notifikasi ke Admin: Laporan Penyaluran Baru dari Validator
+        try {
+            AdminNotification::create([
+                'title'               => '📋 Laporan Penyaluran Baru',
+                'message'             => 'Laporan pertanggungjawaban penyaluran dana sebesar Rp ' . number_format($report->amount, 0, ',', '.') . ' untuk kampanye "' . $campaign->title . '" telah diajukan oleh validator lapangan.',
+                'category'            => 'laporan',
+                'priority'            => 'high',
+                'icon'                => '📋',
+                'type'                => 'distribution_report_submitted',
+                'action_label'        => 'Tinjau Laporan',
+                'action_url'          => route('admin.distribution.show', $report->id),
+                'related_campaign_id' => $campaign->id,
+                'metadata'            => [
+                    'campaign_title' => $campaign->title,
+                    'amount'         => $report->amount,
+                    'description'    => $report->description,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create admin notification for distribution report: ' . $e->getMessage());
+        }
 
         return response()->json([
             'message' => 'Laporan penyaluran berhasil dikirim',

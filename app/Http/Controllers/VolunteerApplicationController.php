@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\VolunteerCampaign;
 use App\Models\VolunteerApplication;
+use App\Models\AdminNotification;
 use Illuminate\Support\Facades\Auth;
 
 class VolunteerApplicationController extends Controller
@@ -53,7 +54,7 @@ class VolunteerApplicationController extends Controller
         try {
             $cvPath = $request->file('cv')->store('cv-uploads', 'public');
 
-            VolunteerApplication::create([
+            $application = VolunteerApplication::create([
                 'user_id' => Auth::id(),
                 'volunteer_campaign_id' => $campaign->id,
                 'alamat' => $request->alamat,
@@ -63,8 +64,32 @@ class VolunteerApplicationController extends Controller
                 'status' => 'pending' // Default pending
             ]);
 
+            // Notifikasi ke Admin: Relawan baru mendaftar
+            try {
+                $user = Auth::user();
+                AdminNotification::create([
+                    'title'               => '🤝 Pendaftar Relawan Baru',
+                    'message'             => $user->name . ' mendaftar sebagai relawan untuk kampanye "' . $campaign->name . '" pada posisi ' . $request->posisi_dilamar . '.',
+                    'category'            => 'relawan',
+                    'priority'            => 'medium',
+                    'icon'                => '🤝',
+                    'type'                => 'volunteer_registered',
+                    'action_label'        => 'Lihat Pendaftar',
+                    'action_url'          => route('admin.verifikasi-relawan.show', $application->id),
+                    'related_volunteer_id' => $application->id,
+                    'related_campaign_id'  => $campaign->id,
+                    'related_user_id'      => $user->id,
+                    'metadata'             => [
+                        'applicant_name'  => $user->name,
+                        'campaign_name'   => $campaign->name,
+                        'posisi_dilamar'  => $request->posisi_dilamar,
+                    ],
+                ]);
+            } catch (\Exception $notifEx) {
+                \Log::warning('Admin notification for volunteer app failed: ' . $notifEx->getMessage());
+            }
+
             // 4. Redirect Sukses
-            // Pastikan halaman 'volunteer.campaigns.index' punya script SweetAlert!
             return redirect()->route('volunteer.campaigns.index')
                 ->with('success', 'Formulir Anda telah terkirim! Tim kami akan segera melakukan verifikasi.');
 
@@ -76,12 +101,6 @@ class VolunteerApplicationController extends Controller
 
     public function checkStatus($slug)
     {
-        // Check if the authenticated user is an admin
-        if (Auth::check() && Auth::user()->role === 'admin') {
-            // Redirect admin to admin dashboard instead of user pages
-            return redirect('/admin/dashboard');
-        }
-
         $campaign = VolunteerCampaign::where('slug', $slug)->firstOrFail();
 
         $application = VolunteerApplication::where('user_id', Auth::id())

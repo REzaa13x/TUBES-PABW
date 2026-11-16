@@ -1,20 +1,4 @@
 <x-app title="Riwayat Donasi - DonGiv">
-<body class="bg-gradient-to-br from-blue-50 to-cyan-50 text-gray-800 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-sm py-4">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonGiv Logo" class="h-8">
-                    <span class="text-xl font-bold text-primary">DonGiv</span>
-                </div>
-                <a href="{{ route('home') }}" class="text-gray-700 hover:text-primary font-medium transition">
-                    <i class="fas fa-home mr-1"></i>Beranda
-                </a>
-            </div>
-        </div>
-    </header>
-
     <!-- Main Content -->
     <main class="py-8 px-4 sm:px-6 lg:px-8">
         <div class="max-w-6xl mx-auto">
@@ -214,44 +198,4 @@
             </div>
         </div>
     </main>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-gray-300 py-12 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div class="text-center md:text-left">
-                    <h4 class="text-xl font-bold text-white mb-4">DonGiv</h4>
-                    <p class="text-sm">Creating positive change through transparent and effective charitable giving.</p>
-                </div>
-                <div class="text-center md:text-left">
-                    <h5 class="font-semibold text-white mb-4">Explore</h5>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="{{ route('home') }}" class="hover:text-white transition">Home</a></li>
-                        <li><a href="{{ route('donation.details') }}" class="hover:text-white transition">Donations</a></li>
-                        <li><a href="#" class="hover:text-white transition">Volunteer</a></li>
-                        <li><a href="#" class="hover:text-white transition">About Us</a></li>
-                    </ul>
-                </div>
-                <div class="text-center md:text-left">
-                    <h5 class="font-semibold text-white mb-4">Legal</h5>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-white transition">Charity Registration</a></li>
-                    </ul>
-                </div>
-                <div class="text-center md:text-left">
-                    <h5 class="font-semibold text-white mb-4">Contact Us</h5>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition">Support Center</a></li>
-                        <li><a href="#" class="hover:text-white transition">Partnership Inquiry</a></li>
-                        <li><a href="#" class="hover:text-white transition">Media Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-sm">
-                <p>&copy; {{ date('Y') }} DonGiv — Making a Difference Together ❤️</p>
-            </div>
-        </div>
-    </footer>
 </x-app>

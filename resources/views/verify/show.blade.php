@@ -44,7 +44,7 @@
             <div class="glass-card rounded-[2.5rem] overflow-hidden shadow-2xl mb-8">
                 <!-- Cover Image -->
                 <div class="relative h-80">
-                    <img src="{{ $campaign->image ? asset('storage/' . $campaign->image) : 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1000' }}" 
+                    <img src="{{ $campaign->image ? $campaign->image : 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1000' }}" 
                          class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/20 to-transparent"></div>
                     <div class="absolute bottom-8 left-8 right-8">

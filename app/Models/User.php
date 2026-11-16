@@ -86,7 +86,7 @@ class User extends Authenticatable
      */
     public function donations()
     {
-        return $this->hasMany(\App\Models\DonationTransaction::class);
+        return $this->hasMany(\App\Models\Donation::class);
     }
 
     /**
@@ -97,6 +97,22 @@ class User extends Authenticatable
         // Pastikan Anda sudah punya model VolunteerApplication
         // Sesuaikan nama kolom foreign key jika bukan 'user_id'
         return $this->hasMany(VolunteerApplication::class);
+    }
+
+    /**
+     * Relasi ke VolunteerCategoryPreference (User punya banyak preferensi kategori)
+     */
+    public function categoryPreferences()
+    {
+        return $this->hasMany(VolunteerCategoryPreference::class);
+    }
+
+    /**
+     * Relasi ke RecommendationNotification (User menerima banyak notifikasi rekomendasi)
+     */
+    public function recommendationNotifications()
+    {
+        return $this->hasMany(RecommendationNotification::class);
     }
 
 

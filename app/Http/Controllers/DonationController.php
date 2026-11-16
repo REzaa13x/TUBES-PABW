@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Campaign;
 use App\Models\DonationTransaction;
+use App\Models\AdminNotification;
 use Illuminate\Support\Str;
 
 class DonationController extends Controller
@@ -61,12 +62,6 @@ class DonationController extends Controller
 
     public function manualTransfer($order_id)
     {
-        // Check if the authenticated user is an admin
-        if (auth()->check() && auth()->user()->role === 'admin') {
-            // Redirect admin to admin dashboard instead of user pages
-            return redirect('/admin/dashboard');
-        }
-
         $transaction = \App\Models\DonationTransaction::where('order_id', $order_id)->first();
 
         if (!$transaction) {
@@ -83,12 +78,6 @@ class DonationController extends Controller
 
     public function downloadTransactionPDF($order_id)
     {
-        // Check if the authenticated user is an admin
-        if (auth()->check() && auth()->user()->role === 'admin') {
-            // Redirect admin to admin dashboard instead of user pages
-            return redirect('/admin/dashboard');
-        }
-
         $transaction = \App\Models\DonationTransaction::where('order_id', $order_id)->first();
 
         if (!$transaction) {
@@ -149,12 +138,6 @@ class DonationController extends Controller
 
     public function uploadProof(Request $request, $order_id)
     {
-        // Check if the authenticated user is an admin
-        if (auth()->check() && auth()->user()->role === 'admin') {
-            // Redirect admin to admin dashboard instead of user pages
-            return redirect('/admin/dashboard');
-        }
-
         $transaction = \App\Models\DonationTransaction::where('order_id', $order_id)->first();
 
         if (!$transaction) {
@@ -184,6 +167,35 @@ class DonationController extends Controller
                 'proof_of_transfer_path' => $path,
                 'status' => 'PENDING_VERIFICATION'  // This means it's added to history and waiting admin verification
             ]);
+
+            // Notifikasi ke admin: bukti transfer diunggah
+            try {
+                $campaign = $transaction->campaign_id ? Campaign::find($transaction->campaign_id) : null;
+                AdminNotification::create([
+                    'title'               => '📎 Bukti Transfer Diunggah',
+                    'message'             => ($transaction->donor_name ?? auth()->user()->name ?? 'Pengguna') .
+                        ' telah mengunggah bukti transfer untuk donasi Rp' .
+                        number_format($transaction->amount, 0, ',', '.') .
+                        ($campaign ? ' pada kampanye "' . $campaign->title . '"' : '') . '. Harap verifikasi segera.',
+                    'category'            => 'donasi',
+                    'priority'            => 'high',
+                    'icon'                => '📎',
+                    'type'                => 'donation_proof_uploaded',
+                    'action_label'        => 'Verifikasi Sekarang',
+                    'action_url'          => route('admin.donations.show', $order_id),
+                    'related_campaign_id' => $transaction->campaign_id,
+                    'related_user_id'     => auth()->id(),
+                    'metadata'            => [
+                        'order_id'       => $order_id,
+                        'amount'         => $transaction->amount,
+                        'donor_name'     => $transaction->donor_name,
+                        'campaign_title' => $campaign ? $campaign->title : null,
+                        'proof_path'     => $path,
+                    ],
+                ]);
+            } catch (\Exception $notifEx) {
+                \Log::warning('Admin notification for proof upload failed: ' . $notifEx->getMessage());
+            }
 
             return redirect()->route('donation.success', ['order_id' => $order_id, 'amount' => $transaction->amount])
                 ->with('success', 'Bukti transfer berhasil diupload. Mohon tunggu verifikasi admin.');

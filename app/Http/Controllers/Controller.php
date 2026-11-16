@@ -22,9 +22,8 @@ class Controller extends BaseController
         // Get urgent campaigns: campaigns that have less than 7 days remaining (regardless of funding level)
         $urgentCampaigns = Campaign::where('status', 'verified')
             ->select(['id', 'title', 'description', 'image', 'target_amount', 'current_amount', 'end_date', 'status', 'kategori', 'slug'])
-            ->whereRaw('DATEDIFF(end_date, NOW()) <= 7')
-            ->whereRaw('DATEDIFF(end_date, NOW()) >= 0') // Ensure end date is not in the past
-            ->orderByRaw('DATEDIFF(end_date, NOW()) ASC')
+            ->whereBetween('end_date', [now(), now()->addDays(7)])
+            ->orderBy('end_date', 'asc')
             ->orderBy('current_amount', 'desc')
             ->limit(4)
             ->get();

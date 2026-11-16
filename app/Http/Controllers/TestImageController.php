@@ -12,8 +12,8 @@ class TestImageController extends Controller
     {
         $path = storage_path('app/public/' . $folder . '/' . $filename);
 
-        if (!File::exists($path)) {
-            return response()->json(['error' => 'File not found'], 404);
+        if (!File::exists($path) || is_dir($path)) {
+            return redirect('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=600');
         }
 
         $file = File::get($path);

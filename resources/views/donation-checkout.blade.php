@@ -77,11 +77,13 @@
         }
 
         .card {
-            background: white;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 24px;
             padding: 32px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-            border: 1px solid var(--slate-100);
+            border: 1px solid rgba(255, 255, 255, 0.7);
             margin-bottom: 40px;
         }
 
@@ -235,10 +237,13 @@
         }
 
         .summary-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 24px;
             overflow: hidden;
             box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.7);
             position: sticky;
             top: 100px; /* Adjust for navbar */
         }

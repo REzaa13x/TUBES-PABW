@@ -34,7 +34,7 @@
         }
     </style>
 
-    <section class="py-12 bg-slate-50 min-h-screen relative">
+    <section class="py-12 bg-transparent min-h-screen relative">
         <div class="container mx-auto px-6 max-w-7xl">
 
             {{-- HEADER SECTION --}}
@@ -49,7 +49,7 @@
             </div>
 
             {{-- SEARCH & FILTER BAR --}}
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-10 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-4 z-30">
+            <div class="bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-white/60 mb-10 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-4 z-30">
                 {{-- Search --}}
                 <div class="relative w-full md:w-96">
                     <input type="text" id="searchInput" onkeyup="filterCampaigns()" placeholder="Cari judul kampanye..."
@@ -96,7 +96,7 @@
                 @endphp
 
                 {{-- Item Kampanye --}}
-                <div class="campaign-item group bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
+                <div class="campaign-item group bg-white/85 backdrop-blur-md rounded-3xl overflow-hidden border border-white/60 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
                     data-category="{{ $campaign->kategori }}"
                     data-title="{{ $campaign->judul }}">
 

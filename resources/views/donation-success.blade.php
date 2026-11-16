@@ -13,17 +13,20 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
-            background-color: #F8FAFC;
+            background-color: transparent;
         }
 
         .success-modal {
-            background: white;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-radius: 40px;
             padding: 48px;
             width: 100%;
             max-width: 500px;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.7);
         }
 
         .heart-circle {

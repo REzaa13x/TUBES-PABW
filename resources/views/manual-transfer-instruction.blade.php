@@ -18,11 +18,13 @@
         }
 
         .instruction-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 32px;
             padding: 48px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.03);
-            border: 1px solid var(--slate-100);
+            border: 1px solid rgba(226, 232, 240, 0.6);
         }
 
         .bank-info-box {

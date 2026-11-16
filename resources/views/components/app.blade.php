@@ -13,6 +13,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
+    {{-- 3D Libraries: Three.js & VanillaTilt for Interactive 3D visuals --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+
     {{-- Google Fonts: Plus Jakarta Sans --}}
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
@@ -34,10 +38,15 @@
                     boxShadow: {
                         'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
                         'glow': '0 0 15px rgba(37, 99, 235, 0.3)',
+                        '3d': '0 20px 40px -15px rgba(37, 99, 235, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.8) inset',
+                        '3d-hover': '0 30px 60px -20px rgba(37, 99, 235, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.9) inset',
                     },
                     animation: {
                         'slide-up': 'slideUp 0.4s ease-out forwards',
                         'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+                        'float-3d': 'float3D 6s ease-in-out infinite',
+                        'float-3d-slow': 'float3D 8s ease-in-out infinite',
+                        'float-3d-reverse': 'float3DReverse 7s ease-in-out infinite',
                     },
                     keyframes: {
                         slideUp: {
@@ -49,6 +58,14 @@
                             '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
                             '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
                             '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+                        },
+                        float3D: {
+                            '0%, 100%': { transform: 'translate3d(0, 0, 0) rotateX(4deg) rotateY(-4deg)' },
+                            '50%': { transform: 'translate3d(0, -12px, 20px) rotateX(-4deg) rotateY(6deg)' }
+                        },
+                        float3DReverse: {
+                            '0%, 100%': { transform: 'translate3d(0, 0, 0) rotateX(-4deg) rotateY(5deg)' },
+                            '50%': { transform: 'translate3d(0, -14px, 15px) rotateX(5deg) rotateY(-4deg)' }
                         }
                     }
                 }
@@ -63,279 +80,273 @@
         .delay-100 { animation-delay: 100ms; }
         .delay-200 { animation-delay: 200ms; }
         .delay-300 { animation-delay: 300ms; }
+
+        /* 3D Transform & Perspective Utilities */
+        .preserve-3d { transform-style: preserve-3d; }
+        .perspective-800 { perspective: 800px; }
+        .perspective-1000 { perspective: 1000px; }
+        .perspective-1500 { perspective: 1500px; }
+
+        .card-3d-tilt {
+            transform-style: preserve-3d;
+            transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.25s ease;
+            will-change: transform;
+        }
+        .card-3d-tilt .pop-3d {
+            transition: transform 0.3s ease;
+            transform: translateZ(24px);
+        }
+        .card-3d-tilt:hover .pop-3d {
+            transform: translateZ(36px);
+        }
+        .card-3d-tilt .pop-3d-lg {
+            transition: transform 0.3s ease;
+            transform: translateZ(36px);
+        }
+        .card-3d-tilt:hover .pop-3d-lg {
+            transform: translateZ(52px);
+        }
+
+        /* Glassmorphism 3D */
+        .glass-card-3d {
+            background: rgba(255, 255, 255, 0.90);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 20px 40px -10px rgba(30, 58, 138, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-card-3d:hover {
+            box-shadow: 0 30px 60px -12px rgba(37, 99, 235, 0.16), 0 0 0 1px rgba(99, 102, 241, 0.2), inset 0 1px 0 rgba(255, 255, 255, 1);
+            transform: translateY(-4px) translateZ(10px);
+        }
+
+        /* Global 3D Interactive Card Lift for Cards across all pages */
+        .card-interactive-3d {
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease, border-color 0.3s ease;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+        .card-interactive-3d:hover {
+            transform: translateY(-6px) scale(1.012) rotateX(1.5deg);
+            box-shadow: 0 24px 48px -12px rgba(37, 99, 235, 0.14), 0 0 0 1px rgba(99, 102, 241, 0.15);
+        }
+
+        /* 3D Dynamic Buttons with Depth */
+        .btn-3d {
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform-style: preserve-3d;
+            will-change: transform;
+            position: relative;
+        }
+        .btn-3d:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 14px 28px -6px rgba(37, 99, 235, 0.35);
+        }
+        .btn-3d:active {
+            transform: translateY(1px) scale(0.98);
+            box-shadow: 0 6px 14px -3px rgba(37, 99, 235, 0.25);
+        }
+
+        /* 3D Hero Canvas Container - strictly non-blocking */
+        .hero-3d-canvas-wrap {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* Subtle 3D Depth Shimmer */
+        .shimmer-3d {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer-3d::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                60deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.35) 50%,
+                transparent 70%
+            );
+            transform: rotate(25deg);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .shimmer-3d:hover::after {
+            opacity: 1;
+            animation: shimmerMove 1.4s forwards;
+        }
+        @keyframes shimmerMove {
+            0% { transform: translate(-35%, -35%) rotate(25deg); }
+            100% { transform: translate(35%, 35%) rotate(25deg); }
+        }
+
+        /* Ambient Cosmic Pulse for Glow Accents */
+        .glow-cosmic {
+            position: relative;
+        }
+        .glow-cosmic::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(217, 70, 239, 0.2), rgba(14, 165, 233, 0.3));
+            z-index: -1;
+            opacity: 0;
+            filter: blur(8px);
+            transition: opacity 0.35s ease;
+        }
+        .glow-cosmic:hover::before {
+            opacity: 1;
+        }
+
+        /* ===================================================================
+           GALAXY COSMIC GRADIENT & FLOATING DONGIV — Semua Halaman
+        =================================================================== */
+
+        /* Gradasi Galaksi di Tiap Halaman */
+        body.galaxy-theme {
+            background-color: #f8faff;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 10% 5%, rgba(99, 102, 241, 0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 50% at 90% 8%, rgba(217, 70, 239, 0.16) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 50% at 50% 30%, rgba(14, 165, 233, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 80% 60% at 15% 75%, rgba(139, 92, 246, 0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 50% at 85% 85%, rgba(37, 99, 235, 0.18) 0%, transparent 60%),
+                radial-gradient(circle at 50% 95%, rgba(168, 85, 247, 0.14) 0%, transparent 50%),
+                linear-gradient(180deg, #f0f4ff 0%, #faf5ff 35%, #f0f9ff 70%, #f5f3ff 100%);
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-size: cover;
+            min-height: 100vh;
+        }
+
+        /* Fixed Galaxy Nebula & Stardust Overlay — di belakang konten */
+        .galaxy-overlay {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            background-image: 
+                radial-gradient(1.5px 1.5px at 15% 20%, rgba(99, 102, 241, 0.5) 50%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 35% 10%, rgba(168, 85, 247, 0.6) 50%, transparent 100%),
+                radial-gradient(2px 2px at 75% 25%, rgba(56, 189, 248, 0.6) 50%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 85% 15%, rgba(236, 72, 153, 0.5) 50%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 20% 70%, rgba(59, 130, 246, 0.5) 50%, transparent 100%),
+                radial-gradient(2px 2px at 80% 80%, rgba(147, 51, 234, 0.6) 50%, transparent 100%),
+                radial-gradient(1px 1px at 50% 85%, rgba(14, 165, 233, 0.5) 50%, transparent 100%);
+            background-size: 500px 500px;
+            opacity: 0.6;
+        }
+
+        /* Floating 3D Layer — MURNI SEBAGAI BACKGROUND, DI BAWAH KONTEN */
+        #floating3DLayer {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .obj3d {
+            position: absolute;
+            will-change: transform;
+            --p-x: 0px;
+            --p-y: 0px;
+        }
+
+        /* Teks DonGiv — HANYA 2 TITIK TEPI DI BACKGROUND (Bersih, Elegan & Tidak Ramai) */
+        .obj-dongiv-text {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            font-weight: 950;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.45) 0%, rgba(99, 102, 241, 0.5) 50%, rgba(147, 51, 234, 0.45) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            -webkit-text-stroke: 1.5px rgba(37, 99, 235, 0.35);
+            white-space: nowrap;
+            user-select: none;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 16px rgba(37, 99, 235, 0.18)) drop-shadow(0 2px 4px rgba(99, 102, 241, 0.12));
+            transition: all 0.3s ease;
+        }
+
+        /* Tepi Kanan Atas (Di bawah navbar agar tidak bentrok dengan logo navbar di kiri) */
+        .obj-dongiv-edge-top-right {
+            top: 100px;
+            right: 32px;
+            animation: driftTopRight 20s ease-in-out infinite;
+        }
+
+        /* Tepi Kiri Bawah */
+        .obj-dongiv-edge-bottom-left {
+            bottom: 36px;
+            left: 32px;
+            animation: driftBottomLeft 22s ease-in-out infinite;
+        }
+
+        @keyframes driftTopRight {
+            0%   { transform: translate(var(--p-x), calc(0px + var(--p-y))) rotate(2deg); }
+            50%  { transform: translate(calc(-12px + var(--p-x)), calc(-10px + var(--p-y))) rotate(-2deg); }
+            100% { transform: translate(var(--p-x), calc(0px + var(--p-y))) rotate(2deg); }
+        }
+
+        @keyframes driftBottomLeft {
+            0%   { transform: translate(var(--p-x), calc(0px + var(--p-y))) rotate(-2deg); }
+            50%  { transform: translate(calc(12px + var(--p-x)), calc(10px + var(--p-y))) rotate(2deg); }
+            100% { transform: translate(var(--p-x), calc(0px + var(--p-y))) rotate(-2deg); }
+        }
+
+        /* Parallax support */
+        .obj3d[data-speed] { transition: transform 0.08s linear; }
     </style>
 </head>
 
-<body class="bg-slate-50 text-slate-600 font-sans antialiased flex flex-col min-h-screen selection:bg-blue-100 selection:text-blue-900">
 
-    {{-- NAVBAR --}}
-    <nav class="fixed top-0 w-full z-40 transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-white/50" id="navbar">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            {{-- Logo --}}
-            <a href="{{ url('/') }}" class="flex items-center gap-2 transition transform hover:scale-105 active:scale-95">
-                <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonasiKita" class="h-10">
-            </a>
+<body class="galaxy-theme text-slate-600 font-sans antialiased flex flex-col min-h-screen selection:bg-blue-100 selection:text-blue-900 relative">
 
-            {{-- Desktop Menu --}}
-            <div class="hidden md:flex items-center space-x-1">
-                <a href="{{ url('/') }}#donasi" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Donasi</a>
-                <a href="{{ route('volunteer.landing') }}" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Relawan</a>
-                <a href="{{ url('/') }}#cara-kerja" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Cara Kerja</a>
+    {{-- GALAXY COSMIC OVERLAY --}}
+    <div class="galaxy-overlay" aria-hidden="true"></div>
 
-                <div class="h-6 w-px bg-slate-200 mx-2"></div>
+    {{-- ================================================================
+         FLOATING DONGIV — HANYA 2 TITIK TEPI DI BACKGROUND (TIDAK RAMAI)
+    ================================================================ --}}
+    <div id="floating3DLayer" aria-hidden="true">
 
-                {{-- NOTIFICATION BELL SYSTEM (HANYA JIKA LOGIN) --}}
-                @auth
-                    <div class="relative mr-5">
-                        <button id="notifButton" class="relative p-2 text-slate-600 hover:text-primary transition-colors focus:outline-none">
-                            <i class="fas fa-bell text-xl"></i>
-                            
-                            {{-- Titik Merah (Hanya muncul jika ada notif belum dibaca) --}}
-                            @if(auth()->user()->unreadNotifications->count() > 0)
-                                <span id="notifBadge" class="absolute top-1 right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
-                            @endif
-                        </button>
-
-                        {{-- Dropdown Notifikasi --}}
-                        <div id="notifDropdown" class="hidden absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 overflow-hidden transform origin-top-right transition-all">
-                            <div class="px-4 py-3 border-b border-slate-50 flex justify-between items-center">
-                                <p class="text-sm font-bold text-slate-800">Notifikasi</p>
-                                @if(auth()->user()->unreadNotifications->count() > 0)
-                                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">
-                                        {{ auth()->user()->unreadNotifications->count() }} Baru
-                                    </span>
-                                @endif
-                            </div>
-
-                            <div class="max-h-[300px] overflow-y-auto no-scrollbar">
-                                @forelse(auth()->user()->notifications as $notification)
-                                    <a href="{{ $notification->data['url'] ?? '#' }}" class="block px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 {{ $notification->read_at ? 'opacity-60' : 'bg-blue-50/40' }}">
-                                        <div class="flex gap-3">
-                                            <div class="mt-1 flex-shrink-0">
-                                                {{-- Icon Dinamis dari Database --}}
-                                                <i class="{{ $notification->data['icon'] ?? 'fas fa-info-circle' }} {{ $notification->data['color'] ?? 'text-blue-500' }}"></i>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-bold text-slate-700 leading-tight">{{ $notification->data['title'] }}</p>
-                                                <p class="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">{{ $notification->data['message'] }}</p>
-                                                <p class="text-[10px] text-slate-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                @empty
-                                    <div class="px-4 py-8 text-center text-slate-400">
-                                        <i class="fas fa-bell-slash text-2xl mb-2 opacity-50"></i>
-                                        <p class="text-xs">Belum ada notifikasi</p>
-                                    </div>
-                                @endforelse
-                            </div>
-                            
-                            @if(auth()->user()->notifications->count() > 0)
-                                <div class="border-t border-slate-50 p-2 text-center bg-slate-50/50">
-                                    <form action="{{ route('notifications.markAllRead') }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="text-xs font-bold text-primary hover:text-blue-700 transition-colors">
-                                            Tandai semua dibaca
-                                        </button>
-                                    </form>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                @endauth
-
-                    {{-- This section works for both server-side auth and API auth --}}
-                    {{-- This section will be controlled by JavaScript based on auth state --}}
-                    {{-- Server-side auth elements (will be shown if Laravel auth is active) --}}
-                    @auth
-                        <div id="serverAuthElements" class="relative ml-2">
-                            <button id="profileButton" class="flex items-center gap-2 px-1 py-1 pr-3 rounded-full border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all focus:outline-none focus:ring-2 focus:ring-blue-100">
-                                @if(auth()->check() && auth()->user()->photo)
-                                    <img src="{{ asset('storage/' . auth()->user()->photo) }}"
-                                         class="w-8 h-8 rounded-full object-cover shadow-md ring-2 ring-white"
-                                         onerror="this.onerror=null; this.src='https://placehold.co/32x32?text={{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}';">
-                                @elseif(auth()->check())
-                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white">
-                                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
-                                    </div>
-                                @else
-                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white">
-                                        U
-                                    </div>
-                                @endif
-                                <span class="text-sm font-semibold text-slate-700 max-w-[100px] truncate">{{ auth()->user()->name ?? 'User' }}</span>
-                                <i class="fas fa-chevron-down text-xs text-slate-400"></i>
-                            </button>
-                            <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 transform origin-top-right transition-all">
-                                <div class="px-5 py-3 border-b border-slate-50 mb-2">
-                                    <p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Akun Masuk</p>
-                                    <div class="flex items-center gap-3 mt-2">
-                                        @if(auth()->check() && auth()->user()->photo)
-                                            <img src="{{ asset('storage/' . auth()->user()->photo) }}"
-                                                 class="w-10 h-10 rounded-full object-cover"
-                                                 onerror="this.onerror=null; this.src='https://placehold.co/40x40?text={{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}';">
-                                        @elseif(auth()->check())
-                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold">
-                                                {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
-                                            </div>
-                                        @else
-                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold">
-                                                U
-                                            </div>
-                                        @endif
-                                        <div>
-                                            <p class="text-sm font-bold text-slate-800 truncate">{{ auth()->user()->name ?? 'User' }}</p>
-                                            <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email ?? 'email@example.com' }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                               {{-- PERBAIKAN DI SINI: href="#" diganti route('profiles.index') --}}
-                                <a href="{{ route('profiles.index') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
-                                    <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-primary flex items-center justify-center mr-3 transition-colors">
-                                        <i class="fas fa-user-circle"></i>
-                                    </div>
-                                    Profil & Riwayat
-                                </a>
-                                <div class="border-t border-slate-50 mt-2 pt-2 mx-2">
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit" class="group flex w-full items-center px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-colors">
-                                            <div class="w-8 h-8 rounded-lg bg-red-50 text-red-500 group-hover:bg-red-100 flex items-center justify-center mr-3 transition-colors">
-                                                <i class="fas fa-sign-out-alt"></i>
-                                            </div>
-                                            Keluar
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-                    @else
-                        {{-- Guest elements (login/register buttons) --}}
-                        <div id="guestElements" class="flex items-center gap-3 ml-4">
-                            <a href="{{ route('login') }}" class="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-primary transition-colors" id="loginLink">
-                                Masuk
-                            </a>
-                            <a href="{{ route('register') }}" class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-full shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0" id="registerLink">
-                                Daftar Sekarang
-                            </a>
-                        </div>
-                    @endauth
-
-                    {{-- Elements for API authentication (will be managed by JavaScript) --}}
-                    <div id="apiAuthElements" class="hidden">
-                        <div id="profileDropdownContainer" class="relative ml-2">
-                            <button id="apiProfileButton" class="flex items-center gap-2 px-1 py-1 pr-3 rounded-full border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all focus:outline-none focus:ring-2 focus:ring-blue-100">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white" id="profileInitial">
-                                    U
-                                </div>
-                                <span class="text-sm font-semibold text-slate-700 max-w-[100px] truncate" id="profileName">User</span>
-                                <i class="fas fa-chevron-down text-xs text-slate-400"></i>
-                            </button>
-                            <div id="apiProfileDropdown" class="hidden absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 transform origin-top-right transition-all">
-                                <div class="px-5 py-3 border-b border-slate-50 mb-2">
-                                    <p class="text-xs text-slate-400 uppercase tracking-wider font-bold">Akun Masuk</p>
-                                    <p class="text-sm font-bold text-slate-800 truncate" id="dropdownName">User</p>
-                                    <p class="text-xs text-slate-500 truncate" id="dropdownEmail">user@example.com</p>
-                                </div>
-                                <a href="{{ route('profiles.index') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
-                                    <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-primary flex items-center justify-center mr-3 transition-colors">
-                                        <i class="fas fa-user-circle"></i>
-                                    </div>
-                                    Profil & Riwayat
-                                </a>
-                                <div class="border-t border-slate-50 mt-2 pt-2 mx-2">
-                                    <button id="apiLogoutBtn" class="group flex w-full items-center px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-colors">
-                                        <div class="w-8 h-8 rounded-lg bg-red-50 text-red-500 group-hover:bg-red-100 flex items-center justify-center mr-3 transition-colors">
-                                            <i class="fas fa-sign-out-alt"></i>
-                                        </div>
-                                        Keluar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="apiNotificationContainer" class="relative mr-5 hidden">
-                        <button id="apiNotifButton" class="relative p-2 text-slate-600 hover:text-primary transition-colors focus:outline-none">
-                            <i class="fas fa-bell text-xl"></i>
-                            <span id="apiNotifBadge" class="absolute top-1 right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse hidden"></span>
-                        </button>
-                        <div id="apiNotifDropdown" class="hidden absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 overflow-hidden transform origin-top-right transition-all">
-                            <div class="px-4 py-3 border-b border-slate-50 flex justify-between items-center">
-                                <p class="text-sm font-bold text-slate-800">Notifikasi</p>
-                                <span id="apiNotifCount" class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold"></span>
-                            </div>
-                            <div id="apiNotifList" class="max-h-[300px] overflow-y-auto no-scrollbar">
-                                <!-- Notifications will be loaded here -->
-                            </div>
-                            <div class="border-t border-slate-50 p-2 text-center bg-slate-50/50">
-                                <button id="markAllReadBtn" class="text-xs font-bold text-primary hover:text-blue-700 transition-colors">
-                                    Tandai semua dibaca
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-            </div>
-
-            {{-- Mobile Button --}}
-            <button id="mobileMenuBtn" class="md:hidden p-2 text-slate-600 hover:text-primary transition-colors">
-                <i class="fas fa-bars text-2xl"></i>
-            </button>
+        {{-- 1. Kanan Atas --}}
+        <div class="obj3d obj-dongiv-text obj-dongiv-edge-top-right" data-speed="0.04"
+             style="font-size: clamp(2rem, 3.5vw, 3.6rem);">
+            DonGiv
         </div>
 
-        {{-- Mobile Menu --}}
-        <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-slate-100 absolute w-full shadow-lg">
-            <div class="flex flex-col p-4 space-y-3">
-                <a href="{{ url('/') }}#donasi" class="px-4 py-3 rounded-xl hover:bg-blue-50 font-medium text-slate-700">Donasi</a>
-                <a href="{{ route('volunteer.campaigns.index') }}" class="px-4 py-3 rounded-xl hover:bg-blue-50 font-medium text-slate-700">Relawan</a>
-                @auth
-                        <a href="{{ route('profiles.index') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
-                            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-primary flex items-center justify-center mr-3 transition-colors">
-                                <i class="fas fa-user-circle"></i>
-                            </div>
-                            Profil & Riwayat
-                        </a>
-                        <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button class="w-full text-left px-4 py-3 rounded-xl text-red-500 font-bold hover:bg-red-50">Keluar</button>
-                    </form>
-                @else
-                    <div id="mobileAuthButtons" class="grid grid-cols-2 gap-3 mt-2">
-                        <a href="{{ route('login') }}" class="text-center py-3 rounded-xl border border-slate-200 font-bold text-slate-600" id="mobileLoginLink">Masuk</a>
-                        <a href="{{ route('register') }}" class="text-center py-3 rounded-xl bg-primary text-white font-bold" id="mobileRegisterLink">Daftar</a>
-                    </div>
-
-                    {{-- Mobile Profile Menu for API Auth --}}
-                    <div id="mobileProfileContainer" class="hidden">
-                        <div class="px-4 py-3 border-b border-slate-50">
-                            @if(auth()->check() && auth()->user()->photo)
-                                <img src="{{ asset('storage/' . auth()->user()->photo) }}"
-                                     class="w-12 h-12 rounded-full object-cover mx-auto mb-2"
-                                     onerror="this.onerror=null; this.src='https://placehold.co/48x48?text={{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}';">
-                            @elseif(auth()->check())
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-lg mx-auto mb-2">
-                                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
-                                </div>
-                            @endif
-                            <p class="text-sm font-bold text-slate-800 text-center">{{ auth()->user()->name ?? 'User' }}</p>
-                            <p class="text-xs text-slate-500 text-center">{{ auth()->user()->email ?? 'email@example.com' }}</p>
-                        </div>
-                        <a id="mobileProfileLink" href="{{ route('profiles.index') }}" class="group flex items-center px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-primary transition-colors mx-2 rounded-xl">
-                            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-primary flex items-center justify-center mr-3 transition-colors">
-                                <i class="fas fa-user-circle"></i>
-                            </div>
-                            <span id="mobileProfileName">Profil & Riwayat</span>
-                        </a>
-                        <button id="mobileApiLogoutBtn" class="w-full text-left px-4 py-3 rounded-xl text-red-500 font-bold hover:bg-red-50 mt-2">Keluar</button>
-                    </div>
-                @endauth
-            </div>
+        {{-- 2. Kiri Bawah --}}
+        <div class="obj3d obj-dongiv-text obj-dongiv-edge-bottom-left" data-speed="0.03"
+             style="font-size: clamp(2rem, 3.6vw, 3.8rem);">
+            DonGiv
         </div>
-    </nav>
 
-    {{-- KONTEN UTAMA --}}
-    <main class="flex-grow pt-20">
+    </div>
+
+    {{-- UNIFIED NAVBAR --}}
+    <x-navbar />
+
+    {{-- KONTEN UTAMA (Berada di atas floating background layer) --}}
+    <main class="flex-grow pt-20 relative z-10">
         {{ $slot }}
     </main>
 
@@ -540,91 +551,6 @@
                 mobileApiLogoutBtn.addEventListener('click', apiLogout);
             }
 
-            // 1. Notification Dropdown Logic (API version)
-            const apiNotifBtn = document.getElementById('apiNotifButton');
-            const apiNotifMenu = document.getElementById('apiNotifDropdown');
-
-            if (apiNotifBtn && apiNotifMenu) {
-                apiNotifBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    apiNotifMenu.classList.toggle('hidden');
-                });
-            }
-
-            // 2. Profile Dropdown Logic (API version) - for API profile button
-            const apiProfileBtn = document.getElementById('apiProfileButton');
-            const apiProfileMenu = document.getElementById('apiProfileDropdown');
-
-            if (apiProfileBtn && apiProfileMenu) {
-                apiProfileBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    apiProfileMenu.classList.toggle('hidden');
-                });
-            }
-
-            // 2.5. Profile Dropdown Logic (Server-side version) - for server-side profile button
-            const profileBtn = document.getElementById('profileButton');
-            const profileMenu = document.getElementById('profileDropdown');
-
-            if (profileBtn && profileMenu) {
-                profileBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    profileMenu.classList.toggle('hidden');
-                });
-            }
-
-            // 2.6. Notification Dropdown Logic (Server-side version) - for server-side notification button
-            const notifBtn = document.getElementById('notifButton');
-            const notifMenu = document.getElementById('notifDropdown');
-
-            if (notifBtn && notifMenu) {
-                notifBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    notifMenu.classList.toggle('hidden');
-                });
-            }
-
-            // 3. Global Click Handler (Tutup dropdown saat klik di luar area)
-            document.addEventListener('click', (e) => {
-                if (apiNotifBtn && apiNotifMenu && !apiNotifBtn.contains(e.target) && !apiNotifMenu.contains(e.target)) {
-                    apiNotifMenu.classList.add('hidden');
-                }
-                if (apiProfileBtn && apiProfileMenu && !apiProfileBtn.contains(e.target) && !apiProfileMenu.contains(e.target)) {
-                    apiProfileMenu.classList.add('hidden');
-                }
-                // Tutup juga dropdown server-side jika ada
-                if (profileBtn && profileMenu && !profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
-                    profileMenu.classList.add('hidden');
-                }
-                // Tutup juga dropdown notifikasi server-side jika ada
-                const notifBtn = document.getElementById('notifButton');
-                const notifMenu = document.getElementById('notifDropdown');
-                if (notifBtn && notifMenu && !notifBtn.contains(e.target) && !notifMenu.contains(e.target)) {
-                    notifMenu.classList.add('hidden');
-                }
-            });
-
-            // 4. Mobile Menu Logic
-            const mobileBtn = document.getElementById('mobileMenuBtn');
-            const mobileMenu = document.getElementById('mobileMenu');
-            if (mobileBtn && mobileMenu) {
-                mobileBtn.addEventListener('click', () => {
-                    mobileMenu.classList.toggle('hidden');
-                });
-            }
-
-            // 5. Navbar Scroll Effect
-            const navbar = document.getElementById('navbar');
-            if (navbar) {
-                window.addEventListener('scroll', () => {
-                    if (window.scrollY > 10) {
-                        navbar.classList.add('shadow-soft');
-                    } else {
-                        navbar.classList.remove('shadow-soft');
-                    }
-                });
-            }
-
             // --- C. SWEETALERT POPUP LOGIC ---
 
             // Popup Sukses
@@ -710,6 +636,74 @@
 
         // Update every minute
         setInterval(updateRemainingDays, 60000);
+
+        // Inisialisasi Efek 3D Tilt secara aman dan responsif di seluruh halaman
+        function init3DTilt() {
+            if (typeof VanillaTilt !== 'undefined') {
+                // Terapkan ke semua elemen card, campaign card, glass card, dan elemen interaktif
+                const tiltElements = document.querySelectorAll("[data-tilt], .card-3d-tilt, .card-interactive-3d, .glass-card-3d, .tilt-card-auto");
+                if (tiltElements.length > 0) {
+                    VanillaTilt.init(tiltElements, {
+                        max: 6,
+                        speed: 600,
+                        glare: true,
+                        "max-glare": 0.15,
+                        scale: 1.018,
+                        perspective: 1100,
+                        gyroscope: false,
+                        easing: "cubic-bezier(.03,.98,.52,.99)"
+                    });
+                }
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init3DTilt);
+        } else {
+            init3DTilt();
+        }
+
+        /* =================================================================
+           GLOBAL 3D PARALLAX — Scroll & Mouse
+           Objects bergerak mengikuti scroll dan kursor mouse
+        ================================================================= */
+        (function() {
+            const layer = document.getElementById('floating3DLayer');
+            if (!layer) return;
+
+            const objects = Array.from(layer.querySelectorAll('.obj3d[data-speed]'));
+            let mouseX = 0, mouseY = 0;
+            let ticking = false;
+
+            function updateParallax() {
+                const scrollY = window.scrollY;
+                objects.forEach(obj => {
+                    const speed = parseFloat(obj.getAttribute('data-speed') || 0.04);
+                    const scrollShift = scrollY * speed * -0.25;
+                    const mouseShiftX = mouseX * speed * 25;
+                    const mouseShiftY = mouseY * speed * 15;
+                    obj.style.setProperty('--p-y', `${scrollShift + mouseShiftY}px`);
+                    obj.style.setProperty('--p-x', `${mouseShiftX}px`);
+                });
+                ticking = false;
+            }
+
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    requestAnimationFrame(updateParallax);
+                    ticking = true;
+                }
+            }, { passive: true });
+
+            window.addEventListener('mousemove', e => {
+                mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+                mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+                if (!ticking) {
+                    requestAnimationFrame(updateParallax);
+                    ticking = true;
+                }
+            }, { passive: true });
+        })();
     </script>
 </body>
 </html>

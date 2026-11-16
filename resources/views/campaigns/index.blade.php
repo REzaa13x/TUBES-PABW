@@ -1,5 +1,5 @@
 <x-app title="Daftar Kampanye Donasi - DonasiKita">
-    <div class="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 overflow-hidden">
+    <div class="relative bg-gradient-to-br from-blue-600/90 via-blue-700/90 to-indigo-900/90 overflow-hidden backdrop-blur-sm">
         <div class="absolute inset-0 opacity-10">
             <svg class="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                 <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    <section class="py-16 bg-slate-50 min-h-screen">
+    <section class="py-16 bg-white/40 backdrop-blur-sm min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -97,7 +97,7 @@
                         $daysLeft = $isExpired ? 0 : ceil($now->floatDiffInDays($endDate));
                     @endphp
 
-                    <div class="group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-blue-900/5 transition-all duration-300 flex flex-col h-full">
+                                            <div class="group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-blue-900/5 transition-all duration-300 flex flex-col h-full card-3d-tilt" data-tilt data-tilt-max="15" data-tilt-scale="1.08">
                         <div class="relative h-56 overflow-hidden">
                             <div class="absolute top-4 left-4 z-10">
                                 <span class="bg-white/95 backdrop-blur-sm text-slate-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-slate-100 flex items-center gap-1.5">

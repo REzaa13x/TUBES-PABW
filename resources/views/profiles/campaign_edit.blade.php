@@ -50,7 +50,7 @@
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Foto Kampanye (Kosongkan jika tidak diubah)</label>
                             <div class="flex items-center gap-4">
                                 @if($campaign->image)
-                                    <img src="{{ asset('storage/' . $campaign->image) }}" class="w-20 h-20 rounded-xl object-cover border border-slate-200">
+                                    <img src="{{ $campaign->image }}" class="w-20 h-20 rounded-xl object-cover border border-slate-200">
                                 @endif
                                 <input type="file" name="foto" class="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 transition-all outline-none">
                             </div>

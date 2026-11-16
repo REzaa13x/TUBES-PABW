@@ -78,7 +78,13 @@ class AdminDonationCampaignController extends Controller
             'kategori' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:pending,verified,rejected',
-            'user_id' => 'required|exists:users,id'
+            'user_id' => 'required|exists:users,id',
+            'lokasi' => 'nullable|string|max:255',
+            'provinsi' => 'nullable|string|max:255',
+            'kabupaten' => 'nullable|string|max:255',
+            'kecamatan' => 'nullable|string|max:255',
+            'alamat_lengkap' => 'nullable|string',
+            'kode_pos' => 'nullable|string|max:10',
         ]);
 
         $data = $request->all();
@@ -135,7 +141,13 @@ class AdminDonationCampaignController extends Controller
             'kategori' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:pending,verified,rejected',
-            'user_id' => 'required|exists:users,id'
+            'user_id' => 'required|exists:users,id',
+            'lokasi' => 'nullable|string|max:255',
+            'provinsi' => 'nullable|string|max:255',
+            'kabupaten' => 'nullable|string|max:255',
+            'kecamatan' => 'nullable|string|max:255',
+            'alamat_lengkap' => 'nullable|string',
+            'kode_pos' => 'nullable|string|max:10',
         ]);
 
         $data = $request->all();

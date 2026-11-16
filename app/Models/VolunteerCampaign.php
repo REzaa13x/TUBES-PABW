@@ -55,4 +55,20 @@ class VolunteerCampaign extends Model
     {
         return $this->hasMany(VolunteerApplication::class, 'volunteer_campaign_id');
     }
+
+    /**
+     * Alias: 'name' sebagai alias dari 'judul' untuk kompatibilitas.
+     */
+    public function getNameAttribute()
+    {
+        return $this->judul;
+    }
+
+    /**
+     * Relasi ke User pembuat kampanye (jika ada kolom user_id).
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

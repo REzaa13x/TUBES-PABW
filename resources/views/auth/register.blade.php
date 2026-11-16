@@ -1,4 +1,4 @@
-@props(['title' => 'Register - DonasiKita'])
+@props(['title' => 'Register - DonGiv'])
 
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
@@ -68,62 +68,102 @@
             font-size: 0.875rem;
             margin-top: 0.25rem;
         }
+
+        /* Gradasi Galaksi di Tiap Halaman */
+        body.galaxy-theme {
+            background-color: #f8faff;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 10% 5%, rgba(99, 102, 241, 0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 50% at 90% 8%, rgba(217, 70, 239, 0.16) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 50% at 50% 30%, rgba(14, 165, 233, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 80% 60% at 15% 75%, rgba(139, 92, 246, 0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 50% at 85% 85%, rgba(37, 99, 235, 0.18) 0%, transparent 60%),
+                radial-gradient(circle at 50% 95%, rgba(168, 85, 247, 0.14) 0%, transparent 50%),
+                linear-gradient(180deg, #f0f4ff 0%, #faf5ff 35%, #f0f9ff 70%, #f5f3ff 100%);
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-size: cover;
+            min-height: 100vh;
+        }
+
+        .galaxy-overlay {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+            background-image: 
+                radial-gradient(1.5px 1.5px at 15% 20%, rgba(99, 102, 241, 0.5) 50%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 35% 10%, rgba(168, 85, 247, 0.6) 50%, transparent 100%),
+                radial-gradient(2px 2px at 75% 25%, rgba(56, 189, 248, 0.6) 50%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 85% 15%, rgba(236, 72, 153, 0.5) 50%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 20% 70%, rgba(59, 130, 246, 0.5) 50%, transparent 100%),
+                radial-gradient(2px 2px at 80% 80%, rgba(147, 51, 234, 0.6) 50%, transparent 100%),
+                radial-gradient(1px 1px at 50% 85%, rgba(14, 165, 233, 0.5) 50%, transparent 100%);
+            background-size: 500px 500px;
+            opacity: 0.6;
+        }
+
+        #floating3DLayer {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .obj3d {
+            position: absolute;
+            will-change: transform;
+        }
+
+        .obj-dongiv-text {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            font-weight: 950;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.55) 0%, rgba(99, 102, 241, 0.6) 50%, rgba(147, 51, 234, 0.55) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            -webkit-text-stroke: 1.8px rgba(37, 99, 235, 0.45);
+            white-space: nowrap;
+            user-select: none;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 16px rgba(37, 99, 235, 0.22)) drop-shadow(0 2px 4px rgba(99, 102, 241, 0.15));
+            transition: all 0.3s ease;
+        }
+
+        .obj-dongiv-edge-top-right { top: 100px; right: 32px; animation: driftTopRight 20s ease-in-out infinite; }
+        .obj-dongiv-edge-bottom-left { bottom: 36px; left: 32px; animation: driftBottomLeft 22s ease-in-out infinite; }
+
+        @keyframes driftTopRight {
+            0%, 100% { transform: translate(0, 0) rotate(2deg); }
+            50%      { transform: translate(-12px, -10px) rotate(-2deg); }
+        }
+        @keyframes driftBottomLeft {
+            0%, 100% { transform: translate(0, 0) rotate(-2deg); }
+            50%      { transform: translate(12px, 10px) rotate(2deg); }
+        }
     </style>
 </head>
 
-<body class="bg-slate-50 text-slate-600 font-sans antialiased flex flex-col min-h-screen selection:bg-blue-100 selection:text-blue-900">
+<body class="galaxy-theme text-slate-600 font-sans antialiased flex flex-col min-h-screen selection:bg-blue-100 selection:text-blue-900 relative">
 
-    {{-- NAVBAR --}}
-    <nav class="fixed top-0 w-full z-40 transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-white/50" id="navbar">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            {{-- Logo --}}
-            <a href="{{ url('/') }}" class="flex items-center gap-2 transition transform hover:scale-105 active:scale-95">
-                <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonasiKita" class="h-10">
-            </a>
+    <div class="galaxy-overlay" aria-hidden="true"></div>
 
-            {{-- Desktop Menu --}}
-            <div class="hidden md:flex items-center space-x-1">
-                <a href="{{ url('/') }}" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Beranda</a>
-                <a href="{{ url('/') }}#donasi" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Donasi</a>
-                <a href="{{ route('volunteer.landing') }}" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Relawan</a>
-                <a href="{{ url('/') }}#cara-kerja" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary hover:bg-blue-50 rounded-full transition-all">Cara Kerja</a>
+    <div id="floating3DLayer" aria-hidden="true">
+        <div class="obj3d obj-dongiv-text obj-dongiv-edge-top-right" style="font-size: clamp(2rem, 3.5vw, 3.6rem);">DonGiv</div>
+        <div class="obj3d obj-dongiv-text obj-dongiv-edge-bottom-left" style="font-size: clamp(2rem, 3.6vw, 3.8rem);">DonGiv</div>
+    </div>
 
-                <div class="h-6 w-px bg-slate-200 mx-2"></div>
-
-                {{-- Guest Buttons --}}
-                <div class="flex items-center gap-3 ml-4">
-                    <a href="{{ route('register') }}" class="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-primary transition-colors">
-                        Daftar
-                    </a>
-                    <a href="{{ route('login') }}" class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-full shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
-                        Masuk
-                    </a>
-                </div>
-            </div>
-
-            {{-- Mobile Button --}}
-            <button id="mobileMenuBtn" class="md:hidden p-2 text-slate-600 hover:text-primary transition-colors">
-                <i class="fas fa-bars text-2xl"></i>
-            </button>
-        </div>
-
-        {{-- Mobile Menu --}}
-        <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-slate-100 absolute w-full shadow-lg">
-            <div class="flex flex-col p-4 space-y-3">
-                <a href="{{ url('/') }}" class="px-4 py-3 rounded-xl hover:bg-blue-50 font-medium text-slate-700">Beranda</a>
-                <a href="{{ url('/') }}#donasi" class="px-4 py-3 rounded-xl hover:bg-blue-50 font-medium text-slate-700">Donasi</a>
-                <a href="{{ route('volunteer.campaigns.index') }}" class="px-4 py-3 rounded-xl hover:bg-blue-50 font-medium text-slate-700">Relawan</a>
-
-                <div class="grid grid-cols-2 gap-3 mt-2">
-                    <a href="{{ route('register') }}" class="text-center py-3 rounded-xl border border-slate-200 font-bold text-slate-600">Daftar</a>
-                    <a href="{{ route('login') }}" class="text-center py-3 rounded-xl bg-primary text-white font-bold">Masuk</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    {{-- UNIFIED NAVBAR --}}
+    <x-navbar />
 
     {{-- MAIN CONTENT --}}
-    <main class="flex-grow pt-20">
+    <main class="flex-grow pt-20 relative z-10">
         <div class="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
             <div class="w-full max-w-md">
                 <div class="bg-white rounded-3xl shadow-2xl shadow-indigo-900/10 border border-white/50 p-8 animate-slide-up">
@@ -239,7 +279,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
                 <div class="space-y-6">
                     <a href="{{ url('/') }}" class="flex items-center gap-2">
-                        <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonasiKita" class="h-9 brightness-0 invert opacity-90">
+                        <img src="{{ asset('images/dongiv-logo.png') }}" alt="DonGiv" class="h-9 brightness-0 invert opacity-90">
                     </a>
                     <p class="text-slate-400 text-sm leading-relaxed">
                         Platform crowdfunding terpercaya yang menghubungkan kebaikan hati para donatur dengan ribuan cerita yang membutuhkan bantuan nyata.
@@ -283,7 +323,7 @@
             </div>
 
             <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} DonasiKita. Hak Cipta Dilindungi.</p>
+                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} DonGiv. Hak Cipta Dilindungi.</p>
                 <div class="flex gap-6 text-sm text-slate-500 font-medium">
                     <a href="#" class="hover:text-white transition-colors">Syarat & Ketentuan</a>
                     <a href="#" class="hover:text-white transition-colors">Privasi</a>
@@ -292,31 +332,8 @@
         </div>
     </footer>
 
-    {{-- MAIN SCRIPT --}}
+    {{-- REGISTER SCRIPT --}}
     <script>
-        // Mobile Menu Logic
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileBtn = document.getElementById('mobileMenuBtn');
-            const mobileMenu = document.getElementById('mobileMenu');
-            if (mobileBtn && mobileMenu) {
-                mobileBtn.addEventListener('click', () => {
-                    mobileMenu.classList.toggle('hidden');
-                });
-            }
-
-            // Navbar Scroll Effect
-            const navbar = document.getElementById('navbar');
-            if (navbar) {
-                window.addEventListener('scroll', () => {
-                    if (window.scrollY > 10) {
-                        navbar.classList.add('shadow-soft');
-                    } else {
-                        navbar.classList.remove('shadow-soft');
-                    }
-                });
-            }
-        });
-
         // Register Form Handler
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();

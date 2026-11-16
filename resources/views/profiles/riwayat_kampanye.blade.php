@@ -31,9 +31,9 @@
                             
                             {{-- Image Header --}}
                             <div class="relative h-48 overflow-hidden">
-                                <img src="{{ $c->image ? asset('storage/' . $c->image) : 'https://placehold.co/600x400?text=No+Image' }}" 
+                                <img src="{{ $c->image ? $c->image : asset('images/placeholder.jpg') }}" 
                                      class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                     onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=No+Image';">
+                                     onerror="this.onerror=null; this.src='{{ asset('images/placeholder.jpg') }}';">
                                 
                                 {{-- Status Badge --}}
                                 <div class="absolute top-4 right-4">

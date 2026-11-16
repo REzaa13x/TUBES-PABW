@@ -100,32 +100,94 @@
                             @endif
                         </td>
 
-                        {{-- 5. Aksi --}}
+                        {{-- 5. Aksi (Disatukan dalam 1 Dropdown Menu) --}}
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                            <div class="flex justify-center items-center space-x-3">
-                                {{-- Lihat Pendaftar (Link ke Verifikasi) --}}
-                                <a href="{{ route('admin.verifikasi-relawan.index', ['campaign_id' => $campaign->id]) }}" 
-                                   class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg hover:bg-indigo-100 transition" 
-                                   title="Lihat Pendaftar">
-                                    <i class="fas fa-users"></i>
-                                </a>
+                            <div class="relative inline-block text-left">
+                                <button type="button" 
+                                        onclick="toggleRelawanActionMenu(event, 'relawan-menu-{{ $campaign->id }}')"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50/50 hover:text-blue-600 text-gray-700 text-xs font-bold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                                    <i class="fas fa-ellipsis-h text-gray-400 text-xs"></i>
+                                    <span>Aksi</span>
+                                    <i class="fas fa-chevron-down text-[10px] text-gray-400"></i>
+                                </button>
 
-                                {{-- Edit (Pastikan Route admin.relawan.edit ada) --}}
-                                <a href="{{ route('admin.relawan.edit', $campaign->id) }}" 
-                                   class="text-yellow-600 hover:text-yellow-900 bg-yellow-50 p-2 rounded-lg hover:bg-yellow-100 transition"
-                                   title="Edit Kampanye">
-                                    <i class="fas fa-edit"></i>
-                                </a>
+                                {{-- Floating Popup Menu --}}
+                                <div id="relawan-menu-{{ $campaign->id }}" 
+                                     class="relawan-action-menu hidden fixed z-[9999] w-52 bg-white rounded-xl shadow-2xl border border-gray-100 py-1.5 text-left text-xs divide-y divide-gray-100 transition-all">
+                                    
+                                    {{-- Group 1: Navigasi & Lihat --}}
+                                    <div class="py-1">
+                                        {{-- Lihat Detail --}}
+                                        <a href="{{ route('admin.relawan.show', $campaign->id) }}" 
+                                           class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-blue-50 hover:text-blue-600 text-gray-700 font-semibold transition-colors">
+                                            <span class="w-6 h-6 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center text-xs flex-shrink-0">
+                                                <i class="fas fa-eye"></i>
+                                            </span>
+                                            <span>Lihat Detail</span>
+                                        </a>
 
-                                {{-- Hapus --}}
-                                <form action="{{ route('admin.relawan.destroy', $campaign->id) }}" method="POST" class="inline-block" 
-                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus kampanye ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 p-2 rounded-lg hover:bg-red-100 transition" title="Hapus">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                        {{-- Lihat Pendaftar --}}
+                                        <a href="{{ route('admin.verifikasi-relawan.index', ['campaign_id' => $campaign->id]) }}" 
+                                           class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700 font-semibold transition-colors">
+                                            <span class="w-6 h-6 rounded-md bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs flex-shrink-0">
+                                                <i class="fas fa-users"></i>
+                                            </span>
+                                            <div class="flex-1 flex items-center justify-between">
+                                                <span>Pendaftar</span>
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700">
+                                                    {{ $campaign->kuota_terisi }}
+                                                </span>
+                                            </div>
+                                        </a>
+
+                                        {{-- Edit --}}
+                                        <a href="{{ route('admin.relawan.edit', $campaign->id) }}" 
+                                           class="flex items-center gap-2.5 px-3.5 py-2 hover:bg-amber-50 hover:text-amber-600 text-gray-700 font-semibold transition-colors">
+                                            <span class="w-6 h-6 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center text-xs flex-shrink-0">
+                                                <i class="fas fa-edit"></i>
+                                            </span>
+                                            <span>Edit Kampanye</span>
+                                        </a>
+                                    </div>
+
+                                    {{-- Group 2: Status & Hapus --}}
+                                    <div class="py-1">
+                                        {{-- Toggle Status --}}
+                                        <form action="{{ route('admin.relawan.update', $campaign->id) }}" method="POST" class="m-0">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="judul" value="{{ $campaign->judul }}">
+                                            <input type="hidden" name="kategori" value="{{ $campaign->kategori }}">
+                                            <input type="hidden" name="lokasi" value="{{ $campaign->lokasi }}">
+                                            <input type="hidden" name="kuota_total" value="{{ $campaign->kuota_total }}">
+                                            <input type="hidden" name="tanggal_mulai" value="{{ $campaign->tanggal_mulai }}">
+                                            <input type="hidden" name="tanggal_selesai" value="{{ $campaign->tanggal_selesai }}">
+                                            <input type="hidden" name="deskripsi" value="{{ $campaign->deskripsi }}">
+                                            <input type="hidden" name="status" value="{{ $campaign->status == 'Aktif' ? 'Nonaktif' : 'Aktif' }}">
+                                            <button type="submit" 
+                                                    class="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-gray-50 text-left font-semibold transition-colors {{ $campaign->status == 'Aktif' ? 'text-orange-600 hover:bg-orange-50' : 'text-emerald-600 hover:bg-emerald-50' }}">
+                                                <span class="w-6 h-6 rounded-md {{ $campaign->status == 'Aktif' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600' }} flex items-center justify-center text-xs flex-shrink-0">
+                                                    <i class="fas {{ $campaign->status == 'Aktif' ? 'fa-pause' : 'fa-play' }}"></i>
+                                                </span>
+                                                <span>{{ $campaign->status == 'Aktif' ? 'Nonaktifkan' : 'Aktifkan' }}</span>
+                                            </button>
+                                        </form>
+
+                                        {{-- Hapus --}}
+                                        <form action="{{ route('admin.relawan.destroy', $campaign->id) }}" method="POST" class="m-0"
+                                              onsubmit="return confirm('Apakah Anda yakin ingin menghapus kampanye {{ addslashes($campaign->judul) }}?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" 
+                                                    class="w-full flex items-center gap-2.5 px-3.5 py-2 hover:bg-red-50 text-red-600 text-left font-semibold transition-colors">
+                                                <span class="w-6 h-6 rounded-md bg-red-50 text-red-600 flex items-center justify-center text-xs flex-shrink-0">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </span>
+                                                <span>Hapus Kampanye</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -158,3 +220,58 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function toggleRelawanActionMenu(event, menuId) {
+        event.stopPropagation();
+        const menu = document.getElementById(menuId);
+        if (!menu) return;
+
+        const isCurrentlyOpen = !menu.classList.contains('hidden');
+
+        // Tutup semua menu lain
+        closeAllRelawanMenus();
+
+        if (!isCurrentlyOpen) {
+            const btn = event.currentTarget;
+            const rect = btn.getBoundingClientRect();
+            
+            menu.classList.remove('hidden');
+
+            const menuWidth = menu.offsetWidth || 208;
+            const menuHeight = menu.offsetHeight || 220;
+
+            // Posisikan menu: sejajarkan kanan menu dengan kanan tombol
+            let left = rect.right - menuWidth;
+            if (left < 10) left = 10;
+
+            // Posisikan vertikal: jika dekat tepi bawah layar, balikkan ke atas tombol
+            let top = rect.bottom + 6;
+            if (top + menuHeight > window.innerHeight && rect.top > menuHeight) {
+                top = rect.top - menuHeight - 6;
+            }
+
+            menu.style.top = `${top}px`;
+            menu.style.left = `${left}px`;
+        }
+    }
+
+    function closeAllRelawanMenus() {
+        document.querySelectorAll('.relawan-action-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+    }
+
+    // Tutup dropdown saat klik di luar area
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.relawan-action-menu')) {
+            closeAllRelawanMenus();
+        }
+    });
+
+    // Tutup saat window scroll atau resize agar posisi tidak melayang salah
+    window.addEventListener('scroll', closeAllRelawanMenus, true);
+    window.addEventListener('resize', closeAllRelawanMenus);
+</script>
+@endpush

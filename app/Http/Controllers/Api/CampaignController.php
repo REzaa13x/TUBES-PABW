@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CampaignResource;
 use App\Models\Campaign;
+use App\Models\AdminNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -41,8 +42,18 @@ class CampaignController extends Controller
                 });
             }
 
-            // Sort by end_date ascending (nearest first) by default
-            $query->orderBy('end_date', 'asc');
+            if ($request->has('my') && $request->my == '1') {
+                $user = auth('sanctum')->user();
+                if ($user) {
+                    $query->where('user_id', $user->id);
+                } else {
+                    $query->where('user_id', 0);
+                }
+                $query->orderBy('created_at', 'desc');
+            } else {
+                // Sort by end_date ascending (nearest first) by default
+                $query->orderBy('end_date', 'asc');
+            }
 
             $campaigns = $query->paginate(10);
 
@@ -71,6 +82,12 @@ class CampaignController extends Controller
             'yayasan' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'sometimes|string|in:pending,verified,rejected',
+            'lokasi' => 'nullable|string|max:255',
+            'provinsi' => 'nullable|string|max:255',
+            'kabupaten' => 'nullable|string|max:255',
+            'kecamatan' => 'nullable|string|max:255',
+            'alamat_lengkap' => 'nullable|string',
+            'kode_pos' => 'nullable|string|max:10',
         ]);
 
         // Handle image upload if provided
@@ -92,6 +109,33 @@ class CampaignController extends Controller
         }
 
         $campaign = Campaign::create($validatedData);
+
+        // Notifikasi ke admin: kampanye baru dibuat dari mobile
+        try {
+            $user = $request->user();
+            AdminNotification::create([
+                'title'               => '📢 Kampanye Baru Menunggu Verifikasi',
+                'message'             => 'Kampanye "' . $campaign->title . '" dibuat oleh ' . $user->name .
+                    ' dari aplikasi mobile dan menunggu persetujuan admin.',
+                'category'            => 'kampanye',
+                'priority'            => 'high',
+                'icon'                => '📢',
+                'type'                => 'campaign_pending_approval',
+                'action_label'        => 'Lihat Detail',
+                'action_url'          => route('admin.campaigns.show', $campaign->id),
+                'related_campaign_id' => $campaign->id,
+                'related_user_id'     => $user->id,
+                'metadata'            => [
+                    'campaign_title'  => $campaign->title,
+                    'creator_name'    => $user->name,
+                    'target_amount'   => $campaign->target_amount,
+                    'kategori'        => $campaign->kategori,
+                    'source'          => 'mobile',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create admin notification for campaign: ' . $e->getMessage());
+        }
 
         return response()->json([
             'message' => 'Campaign created successfully',
@@ -137,6 +181,12 @@ class CampaignController extends Controller
             'yayasan' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'sometimes|string|in:pending,verified,rejected',
+            'lokasi' => 'nullable|string|max:255',
+            'provinsi' => 'nullable|string|max:255',
+            'kabupaten' => 'nullable|string|max:255',
+            'kecamatan' => 'nullable|string|max:255',
+            'alamat_lengkap' => 'nullable|string',
+            'kode_pos' => 'nullable|string|max:10',
         ]);
 
         // Handle image upload if provided
