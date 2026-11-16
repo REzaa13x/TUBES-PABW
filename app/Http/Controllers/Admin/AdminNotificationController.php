@@ -32,8 +32,12 @@ class AdminNotificationController extends Controller
 
         $query = AdminNotification::latest();
 
-        // Filter kategori
-        $query->byCategory($category);
+        // Filter kategori / status
+        if ($category === 'unread') {
+            $query->unread();
+        } else {
+            $query->byCategory($category);
+        }
 
         // Filter prioritas
         if ($priority) {
@@ -80,6 +84,101 @@ class AdminNotificationController extends Controller
             'stats',
             'activityFeed'
         ));
+    }
+
+    /**
+     * Form tambah notifikasi baru
+     */
+    public function create()
+    {
+        return view('admin.notifications.create');
+    }
+
+    /**
+     * Buat notifikasi baru secara manual oleh Admin
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'message' => 'required|string',
+            'category' => 'nullable|string',
+            'priority' => 'nullable|string',
+            'send_to_users' => 'nullable',
+        ]);
+
+        $category = $request->input('category', 'sistem');
+        $priority = $request->input('priority', 'medium');
+
+        $icon = match($category) {
+            'donasi' => '💰',
+            'kampanye' => '📢',
+            'relawan' => '🤝',
+            'laporan' => '🚩',
+            default => '🔔',
+        };
+
+        AdminNotification::create([
+            'title' => $request->title,
+            'message' => $request->message,
+            'category' => $category,
+            'priority' => $priority,
+            'icon' => $icon,
+            'type' => 'manual',
+            'is_read' => false,
+        ]);
+
+        if ($request->boolean('send_to_users') || $request->input('send_to_users') == '1') {
+            $userIcon = match($category) {
+                'donasi' => 'fas fa-hand-holding-heart',
+                'kampanye' => 'fas fa-bullhorn',
+                'relawan' => 'fas fa-hands-helping',
+                default => 'fas fa-bell',
+            };
+            $users = \App\Models\User::all();
+            foreach ($users as $user) {
+                $user->notify(new \App\Notifications\CustomNotification(
+                    $request->title,
+                    $request->message,
+                    $userIcon,
+                    'text-blue-500'
+                ));
+            }
+        }
+
+        return redirect()->route('admin.notifications.index')->with('success', 'Notifikasi berhasil ditambahkan!');
+    }
+
+    /**
+     * Form edit notifikasi
+     */
+    public function edit($id)
+    {
+        $notification = AdminNotification::findOrFail($id);
+        return view('admin.notifications.edit', compact('notification'));
+    }
+
+    /**
+     * Update notifikasi
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'message' => 'required|string',
+            'category' => 'nullable|string',
+            'priority' => 'nullable|string',
+        ]);
+
+        $notification = AdminNotification::findOrFail($id);
+        $notification->update([
+            'title' => $request->title,
+            'message' => $request->message,
+            'category' => $request->input('category', $notification->category),
+            'priority' => $request->input('priority', $notification->priority),
+        ]);
+
+        return redirect()->route('admin.notifications.index')->with('success', 'Notifikasi berhasil diperbarui!');
     }
 
     /**

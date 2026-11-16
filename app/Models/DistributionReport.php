@@ -26,7 +26,22 @@ class DistributionReport extends Model
 
     public function getProofImageAttribute($value)
     {
-        if (!$value) return null;
-        return asset('storage/' . $value);
+        if (!$value) return asset('images/placeholder.jpg');
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+        if (file_exists(public_path($value))) {
+            return asset($value);
+        }
+        if (file_exists(public_path('storage/' . $value))) {
+            return asset('storage/' . $value);
+        }
+        $pathParts = explode('/', $value);
+        if (count($pathParts) >= 2) {
+            $folder = $pathParts[0];
+            $filename = implode('/', array_slice($pathParts, 1));
+            return url("/api/images/{$folder}/{$filename}");
+        }
+        return asset($value);
     }
 }

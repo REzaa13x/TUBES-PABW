@@ -125,9 +125,21 @@
                 <a href="{{ route('validator.dashboard', $token) }}" class="flex-shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all {{ Route::is('validator.dashboard') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100' }}">
                     <i class="fas fa-list mr-1.5"></i> Daftar Kampanye Saya
                 </a>
-                @if(isset($campaign) && (Route::is('validator.campaign') || Route::is('validator.upload')))
-                <a href="{{ route('validator.campaign', $token) }}" class="flex-shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all {{ Route::is('validator.campaign') || Route::is('validator.upload') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100' }}">
-                    <i class="fas fa-chart-line mr-1.5"></i> Transparansi & Detail: {{ Str::limit($campaign->title, 30) }}
+                @if(isset($campaign))
+                <a href="{{ route('validator.campaign', $token) }}" class="flex-shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all {{ Route::is('validator.campaign') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100' }}">
+                    <i class="fas fa-chart-line mr-1.5"></i> Transparansi & Detail: {{ Str::limit($campaign->title, 25) }}
+                </a>
+                <a href="{{ route('validator.status', $token) }}" class="flex-shrink-0 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all {{ Route::is('validator.status') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100' }}">
+                    <i class="fas fa-clipboard-check mr-1.5"></i> Hasil Laporan Kampanye
+                    @php 
+                        $reportCount = isset($campaign) ? $campaign->distributionReports()->count() : 0; 
+                    @endphp
+                    @if($reportCount > 0)
+                        <span class="ml-1 px-1.5 py-0.2 rounded-full text-[9px] {{ Route::is('validator.status') ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700' }}">{{ $reportCount }}</span>
+                    @endif
+                </a>
+                <a href="{{ route('validator.upload', $token) }}" class="flex-shrink-0 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all {{ Route::is('validator.upload') ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100' }}">
+                    <i class="fas fa-cloud-upload-alt mr-1"></i> Unggah Laporan
                 </a>
                 @endif
             </div>

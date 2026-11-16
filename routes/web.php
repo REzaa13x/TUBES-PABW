@@ -159,6 +159,10 @@ Route::middleware(['auth'])->group(function () {
         // === ADMIN NOTIFICATION CENTER (NEW) ===
         Route::prefix('notifications')->name('notifications.')->group(function () {
             Route::get('/', [AdminNotificationController::class, 'index'])->name('index');
+            Route::get('/create', [AdminNotificationController::class, 'create'])->name('create');
+            Route::post('/', [AdminNotificationController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [AdminNotificationController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [AdminNotificationController::class, 'update'])->name('update');
             Route::get('/dropdown', [AdminNotificationController::class, 'dropdown'])->name('dropdown');
             Route::post('/{id}/mark-as-read', [AdminNotificationController::class, 'markAsRead'])->name('markAsRead');
             Route::post('/mark-all-read', [AdminNotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
@@ -200,8 +204,11 @@ Route::middleware(['auth'])->group(function () {
 
         // Manajemen Penyaluran Dana (Distribution)
         Route::get('distribution', [AdminDistributionController::class, 'index'])->name('distribution.index');
+        Route::get('distribution/create', [AdminDistributionController::class, 'create'])->name('distribution.create');
+        Route::post('distribution', [AdminDistributionController::class, 'store'])->name('distribution.store');
         Route::get('distribution/{id}', [AdminDistributionController::class, 'show'])->name('distribution.show');
         Route::put('distribution/{id}', [AdminDistributionController::class, 'update'])->name('distribution.update');
+        Route::delete('distribution/{id}', [AdminDistributionController::class, 'destroy'])->name('distribution.destroy');
         Route::post('campaigns/{id}/generate-link', [AdminDistributionController::class, 'generateLink'])->name('campaigns.generateLink');
 
         // API Verifikasi Donasi untuk Admin

@@ -73,10 +73,22 @@
                             </div>
                         </div>
 
+                        <!-- Laporan Penyaluran Info -->
+                        @php
+                            $reportsCount = $task->distributionReports ? $task->distributionReports->count() : 0;
+                            $disbursed = $task->distributionReports ? $task->distributionReports->where('status', 'verified')->sum('amount') : 0;
+                        @endphp
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl text-[11px] font-bold border border-slate-100">
+                            <span class="text-slate-500 flex items-center gap-1.5">
+                                <i class="fas fa-clipboard-check text-emerald-500"></i> Laporan Hasil:
+                            </span>
+                            <span class="text-blue-600 font-black">{{ $reportsCount }} Laporan</span>
+                        </div>
+
                         <!-- Card Action -->
-                        <div class="pt-4 border-t border-slate-50 mt-auto">
-                            <a href="{{ route('validator.campaign', $task->distribution_token) }}" class="w-full py-4 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all inline-flex items-center justify-center gap-2 border border-slate-100 hover:border-blue-100">
-                                <i class="fas fa-chart-line"></i> Lihat Detail & Transparansi
+                        <div class="pt-4 border-t border-slate-50 mt-auto flex gap-2">
+                            <a href="{{ route('validator.campaign', $task->distribution_token) }}" class="flex-1 py-3.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all inline-flex items-center justify-center gap-2 border border-slate-100 hover:border-blue-100">
+                                <i class="fas fa-eye text-blue-600"></i> Detail & Hasil Laporan
                             </a>
                         </div>
                     </div>

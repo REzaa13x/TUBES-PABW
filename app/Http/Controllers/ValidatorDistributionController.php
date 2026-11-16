@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Campaign;
 use App\Models\DistributionReport;
+use App\Models\AdminNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class ValidatorDistributionController extends Controller
@@ -24,6 +26,7 @@ class ValidatorDistributionController extends Controller
         if ($campaign->validator_phone) {
             $allTasks = Campaign::where('validator_phone', $campaign->validator_phone)
                 ->where('id', '!=', $campaign->id)
+                ->with('distributionReports')
                 ->get();
             
             foreach($allTasks as $task) {
@@ -52,16 +55,17 @@ class ValidatorDistributionController extends Controller
         $myCampaigns = [];
         if ($campaign->validator_phone) {
             $myCampaigns = Campaign::where('validator_phone', $campaign->validator_phone)
+                ->with('distributionReports')
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
-            $myCampaigns = [$campaign];
+            $myCampaigns = [$campaign->load('distributionReports')];
         }
 
         return view('validator.my-campaigns', compact('campaign', 'myCampaigns', 'token'));
     }
 
-    // Fitur Baru: Verifikasi Kampanye via Portal (Tanpa Login)
+    // Fitur: Verifikasi Kampanye via Portal (Tanpa Login)
     public function verifyCampaign($token)
     {
         $campaign = $this->getCampaign($token);
@@ -98,47 +102,93 @@ class ValidatorDistributionController extends Controller
             ->latest()
             ->get();
             
-        // Pengeluaran 2: Laporan Penyaluran oleh Validator
+        // Pengeluaran 2: Seluruh Laporan Penyaluran Kampanye (Hasil Kegiatan)
         $distributions = $campaign->distributionReports()
-            ->where('status', 'verified')
             ->latest()
             ->get();
+
+        $totalPenyaluran = $distributions->where('status', 'verified')->sum('amount');
+        $totalPenarikan = $withdrawals->sum('amount');
+        $sisaSaldo = max(0, $campaign->current_amount - ($totalPenyaluran + $totalPenarikan));
 
         return view('validator.campaign-detail', array_merge($data, compact(
             'campaign', 
             'token', 
             'donations', 
             'withdrawals', 
-            'distributions'
+            'distributions',
+            'totalPenyaluran',
+            'totalPenarikan',
+            'sisaSaldo'
         )));
     }
 
     public function upload($token)
     {
-        // Validator hanya berperan sebagai pengawas transparansi, bukan pelapor penyaluran
-        return redirect()->route('validator.campaign', $token)
-            ->with('info', 'Validator hanya dapat memantau transparansi aliran dana. Form penyaluran dikelola oleh admin sistem.');
+        $campaign = $this->getCampaign($token);
+        return view('validator.upload-proof', compact('campaign', 'token'));
     }
 
     public function store(Request $request, $token)
     {
-        // Validator tidak diperkenankan mengajukan laporan penyaluran
+        $campaign = $this->getCampaign($token);
+
+        $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'recipient' => 'required|string|max:255',
+            'description' => 'required|string',
+            'proof_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        $image = $request->file('proof_image');
+        $imageName = 'dist_val_' . time() . '_' . Str::random(8) . '.' . $image->getClientOriginalExtension();
+        
+        $destinationPath = public_path('uploads/distributions');
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
+        }
+        $image->move($destinationPath, $imageName);
+        $imagePath = 'uploads/distributions/' . $imageName;
+
+        $report = DistributionReport::create([
+            'campaign_id' => $campaign->id,
+            'amount' => $request->amount,
+            'recipient' => $request->recipient,
+            'description' => $request->description,
+            'proof_image' => $imagePath,
+            'status' => 'verified', // Terverifikasi langsung karena dilaporkan oleh validator resmi
+            'admin_note' => 'Laporan penyaluran diunggah dan divalidasi langsung oleh Validator Lapangan.',
+        ]);
+
+        // Notifikasi Admin
+        AdminNotification::create([
+            'title' => 'Laporan Penyaluran dari Validator',
+            'message' => 'Validator mengunggah laporan penyaluran Rp ' . number_format($request->amount, 0, ',', '.') . ' untuk ' . $campaign->title . '.',
+            'category' => 'relawan',
+            'priority' => 'medium',
+            'icon' => '📑',
+            'action_label' => 'Periksa Laporan',
+            'action_url' => route('admin.distribution.show', $report->id),
+            'related_campaign_id' => $campaign->id,
+            'is_read' => false,
+        ]);
+
         return redirect()->route('validator.campaign', $token)
-            ->with('info', 'Validator hanya dapat memantau transparansi aliran dana. Form penyaluran dikelola oleh admin sistem.');
+            ->with('success', 'Laporan penyaluran kampanye berhasil disimpan dan dicantumkan di portal!');
     }
 
     public function history($token)
     {
         $campaign = $this->getCampaign($token);
         
-        // Tampilkan semua kampanye yang diawasi validator ini (berdasarkan nomor HP validator)
         $myCampaigns = collect();
         if ($campaign->validator_phone) {
             $myCampaigns = Campaign::where('validator_phone', $campaign->validator_phone)
+                ->with('distributionReports')
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
-            $myCampaigns = collect([$campaign]);
+            $myCampaigns = collect([$campaign->load('distributionReports')]);
         }
         
         return view('validator.history', compact('campaign', 'myCampaigns', 'token'));
@@ -148,6 +198,7 @@ class ValidatorDistributionController extends Controller
     {
         $campaign = $this->getCampaign($token);
         $reports = $campaign->distributionReports()->latest()->get();
-        return view('validator.status', compact('campaign', 'reports', 'token'));
+        $totalPenyaluran = $reports->where('status', 'verified')->sum('amount');
+        return view('validator.status', compact('campaign', 'reports', 'token', 'totalPenyaluran'));
     }
 }

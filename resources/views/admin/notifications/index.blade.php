@@ -1,554 +1,491 @@
 @extends('admin.layouts.master')
 
-@section('title', 'Pusat Notifikasi Admin')
-
-@push('styles')
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-/* ============================================================
-   ADMIN NOTIFICATION CENTER — Dongiv Design System
-   ============================================================ */
-.notif-page { font-family: 'Poppins', sans-serif; }
-
-/* ---- Page Header ---- */
-.notif-header {
-    background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
-    border-radius: 1.25rem;
-    padding: 2rem 2.5rem;
-    color: #fff;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 8px 32px rgba(29,78,216,.25);
-}
-.notif-header h1 { font-size: 1.75rem; font-weight: 700; margin: 0; }
-.notif-header p  { font-size: 0.9rem; opacity: .85; margin: .25rem 0 0; }
-.notif-header-actions { display: flex; gap: .75rem; }
-.btn-ghost {
-    background: rgba(255,255,255,.15);
-    border: 1px solid rgba(255,255,255,.3);
-    color: #fff;
-    padding: .5rem 1.1rem;
-    border-radius: .6rem;
-    cursor: pointer;
-    font-size: .85rem;
-    font-family: 'Poppins', sans-serif;
-    transition: background .2s;
-    text-decoration: none;
-}
-.btn-ghost:hover { background: rgba(255,255,255,.3); }
-
-/* ---- Stats Bar ---- */
-.stats-bar {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-.stat-card {
-    background: #fff;
-    border-radius: 1rem;
-    padding: 1.1rem 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,.06);
-}
-.stat-icon {
-    width: 42px; height: 42px;
-    border-radius: .75rem;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.25rem;
-}
-.stat-card .label { font-size: .75rem; color: #6b7280; font-weight: 500; }
-.stat-card .value { font-size: 1.4rem; font-weight: 700; color: #111827; line-height: 1; }
-.stat-blue   { background: #dbeafe; }
-.stat-red    { background: #fee2e2; }
-.stat-green  { background: #d1fae5; }
-.stat-orange { background: #ffedd5; }
-
-/* ---- Toolbar ---- */
-.toolbar {
-    background: #fff;
-    border-radius: 1rem;
-    padding: 1rem 1.25rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,.06);
-    margin-bottom: 1.25rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: .75rem;
-    align-items: center;
-}
-.toolbar input[type=text], .toolbar input[type=date], .toolbar select {
-    border: 1px solid #e5e7eb;
-    border-radius: .6rem;
-    padding: .5rem .85rem;
-    font-family: 'Poppins', sans-serif;
-    font-size: .85rem;
-    color: #374151;
-    outline: none;
-    transition: border .2s;
-}
-.toolbar input[type=text]:focus,
-.toolbar input[type=date]:focus,
-.toolbar select:focus { border-color: #3b82f6; }
-
-/* ---- Category Tabs ---- */
-.cat-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .4rem;
-    background: #f3f6fc;
-    padding: .5rem;
-    border-radius: .75rem;
-    margin-bottom: 1.25rem;
-}
-.cat-tab {
-    padding: .45rem 1rem;
-    border-radius: .5rem;
-    font-size: .82rem;
-    font-weight: 500;
-    cursor: pointer;
-    color: #6b7280;
-    border: none;
-    background: transparent;
-    font-family: 'Poppins', sans-serif;
-    transition: all .2s;
-}
-.cat-tab:hover { background: rgba(59,130,246,.1); color: #1d4ed8; }
-.cat-tab.active {
-    background: #1d4ed8;
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(29,78,216,.25);
-}
-.cat-tab .badge {
-    background: rgba(255,255,255,.25);
-    border-radius: 999px;
-    padding: .05rem .4rem;
-    font-size: .72rem;
-    margin-left: .3rem;
-}
-.cat-tab.active .badge { background: rgba(255,255,255,.3); }
-.cat-tab:not(.active) .badge { background: #e5e7eb; color: #374151; }
-
-/* ---- Notification Card ---- */
-.notif-card {
-    background: #fff;
-    border-radius: 1rem;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: .9rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,.06);
-    border-left: 5px solid #d1d5db;
-    transition: transform .2s, box-shadow .2s;
-    position: relative;
-}
-.notif-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,.1);
-}
-.notif-card.unread { background: linear-gradient(90deg, #f0f9ff 0%, #fff 30%); }
-.notif-card.priority-high   { border-left-color: #ef4444; }
-.notif-card.priority-medium { border-left-color: #f59e0b; }
-.notif-card.priority-low    { border-left-color: #10b981; }
-
-.notif-icon {
-    font-size: 2rem;
-    min-width: 50px;
-    text-align: center;
-    line-height: 1;
-}
-.notif-body { flex: 1; min-width: 0; }
-.notif-body .notif-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111827;
-    margin: 0 0 .3rem;
-}
-.notif-body .notif-message {
-    font-size: .875rem;
-    color: #4b5563;
-    margin: 0 0 .5rem;
-    line-height: 1.5;
-}
-.notif-meta {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    flex-wrap: wrap;
-}
-.notif-time { font-size: .75rem; color: #9ca3af; }
-.badge-cat {
-    font-size: .7rem;
-    padding: .15rem .6rem;
-    border-radius: 999px;
-    font-weight: 600;
-}
-.badge-kampanye    { background:#dbeafe; color:#1d4ed8; }
-.badge-donasi      { background:#d1fae5; color:#065f46; }
-.badge-relawan     { background:#ede9fe; color:#5b21b6; }
-.badge-laporan     { background:#fee2e2; color:#991b1b; }
-.badge-smart_matching { background:#fef3c7; color:#92400e; }
-.badge-sistem      { background:#f3f4f6; color:#374151; }
-.badge-priority {
-    font-size: .7rem;
-    padding: .15rem .5rem;
-    border-radius: 999px;
-    font-weight: 600;
-}
-.badge-high   { background:#fee2e2; color:#991b1b; }
-.badge-medium { background:#ffedd5; color:#92400e; }
-.badge-low    { background:#d1fae5; color:#065f46; }
-.unread-dot {
-    width: 9px; height: 9px;
-    background: #3b82f6;
-    border-radius: 50%;
-    position: absolute;
-    top: 1rem; right: 1rem;
-}
-
-.notif-actions {
-    display: flex;
-    flex-direction: column;
-    gap: .4rem;
-    min-width: 130px;
-}
-.action-btn {
-    display: block;
-    padding: .4rem .8rem;
-    border-radius: .5rem;
-    font-size: .8rem;
-    font-family: 'Poppins', sans-serif;
-    cursor: pointer;
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
-    color: #374151;
-    text-align: center;
-    text-decoration: none;
-    transition: background .15s, color .15s;
-}
-.action-btn:hover { background: #e5e7eb; }
-.action-btn.primary { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; }
-.action-btn.primary:hover { background: #bfdbfe; }
-.action-btn.danger  { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
-.action-btn.danger:hover  { background: #fecaca; }
-
-/* ---- Empty State ---- */
-.empty-state {
-    text-align: center;
-    padding: 4rem 1rem;
-    background: #fff;
-    border-radius: 1.25rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,.06);
-}
-.empty-state .empty-icon { font-size: 5rem; opacity: .3; margin-bottom: 1rem; }
-.empty-state h3 { font-size: 1.3rem; font-weight: 600; color: #374151; margin: 0 0 .5rem; }
-.empty-state p  { color: #9ca3af; font-size: .9rem; margin: 0 0 1.5rem; }
-
-/* ---- Alert ---- */
-.alert-success {
-    background: #d1fae5;
-    border-left: 4px solid #10b981;
-    color: #065f46;
-    padding: .75rem 1.2rem;
-    border-radius: .75rem;
-    margin-bottom: 1rem;
-    font-size: .875rem;
-}
-
-/* ---- Pagination ---- */
-.pagination-wrap { display: flex; justify-content: center; margin-top: 1.5rem; }
-.pagination-wrap .pagination { gap: .35rem; }
-.pagination-wrap .page-link {
-    border-radius: .5rem !important;
-    border: 1px solid #e5e7eb !important;
-    color: #374151 !important;
-    font-family: 'Poppins', sans-serif;
-    font-size: .85rem;
-}
-.pagination-wrap .page-item.active .page-link {
-    background: #1d4ed8 !important;
-    border-color: #1d4ed8 !important;
-    color: #fff !important;
-}
-
-/* ---- Activity Feed sidebar ---- */
-.activity-feed {
-    background: #fff;
-    border-radius: 1rem;
-    padding: 1.25rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,.06);
-}
-.activity-feed h3 { font-size: 1rem; font-weight: 600; margin: 0 0 1rem; color: #111827; }
-.feed-item {
-    display: flex;
-    gap: .75rem;
-    align-items: flex-start;
-    padding: .6rem 0;
-    border-bottom: 1px solid #f3f4f6;
-    font-size: .8rem;
-}
-.feed-item:last-child { border: none; }
-.feed-time { color: #9ca3af; white-space: nowrap; font-size: .75rem; min-width: 38px; }
-.feed-text { color: #374151; }
-
-/* ---- Layout ---- */
-.two-col { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
-@media(max-width:900px) { .two-col { grid-template-columns: 1fr; } }
-</style>
-@endpush
+@section('title', 'Notifikasi Admin')
 
 @section('content')
-<div class="notif-page">
+<div class="min-h-screen pb-16">
 
-    {{-- ===== PAGE HEADER ===== --}}
-    <div class="notif-header">
+    {{-- ===== HEADER SECTION ===== --}}
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-            <h1>🔔 Pusat Notifikasi Admin</h1>
-            <p>Pantau seluruh aktivitas penting platform Dongiv secara real‑time.</p>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200 flex-shrink-0">
+                    <i class="fas fa-bell text-lg"></i>
+                </div>
+                <span>Notifikasi Admin</span>
+            </h1>
+            <p class="text-slate-500 text-sm mt-1.5 ml-14">Pantau pemberitahuan sistem, donasi, dan relawan secara sederhana.</p>
         </div>
-        <div class="notif-header-actions">
-            <form method="POST" action="{{ route('admin.notifications.markAllAsRead') }}" style="display:inline">
+
+        {{-- Action Buttons --}}
+        <div class="flex flex-wrap items-center gap-2.5">
+            {{-- Tombol Buat Notifikasi Baru --}}
+            <button type="button" onclick="openCreateModal()" 
+                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                <i class="fas fa-plus"></i>
+                <span>Buat Notifikasi</span>
+            </button>
+
+            {{-- Tandai Semua Dibaca --}}
+            @if(($stats['total_unread'] ?? 0) > 0)
+            <form method="POST" action="{{ route('admin.notifications.markAllAsRead') }}" class="inline">
                 @csrf
-                <button type="submit" class="btn-ghost">✅ Tandai Semua Dibaca</button>
+                <button type="submit" 
+                        class="inline-flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 shadow-sm transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                    <i class="fas fa-check-double text-blue-600"></i>
+                    <span>Tandai Semua Dibaca</span>
+                </button>
             </form>
-            <a href="{{ route('admin.notifications.export') }}" class="btn-ghost">📥 Export CSV</a>
+            @endif
+
+            {{-- Export CSV --}}
+            <a href="{{ route('admin.notifications.export', ['category' => $category]) }}" 
+               class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-xl border border-slate-200 shadow-sm transition-all"
+               title="Export CSV Data">
+                <i class="fas fa-download text-slate-500"></i>
+                <span>Export</span>
+            </a>
         </div>
     </div>
 
-    {{-- ===== STATS BAR ===== --}}
-    <div class="stats-bar">
-        <div class="stat-card">
-            <div class="stat-icon stat-blue">🔔</div>
-            <div>
-                <div class="label">Total Notifikasi</div>
-                <div class="value">{{ $stats['all'] }}</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon stat-red">📭</div>
-            <div>
-                <div class="label">Belum Dibaca</div>
-                <div class="value">{{ $stats['total_unread'] }}</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon stat-orange">🚨</div>
-            <div>
-                <div class="label">Prioritas Tinggi</div>
-                <div class="value">{{ $stats['high_priority'] }}</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon stat-green">📅</div>
-            <div>
-                <div class="label">Hari Ini</div>
-                <div class="value">{{ $stats['today'] }}</div>
-            </div>
-        </div>
-    </div>
-
+    {{-- Alert Success --}}
     @if(session('success'))
-        <div class="alert-success">✅ {{ session('success') }}</div>
-    @endif
-
-    {{-- ===== TOOLBAR (SEARCH + FILTER) ===== --}}
-    <div class="toolbar">
-        <input type="text" id="searchInput" placeholder="🔍  Cari notifikasi, nama kampanye, pengguna..." value="{{ $search }}" style="flex:1;min-width:220px">
-        <select id="priorityFilter">
-            <option value="">Semua Prioritas</option>
-            <option value="high"   {{ $priority == 'high'   ? 'selected' : '' }}>🔴 Tinggi</option>
-            <option value="medium" {{ $priority == 'medium' ? 'selected' : '' }}>🟡 Sedang</option>
-            <option value="low"    {{ $priority == 'low'    ? 'selected' : '' }}>🟢 Rendah</option>
-        </select>
-        <input type="date" id="dateFrom" value="{{ $dateFrom }}" title="Dari Tanggal">
-        <input type="date" id="dateTo"   value="{{ $dateTo }}"   title="Sampai Tanggal">
-        <button id="applyFilters" onclick="applyFilters()"
-            style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;padding:.5rem 1.2rem;border-radius:.6rem;cursor:pointer;font-family:'Poppins',sans-serif;font-size:.85rem;">
-            Terapkan
+    <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3.5 rounded-2xl flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                <i class="fas fa-check text-xs"></i>
+            </div>
+            <span class="font-semibold text-sm">{{ session('success') }}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600 p-1">
+            <i class="fas fa-times text-sm"></i>
         </button>
     </div>
+    @endif
 
-    {{-- ===== CATEGORY TABS ===== --}}
-    <div class="cat-tabs">
-        @php
-            $cats = [
-                'semua'         => ['label' => 'Semua',         'icon' => '📋', 'count' => $stats['all']],
-                'kampanye'      => ['label' => 'Kampanye',      'icon' => '📢', 'count' => $stats['kampanye']],
-                'donasi'        => ['label' => 'Donasi',        'icon' => '💰', 'count' => $stats['donasi']],
-                'relawan'       => ['label' => 'Relawan',       'icon' => '🤝', 'count' => $stats['relawan']],
-                'laporan'       => ['label' => 'Laporan',       'icon' => '🚩', 'count' => $stats['laporan']],
-                'smart_matching'=> ['label' => 'Smart Matching','icon' => '⭐', 'count' => $stats['smart_matching']],
-                'sistem'        => ['label' => 'Sistem',        'icon' => '⚙️', 'count' => $stats['sistem']],
-            ];
-        @endphp
-        @foreach($cats as $key => $c)
-            <button class="cat-tab {{ $category == $key ? 'active' : '' }}"
-                    data-category="{{ $key }}"
-                    onclick="setCategory('{{ $key }}')">
-                {{ $c['icon'] }} {{ $c['label'] }}
-                <span class="badge">{{ $c['count'] }}</span>
-            </button>
-        @endforeach
-    </div>
-
-    {{-- ===== TWO-COLUMN LAYOUT ===== --}}
-    <div class="two-col">
-
-        {{-- === LEFT: NOTIFICATIONS LIST === --}}
-        <div>
-            @if($notifications->isEmpty())
-                <div class="empty-state">
-                    <div class="empty-icon">🔕</div>
-                    <h3>Belum Ada Aktivitas Baru</h3>
-                    <p>Semua aktivitas platform Dongiv akan muncul di sini saat ada kampanye, donasi, atau pendaftaran relawan baru.</p>
-                    <a href="{{ route('admin.dashboard') }}"
-                       style="display:inline-block;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;padding:.65rem 1.5rem;border-radius:.75rem;text-decoration:none;font-weight:600;font-size:.9rem;">
-                        Kembali ke Dashboard
-                    </a>
-                </div>
-            @else
-                @foreach($notifications as $notif)
-                    <div class="notif-card priority-{{ $notif->priority }} {{ !$notif->is_read ? 'unread' : '' }}"
-                         id="notif-{{ $notif->id }}">
-
-                        @if(!$notif->is_read)
-                            <div class="unread-dot"></div>
-                        @endif
-
-                        {{-- Icon --}}
-                        <div class="notif-icon">{{ $notif->icon ?? '🔔' }}</div>
-
-                        {{-- Body --}}
-                        <div class="notif-body">
-                            <p class="notif-title">{{ $notif->title }}</p>
-                            <p class="notif-message">{{ $notif->message }}</p>
-                            <div class="notif-meta">
-                                <span class="notif-time">🕐 {{ $notif->created_at->diffForHumans() }}</span>
-                                <span class="badge-cat badge-{{ $notif->category }}">
-                                    {{ ucfirst(str_replace('_', ' ', $notif->category)) }}
-                                </span>
-                                <span class="badge-priority badge-{{ $notif->priority }}">
-                                    {{ $notif->priority == 'high' ? '🔴 Tinggi' : ($notif->priority == 'medium' ? '🟡 Sedang' : '🟢 Rendah') }}
-                                </span>
-                            </div>
-                        </div>
-
-                        {{-- Quick Actions --}}
-                        <div class="notif-actions">
-                            @if($notif->resolved_action_url && !str_contains(strtolower($notif->action_label ?? ''), 'setujui'))
-                                <a href="{{ $notif->resolved_action_url }}" class="action-btn primary" target="_blank">
-                                    {{ $notif->action_label ?? 'Lihat Detail' }}
-                                </a>
-                            @endif
-                            @if($notif->secondary_action_url && !str_contains(strtolower($notif->secondary_action_label ?? ''), 'setujui'))
-                                <a href="{{ $notif->secondary_action_url }}" class="action-btn primary" target="_blank">
-                                    {{ $notif->secondary_action_label }}
-                                </a>
-                            @endif
-                            @if($notif->is_read)
-                                <button class="action-btn"
-                                        onclick="markUnread({{ $notif->id }})">
-                                    📌 Tandai Belum Dibaca
-                                </button>
-                            @else
-                                <button class="action-btn"
-                                        onclick="markRead({{ $notif->id }})">
-                                    ✅ Tandai Dibaca
-                                </button>
-                            @endif
-                            <button class="action-btn danger"
-                                    onclick="deleteNotif({{ $notif->id }})">
-                                🗑 Hapus
-                            </button>
-                        </div>
-                    </div>
-                @endforeach
-
-                {{-- Pagination --}}
-                <div class="pagination-wrap">
-                    {{ $notifications->appends(request()->query())->links() }}
-                </div>
-            @endif
-        </div>
-
-        {{-- === RIGHT: ACTIVITY FEED === --}}
-        <div>
-            <div class="activity-feed">
-                <h3>⚡ Aktivitas Terbaru</h3>
-                @forelse($activityFeed as $item)
-                    <div class="feed-item">
-                        <span class="feed-time">{{ $item->created_at->format('H:i') }}</span>
-                        <span class="feed-text">{{ $item->icon ?? '🔔' }} {{ $item->title }}</span>
-                    </div>
-                @empty
-                    <p style="color:#9ca3af;font-size:.8rem;text-align:center;padding:1rem 0;">Belum ada aktivitas</p>
-                @endforelse
+    {{-- ===== RINGKASAN STATISTIK SEDERHANA ===== --}}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        {{-- Total --}}
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl flex-shrink-0">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Notifikasi</p>
+                <h3 class="text-2xl font-black text-slate-900 mt-0.5">{{ $stats['all'] ?? 0 }}</h3>
             </div>
         </div>
 
-    </div>{{-- end two-col --}}
+        {{-- Belum Dibaca --}}
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl flex-shrink-0">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Belum Dibaca</p>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <h3 class="text-2xl font-black text-slate-900">{{ $stats['total_unread'] ?? 0 }}</h3>
+                    @if(($stats['total_unread'] ?? 0) > 0)
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-700 uppercase">
+                            Perlu Dicek
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
 
+        {{-- Hari Ini --}}
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl flex-shrink-0">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Aktivitas Hari Ini</p>
+                <h3 class="text-2xl font-black text-slate-900 mt-0.5">{{ $stats['today'] ?? 0 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    {{-- ===== FILTER TABS & SEARCH BAR ===== --}}
+    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        
+        {{-- Tabs Kategori --}}
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
+            @php
+                $tabItems = [
+                    'semua'    => ['label' => 'Semua', 'count' => $stats['all'] ?? 0],
+                    'unread'   => ['label' => 'Belum Dibaca', 'count' => $stats['total_unread'] ?? 0],
+                    'kampanye' => ['label' => 'Kampanye', 'count' => $stats['kampanye'] ?? 0],
+                    'donasi'   => ['label' => 'Donasi', 'count' => $stats['donasi'] ?? 0],
+                    'relawan'  => ['label' => 'Relawan', 'count' => $stats['relawan'] ?? 0],
+                    'sistem'   => ['label' => 'Sistem', 'count' => $stats['sistem'] ?? 0],
+                ];
+            @endphp
+
+            @foreach($tabItems as $tabKey => $tabData)
+                @php
+                    $isActive = ($category === $tabKey);
+                @endphp
+                <a href="{{ route('admin.notifications.index', array_merge(request()->except('category', 'page'), ['category' => $tabKey])) }}"
+                   class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap {{ $isActive ? 'bg-blue-600 text-white shadow-sm shadow-blue-200' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                    <span>{{ $tabData['label'] }}</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] {{ $isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500' }}">
+                        {{ $tabData['count'] }}
+                    </span>
+                </a>
+            @endforeach
+        </div>
+
+        {{-- Search Input --}}
+        <form method="GET" action="{{ route('admin.notifications.index') }}" class="relative w-full lg:w-72">
+            @if($category && $category !== 'semua')
+                <input type="hidden" name="category" value="{{ $category }}">
+            @endif
+            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" name="search" value="{{ $search }}" 
+                   placeholder="Cari notifikasi..." 
+                   class="w-full pl-9 pr-8 py-2 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-blue-500 transition-all">
+            @if($search)
+                <a href="{{ route('admin.notifications.index', ['category' => $category]) }}" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times text-xs"></i>
+                </a>
+            @endif
+        </form>
+    </div>
+
+    {{-- ===== DAFTAR NOTIFIKASI ===== --}}
+    <div class="space-y-3">
+        @forelse($notifications as $notif)
+            @php
+                $cat = strtolower($notif->category ?? 'sistem');
+                
+                // Icon & Color per Category
+                if ($cat === 'donasi') {
+                    $iconClass = 'fas fa-hand-holding-heart';
+                    $iconBoxColor = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                    $badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200/60';
+                    $catLabel = 'Donasi';
+                } elseif ($cat === 'kampanye') {
+                    $iconClass = 'fas fa-bullhorn';
+                    $iconBoxColor = 'bg-blue-50 text-blue-600 border-blue-100';
+                    $badgeColor = 'bg-blue-50 text-blue-700 border-blue-200/60';
+                    $catLabel = 'Kampanye';
+                } elseif ($cat === 'relawan') {
+                    $iconClass = 'fas fa-hands-helping';
+                    $iconBoxColor = 'bg-purple-50 text-purple-600 border-purple-100';
+                    $badgeColor = 'bg-purple-50 text-purple-700 border-purple-200/60';
+                    $catLabel = 'Relawan';
+                } elseif ($cat === 'laporan') {
+                    $iconClass = 'fas fa-flag';
+                    $iconBoxColor = 'bg-rose-50 text-rose-600 border-rose-100';
+                    $badgeColor = 'bg-rose-50 text-rose-700 border-rose-200/60';
+                    $catLabel = 'Laporan';
+                } else {
+                    $iconClass = 'fas fa-bell';
+                    $iconBoxColor = 'bg-slate-100 text-slate-600 border-slate-200';
+                    $badgeColor = 'bg-slate-100 text-slate-700 border-slate-200/60';
+                    $catLabel = 'Sistem';
+                }
+            @endphp
+
+            <div id="notif-card-{{ $notif->id }}" 
+                 class="bg-white rounded-2xl border p-4 sm:p-5 transition-all duration-200 hover:shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 {{ !$notif->is_read ? 'border-blue-200 bg-blue-50/20' : 'border-slate-100' }}">
+                
+                {{-- Konten Kiri (Icon + Info) --}}
+                <div class="flex items-start gap-4 flex-1 min-w-0">
+                    {{-- Icon Kategori --}}
+                    <div class="w-11 h-11 rounded-xl flex items-center justify-center text-base border {{ $iconBoxColor }} flex-shrink-0 mt-0.5 sm:mt-0">
+                        <i class="{{ $iconClass }}"></i>
+                    </div>
+
+                    {{-- Teks & Metadata --}}
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                            <h3 class="text-sm font-bold text-slate-900 leading-snug">
+                                {{ $notif->title }}
+                            </h3>
+
+                            {{-- Badge Kategori --}}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border {{ $badgeColor }}">
+                                {{ $catLabel }}
+                            </span>
+
+                            {{-- Badge Baru jika belum dibaca --}}
+                            @if(!$notif->is_read)
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-700 uppercase tracking-wider">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                                    Baru
+                                </span>
+                            @endif
+                        </div>
+
+                        {{-- Pesan Notifikasi --}}
+                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed break-words">
+                            {{ $notif->message }}
+                        </p>
+
+                        {{-- Waktu --}}
+                        <div class="flex items-center gap-3 mt-2 text-[11px] font-medium text-slate-400">
+                            <span class="flex items-center gap-1">
+                                <i class="far fa-clock"></i> {{ $notif->created_at->diffForHumans() }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Aksi Kanan --}}
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 border-slate-100 pt-3 sm:pt-0">
+                    {{-- Link Detail (jika ada) --}}
+                    @if($notif->resolved_action_url)
+                        <a href="{{ $notif->resolved_action_url }}" 
+                           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors">
+                            <span>Detail</span>
+                            <i class="fas fa-arrow-right text-[10px]"></i>
+                        </a>
+                    @endif
+
+                    {{-- Tandai Dibaca / Belum Dibaca --}}
+                    @if($notif->is_read)
+                        <button type="button" 
+                                onclick="toggleRead({{ $notif->id }}, false)"
+                                title="Tandai belum dibaca"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+                            <i class="far fa-envelope-open text-xs"></i>
+                        </button>
+                    @else
+                        <button type="button" 
+                                onclick="toggleRead({{ $notif->id }}, true)"
+                                title="Tandai sudah dibaca"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-blue-600 hover:bg-blue-50 transition-colors">
+                            <i class="fas fa-check text-xs"></i>
+                        </button>
+                    @endif
+
+                    {{-- Hapus Notifikasi --}}
+                    <button type="button" 
+                            onclick="confirmDelete({{ $notif->id }})"
+                            title="Hapus notifikasi"
+                            class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                        <i class="far fa-trash-alt text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        @empty
+            {{-- Empty State Bersih & Simpel --}}
+            <div class="bg-white rounded-2xl border border-slate-100 p-12 text-center shadow-sm">
+                <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mx-auto mb-4">
+                    <i class="fas fa-bell-slash"></i>
+                </div>
+                <h3 class="text-base font-extrabold text-slate-800">Belum Ada Notifikasi</h3>
+                <p class="text-slate-500 text-xs sm:text-sm mt-1 max-w-sm mx-auto">
+                    Seluruh pemberitahuan baru terkait kampanye, donasi, dan relawan akan langsung ditampilkan di sini.
+                </p>
+                @if($search || $category !== 'semua')
+                    <a href="{{ route('admin.notifications.index') }}" 
+                       class="inline-flex items-center gap-1.5 mt-5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all">
+                        <i class="fas fa-sync-alt text-[10px]"></i>
+                        <span>Reset Filter</span>
+                    </a>
+                @endif
+            </div>
+        @endforelse
+    </div>
+
+    {{-- ===== PAGINATION ===== --}}
+    @if($notifications->hasPages())
+    <div class="mt-6 flex justify-center">
+        {{ $notifications->appends(request()->query())->links() }}
+    </div>
+    @endif
+
+</div>
+
+{{-- ===== MODAL BUAT NOTIFIKASI BARU (SIMPLE & CLEAN) ===== --}}
+<div id="createNotificationModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all animate-fade-in">
+        
+        {{-- Modal Header --}}
+        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <div>
+                    <h2 class="text-base font-extrabold text-slate-900">Buat Notifikasi Baru</h2>
+                    <p class="text-xs text-slate-400">Kirim pemberitahuan atau pesan pengumuman.</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeCreateModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+        </div>
+
+        {{-- Modal Form --}}
+        <form action="{{ route('admin.notifications.store') }}" method="POST">
+            @csrf
+            <div class="p-6 space-y-4">
+                
+                {{-- Judul Notifikasi --}}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Judul Notifikasi <span class="text-rose-500">*</span></label>
+                    <input type="text" name="title" required
+                           placeholder="Contoh: Pemeliharaan Server atau Update Program Donasi"
+                           class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium">
+                </div>
+
+                {{-- Kategori & Prioritas --}}
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Kategori</label>
+                        <select name="category" class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium">
+                            <option value="sistem">Sistem</option>
+                            <option value="kampanye">Kampanye</option>
+                            <option value="donasi">Donasi</option>
+                            <option value="relawan">Relawan</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Prioritas</label>
+                        <select name="priority" class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium">
+                            <option value="medium">Normal</option>
+                            <option value="high">Tinggi</option>
+                            <option value="low">Rendah</option>
+                        </select>
+                    </div>
+                </div>
+
+                {{-- Isi Pesan --}}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Isi Pesan <span class="text-rose-500">*</span></label>
+                    <textarea name="message" rows="3" required
+                              placeholder="Tuliskan isi ringkas pemberitahuan notifikasi..."
+                              class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium"></textarea>
+                </div>
+
+                {{-- Checkbox Broadcast User --}}
+                <div class="flex items-center gap-2.5 pt-1">
+                    <input type="checkbox" name="send_to_users" id="send_to_users" value="1"
+                           class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                    <label for="send_to_users" class="text-xs font-semibold text-slate-600 cursor-pointer">
+                        Kirimkan juga sebagai notifikasi ke seluruh pengguna
+                    </label>
+                </div>
+            </div>
+
+            {{-- Modal Footer --}}
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                <button type="button" onclick="closeCreateModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200/60 rounded-xl transition-colors">
+                    Batal
+                </button>
+                <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all">
+                    Kirim Notifikasi
+                </button>
+            </div>
+        </form>
+
+    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-    const BASE_URL = '{{ url('/admin/notifications') }}';
-    const CSRF    = '{{ csrf_token() }}';
+    const CSRF_TOKEN = '{{ csrf_token() }}';
+    const BASE_NOTIF_URL = '{{ url('/admin/notifications') }}';
 
-    // ----- Category filter -----
-    let activeCategory = '{{ $category }}';
-    function setCategory(cat) {
-        activeCategory = cat;
-        document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
-        document.querySelector('[data-category="'+cat+'"]').classList.add('active');
+    // Modal Control
+    function openCreateModal() {
+        document.getElementById('createNotificationModal').classList.remove('hidden');
     }
 
-    // ----- Apply all filters (redirect) -----
-    function applyFilters() {
-        const params = new URLSearchParams();
-        params.set('category',  activeCategory);
-        const priority = document.getElementById('priorityFilter').value;
-        const dateFrom = document.getElementById('dateFrom').value;
-        const dateTo   = document.getElementById('dateTo').value;
-        const search   = document.getElementById('searchInput').value;
-        if (priority) params.set('priority',  priority);
-        if (dateFrom) params.set('date_from', dateFrom);
-        if (dateTo)   params.set('date_to',   dateTo);
-        if (search)   params.set('search',    search);
-        window.location.href = BASE_URL + '?' + params.toString();
+    function closeCreateModal() {
+        document.getElementById('createNotificationModal').classList.add('hidden');
     }
 
-    // Live search on Enter
-    document.getElementById('searchInput').addEventListener('keydown', function(e){
-        if (e.key === 'Enter') applyFilters();
+    // Close on backdrop click
+    document.getElementById('createNotificationModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeCreateModal();
+        }
     });
 
-    // ----- AJAX helpers -----
-    async function ajaxPost(url, method = 'POST') {
-        const res = await fetch(url, {
+    // Toggle Read Status via AJAX
+    function toggleRead(id, markAsRead) {
+        const url = BASE_NOTIF_URL + '/' + id + (markAsRead ? '/mark-as-read' : '/mark-as-unread');
+        
+        fetch(url, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json',
-                       'Content-Type': 'application/x-www-form-urlencoded' },
-            body: method !== 'POST' ? '_method=' + method : ''
+            headers: {
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            location.reload();
         });
-        return res.json();
     }
 
-    function markRead(id) {
-        ajaxPost(BASE_URL + '/' + id + '/mark-as-read').then(() => location.reload());
+    // Confirm Delete via SweetAlert2
+    function confirmDelete(id) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Hapus Notifikasi?',
+                text: 'Notifikasi yang dihapus tidak dapat dipulihkan kembali.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'rounded-xl px-4 py-2 font-bold text-xs',
+                    cancelButton: 'rounded-xl px-4 py-2 font-bold text-xs'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    executeDelete(id);
+                }
+            });
+        } else {
+            if (confirm('Yakin ingin menghapus notifikasi ini?')) {
+                executeDelete(id);
+            }
+        }
     }
-    function markUnread(id) {
-        ajaxPost(BASE_URL + '/' + id + '/mark-as-unread').then(() => location.reload());
-    }
-    function deleteNotif(id) {
-        if (!confirm('Yakin ingin menghapus notifikasi ini?')) return;
-        ajaxPost(BASE_URL + '/' + id, 'DELETE').then(() => {
-            document.getElementById('notif-' + id)?.remove();
+
+    function executeDelete(id) {
+        fetch(BASE_NOTIF_URL + '/' + id, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: '_method=DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+            const card = document.getElementById('notif-card-' + id);
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => card.remove(), 200);
+            } else {
+                location.reload();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            location.reload();
         });
     }
 </script>
