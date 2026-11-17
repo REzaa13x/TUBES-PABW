@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // MySQL may leave the table behind when adding a foreign key fails.
+        // Preserve it (and any data) so a failed deploy can be retried.
+        if (Schema::hasTable('admin_notifications')) {
+            return;
+        }
+
         Schema::create('admin_notifications', function (Blueprint $table) {
             $table->id();
             $table->string('title'); // Judul notifikasi
@@ -23,10 +29,12 @@ return new class extends Migration
             $table->string('action_url')->nullable(); // URL untuk tombol aksi
             $table->string('secondary_action_label')->nullable(); // Tombol aksi kedua
             $table->string('secondary_action_url')->nullable();
-            $table->foreignId('related_campaign_id')->nullable()->constrained('campaigns')->cascadeOnDelete();
+            // These tables are created later. Keep notification references without
+            // constraints, as required by the later foreign-key removal migration.
+            $table->foreignId('related_campaign_id')->nullable();
             $table->foreignId('related_user_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->foreignId('related_donation_id')->nullable()->constrained('donations')->cascadeOnDelete();
-            $table->foreignId('related_volunteer_id')->nullable()->constrained('volunteers')->cascadeOnDelete();
+            $table->foreignId('related_donation_id')->nullable();
+            $table->foreignId('related_volunteer_id')->nullable();
             $table->boolean('is_read')->default(false);
             $table->dateTime('read_at')->nullable();
             $table->json('metadata')->nullable(); // Extra data sebagai JSON

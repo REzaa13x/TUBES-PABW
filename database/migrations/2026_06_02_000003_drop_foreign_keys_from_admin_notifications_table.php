@@ -6,59 +6,34 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('admin_notifications', function (Blueprint $table) {
-            // Drop foreign keys
-            try {
-                $table->dropForeign(['related_donation_id']);
-            } catch (\Exception $e) {
-                // Ignore if it doesn't exist
+        // SQL executes after the Blueprint callback, so inspect constraints first.
+        foreach (Schema::getForeignKeys('admin_notifications') as $foreignKey) {
+            if (count($foreignKey['columns']) === 1 && in_array($foreignKey['columns'][0], [
+                'related_donation_id', 'related_volunteer_id', 'related_campaign_id',
+            ], true)) {
+                Schema::table('admin_notifications', function (Blueprint $table) use ($foreignKey) {
+                    $table->dropForeign($foreignKey['name']);
+                });
             }
-
-            try {
-                $table->dropForeign(['related_volunteer_id']);
-            } catch (\Exception $e) {
-                // Ignore if it doesn't exist
-            }
-
-            try {
-                $table->dropForeign(['related_campaign_id']);
-            } catch (\Exception $e) {
-                // Ignore if it doesn't exist
-            }
-        });
+        }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('admin_notifications', function (Blueprint $table) {
-            try {
-                $table->foreign('related_donation_id')
-                    ->references('id')
-                    ->on('donations')
-                    ->onDelete('cascade');
-            } catch (\Exception $e) {}
-
-            try {
-                $table->foreign('related_volunteer_id')
-                    ->references('id')
-                    ->on('volunteers')
-                    ->onDelete('cascade');
-            } catch (\Exception $e) {}
-
-            try {
-                $table->foreign('related_campaign_id')
-                    ->references('id')
-                    ->on('campaigns')
-                    ->onDelete('cascade');
-            } catch (\Exception $e) {}
-        });
+        $foreignKeys = Schema::getForeignKeys('admin_notifications');
+        foreach ([
+            'related_donation_id' => 'donations',
+            'related_volunteer_id' => 'volunteers',
+            'related_campaign_id' => 'campaigns',
+        ] as $column => $referencedTable) {
+            $exists = collect($foreignKeys)->contains(fn ($key) => $key['columns'] === [$column]);
+            if (Schema::hasTable($referencedTable) && ! $exists) {
+                Schema::table('admin_notifications', function (Blueprint $table) use ($column, $referencedTable) {
+                    $table->foreign($column)->references('id')->on($referencedTable)->cascadeOnDelete();
+                });
+            }
+        }
     }
 };
