@@ -176,7 +176,7 @@
         </div>
 
         <div class="qr-wrap">
-            <img src="{{ $certificate->qr_url }}" alt="QR">
+            <img src="{{ $certificate->qr_data_uri }}" alt="QR">
             <div class="qr-label">Pindai untuk verifikasi</div>
         </div>
 

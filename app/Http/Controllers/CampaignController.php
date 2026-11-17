@@ -173,6 +173,9 @@ class CampaignController extends Controller
                 'kecamatan' => 'nullable|string|max:255',
                 'alamat_lengkap' => 'nullable|string',
                 'kode_pos' => 'nullable|string|max:10',
+                'latitude' => 'nullable|required_with:longitude|numeric|between:-90,90',
+                'longitude' => 'nullable|required_with:latitude|numeric|between:-180,180',
+                'recipient_description' => 'nullable|string|max:5000',
             ]);
 
             $imagePath = null;
@@ -215,6 +218,9 @@ class CampaignController extends Controller
                 'alamat_lengkap' => $request->alamat_lengkap,
                 'kode_pos' => $request->kode_pos,
                 'jenis_penerima' => $request->jenis_penerima,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'recipient_description' => $request->recipient_description,
                 'whatsapp' => $request->whatsapp,
                 'slug' => \Illuminate\Support\Str::slug($request->judul) . '-' . time(),
             ]);

@@ -23,8 +23,8 @@ Route::prefix('v1')->middleware('cors')->group(function () {
     */
 
     // Auth
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
     // Campaigns public
     Route::get('/campaigns/urgent', [CampaignController::class, 'urgent']);
@@ -204,3 +204,34 @@ Route::prefix('v1')->middleware('cors')->group(function () {
         });
     });
 });
+// Reviews shared by Flutter and the website.
+Route::prefix('v1')->middleware('cors')->group(function () {
+    Route::get('/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'index']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/reviews/eligibility', [\App\Http\Controllers\Api\ReviewController::class, 'eligibility']);
+        Route::post('/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
+        Route::put('/reviews/{review}', [\App\Http\Controllers\Api\ReviewController::class, 'update']);
+        Route::delete('/reviews/{review}', [\App\Http\Controllers\Api\ReviewController::class, 'destroy']);
+    });
+});
+// Certificate PDFs: bearer-authenticated bytes or a short-lived signed browser link.
+Route::prefix('v1')->middleware('cors')->group(function () {
+    Route::get('/certificates/{id}/download', [\App\Http\Controllers\Api\CertificateFileController::class, 'download'])
+        ->middleware('auth:sanctum');
+    Route::get('/certificates/{id}/download-signed', [\App\Http\Controllers\Api\CertificateFileController::class, 'signedDownload'])
+        ->middleware('signed:relative')->name('api.certificates.signed-download');
+    Route::get('/certificate/qr/{certificateNumber}', [\App\Http\Controllers\Api\CertificateFileController::class, 'qr'])
+        ->name('api.certificate.qr');
+});
+// Address lookup for authenticated campaign applicants. The provider is cached/rate-limited globally.
+Route::prefix('v1')->middleware(['cors', 'auth:sanctum', 'throttle:30,1'])->group(function () {
+    Route::get('/locations/search', [\App\Http\Controllers\Api\CampaignLocationController::class, 'search']);
+    Route::get('/locations/reverse', [\App\Http\Controllers\Api\CampaignLocationController::class, 'reverse']);
+});
+Route::prefix('v1')->middleware(['cors', 'auth:sanctum', 'throttle:30,1'])->group(function () {
+    Route::get('/locations/revese', [\App\Http\Controllers\Api\CampaignLocationController::class, 'reverse']);
+});
+
+// Public campaign information and DonGiv help, with per-client throttling.
+Route::post('v1/chatbot/message', [\App\Http\Controllers\Api\ChatbotController::class, 'message'])
+    ->middleware(['cors', 'throttle:20,1']);

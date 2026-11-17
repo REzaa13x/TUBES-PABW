@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->shouldRenderJsonWhen(fn (\Illuminate\Http\Request $request, \Throwable $e) =>
+            $request->is('api/*') || $request->expectsJson()
+        );
         $exceptions->render(function (\JsonException $e) {
             \Log::error('JSON Error:', [
                 'message' => $e->getMessage(),

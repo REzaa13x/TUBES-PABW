@@ -9,6 +9,7 @@ use App\Models\VolunteerApplication;
 use App\Models\VolunteerCampaign;
 use App\Models\AdminNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class VolunteerApplicationController extends Controller
 {
@@ -61,8 +62,10 @@ class VolunteerApplicationController extends Controller
 
         $request->validate([
             'volunteer_campaign_id' => 'required|exists:volunteer_campaigns,id',
-            'motivation' => 'required|string',
-            'skills' => 'required|string',
+            'alamat' => 'required|string|min:10',
+            'posisi_dilamar' => 'required|string|max:255',
+            'alasan_bergabung' => 'required|string|min:20',
+            'cv' => 'required|file|mimes:pdf|max:2048',
         ]);
 
         // Check if user has already applied to this campaign
@@ -72,7 +75,7 @@ class VolunteerApplicationController extends Controller
 
         if ($existingApplication) {
             return response()->json([
-                'message' => 'You have already applied to this volunteer campaign'
+                'message' => 'Anda sudah mendaftar pada kampanye relawan ini. Periksa Riwayat Relawan.'
             ], 409);
         }
 
@@ -80,17 +83,25 @@ class VolunteerApplicationController extends Controller
         $campaign = VolunteerCampaign::find($request->volunteer_campaign_id);
         if ($campaign && $campaign->kuota_terisi >= $campaign->kuota_total) {
             return response()->json([
-                'message' => 'This volunteer campaign has reached its maximum capacity'
+                'message' => 'Kuota kampanye relawan ini sudah penuh.'
             ], 400);
         }
 
-        $application = VolunteerApplication::create([
+        $cvPath = $request->file('cv')->store('cv-uploads', 'public');
+        try {
+            $application = VolunteerApplication::create([
             'user_id' => $user->id,
             'volunteer_campaign_id' => $request->volunteer_campaign_id,
-            'motivation' => $request->motivation,
-            'skills' => $request->skills,
+            'alamat' => $request->alamat,
+            'posisi_dilamar' => $request->posisi_dilamar,
+            'alasan_bergabung' => $request->alasan_bergabung,
+            'cv_path' => $cvPath,
             'status' => 'pending' // Default status
-        ]);
+            ]);
+        } catch (\Throwable $e) {
+            Storage::disk('public')->delete($cvPath);
+            throw $e;
+        }
 
         // Notifikasi ke Admin: Relawan baru mendaftar dari mobile
         try {
@@ -111,7 +122,7 @@ class VolunteerApplicationController extends Controller
                 'metadata'             => [
                     'applicant_name' => $user->name,
                     'campaign_name'  => $vcampaign ? ($vcampaign->name ?? $vcampaign->judul ?? null) : null,
-                    'skills'         => $request->skills,
+                    'posisi_dilamar' => $request->posisi_dilamar,
                     'source'         => 'mobile',
                 ],
             ]);
@@ -155,8 +166,8 @@ class VolunteerApplicationController extends Controller
         ]);
 
         $application->update([
-            'motivation' => $request->motivation,
-            'skills' => $request->skills,
+            'alasan_bergabung' => $request->motivation,
+            'posisi_dilamar' => $request->skills,
         ]);
 
         return response()->json([

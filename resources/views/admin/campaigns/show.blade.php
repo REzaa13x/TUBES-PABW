@@ -14,6 +14,7 @@
     <div class="admin-campaign-detail container mx-auto p-6 bg-white rounded-lg shadow-md">
         <h1 class="text-3xl font-bold mb-4">{{ $campaign->title }}</h1>
         <p class="mb-2"><strong>Deskripsi:</strong> {{ $campaign->description }}</p>
+        @include('admin.campaigns.submission-details')
         <p class="mb-2"><strong>Kategori:</strong> {{ $campaign->kategori }}</p>
         <p class="mb-2"><strong>Status:</strong> {{ ucfirst($campaign->status) }}</p>
         <p class="mb-2"><strong>Target Dana:</strong> Rp {{ number_format($campaign->target_amount, 0, ',', '.') }}</p>

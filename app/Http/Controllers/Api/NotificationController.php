@@ -40,6 +40,7 @@ class NotificationController extends Controller
             
             return [
                 'id' => $notif->id,
+                'data' => $data,
                 'type' => $notif->type,
                 'title' => $data['title'] ?? 'Notifikasi Baru',
                 'message' => $data['message'] ?? '',
@@ -64,7 +65,10 @@ class NotificationController extends Controller
 
         return response()->json([
             'message' => 'Notifications retrieved successfully',
-            'data' => $notifications
+            'data' => $notifications->forPage(
+                max(1, (int) $request->input('page', 1)),
+                min(100, max(1, (int) $request->input('per_page', 15)))
+            )->values()
         ]);
     }
 

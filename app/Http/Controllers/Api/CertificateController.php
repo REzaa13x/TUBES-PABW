@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\VolunteerCertificate;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\URL;
 
 class CertificateController extends Controller
 {
@@ -28,6 +29,7 @@ class CertificateController extends Controller
             'data'    => $certificates,
             'meta'    => [
                 'total'         => $certificates->count(),
+                'total_campaigns' => $certificates->pluck('campaign_id')->filter()->unique()->count(),
                 'total_active'  => $certificates->where('status', 'active')->count(),
                 'total_hours'   => $certificates->where('status', 'active')->sum('total_volunteer_hours'),
                 'volunteer_level' => VolunteerCertificate::determineLevel(
@@ -118,9 +120,13 @@ class CertificateController extends Controller
             ], 403);
         }
 
+        $relative = URL::temporarySignedRoute(
+            'api.certificates.signed-download', now()->addMinutes(10), ['id' => $certificate->id], absolute: false
+        );
         return response()->json([
+            'expires_at' => now()->addMinutes(10)->toISOString(),
             'message'      => 'Download URL generated',
-            'download_url' => route('certificates.download', $certificate->id),
+            'download_url' => url($relative),
             'certificate_number' => $certificate->certificate_number,
         ]);
     }
@@ -151,7 +157,7 @@ class CertificateController extends Controller
             'certificate_file'      => $cert->certificate_file,
             'qr_code'               => $cert->qr_url,
             'verify_url'            => $cert->verify_url,
-            'download_url'          => $cert->is_downloadable ? route('certificates.download', $cert->id) : null,
+            'download_url'          => null,
             'created_at'            => $cert->created_at?->toISOString(),
         ];
     }

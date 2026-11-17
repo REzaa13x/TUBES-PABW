@@ -38,6 +38,9 @@ class Campaign extends Model
         'whatsapp',
         'distribution_token',
         'validator_phone',
+        'latitude',
+        'longitude',
+        'recipient_description',
     ];
 
     protected $casts = [
@@ -47,6 +50,8 @@ class Campaign extends Model
         'verified_at' => 'datetime',
         'status' => 'string',
         'kategori' => 'string',
+        'latitude' => 'double',
+        'longitude' => 'double',
     ];
 
     // Mutator to automatically create slug from title

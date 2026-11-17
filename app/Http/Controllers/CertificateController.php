@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\VolunteerCertificate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class CertificateController extends Controller
 {
@@ -79,12 +79,7 @@ class CertificateController extends Controller
             return back()->with('error', 'Sertifikat belum dapat diunduh. Kampanye harus selesai terlebih dahulu.');
         }
 
-        $pdf = Pdf::loadView('pdf.certificate', compact('certificate'))
-            ->setPaper('a4', 'landscape')
-            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
-
-        $filename = 'Sertifikat-' . $certificate->certificate_number . '.pdf';
-        return $pdf->download($filename);
+        return app(\App\Services\CertificatePdfService::class)->download($certificate);
     }
 
     /**

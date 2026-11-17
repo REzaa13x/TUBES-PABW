@@ -8,20 +8,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AllowCrossOrigin
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
-
-        // Tambahkan header CORS
-        $response->headers->set('Access-Control-Allow-Origin', '*');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, X-Auth-Token, Origin, Authorization');
-
-        return $response;
+        // Laravel's global HandleCors middleware uses config/cors.php, including
+        // preflight requests. Do not override the configured origin with '*'.
+        return $next($request);
     }
 }

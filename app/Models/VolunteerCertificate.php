@@ -91,11 +91,19 @@ class VolunteerCertificate extends Model
 
     public function getQrUrlAttribute(): string
     {
-        $verifyUrl = $this->verify_url;
-        $encoded   = urlencode($verifyUrl);
-        return "https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl={$encoded}&choe=UTF-8";
+        return route('api.certificate.qr', ['certificateNumber' => $this->certificate_number]);
     }
 
+    public function getQrPngAttribute(): string
+    {
+        return (new \BaconQrCode\Writer(new \BaconQrCode\Renderer\GDLibRenderer(256)))
+            ->writeString($this->verify_url);
+    }
+
+    public function getQrDataUriAttribute(): string
+    {
+        return 'data:image/png;base64,'.base64_encode($this->qr_png);
+    }
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
@@ -177,8 +185,7 @@ class VolunteerCertificate extends Model
         $campaignEnded = $campaign->tanggal_selesai && Carbon::parse($campaign->tanggal_selesai)->isPast();
         $status        = $campaignEnded ? 'active' : 'pending';
 
-        $verifyUrl = url('/certificate/verify/' . $certNo);
-        $qrCode    = 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' . urlencode($verifyUrl) . '&choe=UTF-8';
+        $qrCode = null; // QR is generated from the current hosting domain when requested.
 
         return self::create([
             'certificate_id'       => $certId,

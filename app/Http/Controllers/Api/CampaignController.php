@@ -24,6 +24,12 @@ class CampaignController extends Controller
             \Log::info('API V1 Campaign Index called', ['params' => $request->all()]);
 
             $query = Campaign::with('user');
+            $viewer = auth('sanctum')->user();
+            $isMine = $request->boolean('my');
+            if ($isMine && !$viewer) abort(401, 'Silakan login untuk melihat pengajuan Anda.');
+            if (!$isMine && strtolower((string) $viewer?->role) !== 'admin') {
+                $query->where('status', 'verified');
+            }
 
             // Add filters if provided
             if ($request->has('status')) {
@@ -42,7 +48,7 @@ class CampaignController extends Controller
                 });
             }
 
-            if ($request->has('my') && $request->my == '1') {
+            if ($isMine) {
                 $user = auth('sanctum')->user();
                 if ($user) {
                     $query->where('user_id', $user->id);
@@ -73,21 +79,28 @@ class CampaignController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        abort_unless(in_array(strtolower((string) $request->user()->role), ['user', 'donatur', 'admin'], true), 403, 'Hanya akun donatur yang dapat mengajukan kampanye.');
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'target_amount' => 'required|numeric|min:0',
-            'end_date' => 'required|date|after_or_equal:today',
+            'target_amount' => 'required|numeric|min:10000|max:9999999999999',
+            'end_date' => 'required|date|after:today',
             'kategori' => 'required|string|in:Lingkungan,Kesehatan,Pendidikan,Sosial Kemanusiaan,Bencana Alam',
-            'yayasan' => 'nullable|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'yayasan' => 'required|string|max:255',
+            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'status' => 'sometimes|string|in:pending,verified,rejected',
-            'lokasi' => 'nullable|string|max:255',
+            'lokasi' => 'required|string|max:255',
             'provinsi' => 'nullable|string|max:255',
             'kabupaten' => 'nullable|string|max:255',
             'kecamatan' => 'nullable|string|max:255',
             'alamat_lengkap' => 'nullable|string',
             'kode_pos' => 'nullable|string|max:10',
+            'jenis_penerima' => 'required|in:Individu,Yayasan,Komunitas',
+            'recipient_description' => 'required|string|max:5000',
+            'whatsapp' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9][0-9\s-]{7,19}$/'],
+            'penyaluran' => 'required|in:Langsung,Yayasan,Platform',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
         ]);
 
         // Handle image upload if provided
@@ -96,6 +109,8 @@ class CampaignController extends Controller
             $imagePath = $request->file('image')->store('campaigns', 'public');
         }
 
+        $validatedData['status'] = 'pending'; // Approval remains an admin decision.
+        $validatedData['current_amount'] = 0;
         $validatedData['image'] = $imagePath;
         $validatedData['user_id'] = $request->user()->id; // Assuming user is authenticated
         $validatedData['slug'] = Str::slug($request->title);
@@ -108,7 +123,12 @@ class CampaignController extends Controller
             $counter++;
         }
 
-        $campaign = Campaign::create($validatedData);
+        try {
+            $campaign = Campaign::create($validatedData);
+        } catch (\Throwable $e) {
+            if ($imagePath) Storage::disk('public')->delete($imagePath);
+            throw $e;
+        }
 
         // Notifikasi ke admin: kampanye baru dibuat dari mobile
         try {
@@ -156,6 +176,11 @@ class CampaignController extends Controller
             ], 404);
         }
 
+        $viewer = auth('sanctum')->user();
+        if ($campaign->status !== 'verified' &&
+            (!$viewer || (strtolower((string) $viewer->role) !== 'admin' && (int) $viewer->id !== (int) $campaign->user_id))) {
+            return response()->json(['message' => 'Campaign not found'], 404);
+        }
         return new CampaignResource($campaign);
     }
 
@@ -172,6 +197,11 @@ class CampaignController extends Controller
             ], 404);
         }
 
+        $isAdmin = strtolower((string) $request->user()->role) === 'admin';
+        abort_unless($isAdmin || (int) $campaign->user_id === (int) $request->user()->id, 403);
+        if (!$isAdmin && $request->has('status')) {
+            abort(403, 'Status verifikasi hanya dapat diubah oleh admin.');
+        }
         $validatedData = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string',
@@ -226,7 +256,7 @@ class CampaignController extends Controller
     /**
      * Remove the specified campaign from storage.
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $campaign = Campaign::where('slug', $id)->orWhere('id', $id)->first();
 
@@ -235,6 +265,8 @@ class CampaignController extends Controller
                 'message' => 'Campaign not found'
             ], 404);
         }
+
+        abort_unless(strtolower((string) $request->user()->role) === 'admin' || (int) $campaign->user_id === (int) $request->user()->id, 403);
 
         // Delete associated image if exists
         if ($campaign->image) {

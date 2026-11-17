@@ -36,7 +36,7 @@ class RegisterController extends Controller
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput(); // Agar input nama/email tidak hilang saat error
+                ->withInput($request->except('password', 'password_confirmation'));
         }
 
         // 2. CREATE USER: Set role manual sebagai 'donatur'
@@ -49,6 +49,7 @@ class RegisterController extends Controller
 
         // 3. AUTO LOGIN
         auth()->login($user);
+        $request->session()->regenerate();
 
         // 4. REDIRECT
         return redirect('/')->with('success', 'Pendaftaran berhasil! Selamat datang di DonGiv.');

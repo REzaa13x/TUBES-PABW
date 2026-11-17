@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use App\Models\AdminNotification;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +21,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:user,validator',
+            'role' => 'sometimes|in:user,validator',
             'phone' => 'nullable|string|max:15',
             'birth_date' => 'nullable|date',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -38,7 +37,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role, // Role selected by user (donatur/validator)
+            'role' => $request->input('role', 'user'), // Role selected by user (donatur/validator)
             'coins' => 0, // Default coins for new users
             'photo' => $photoPath,
             'phone' => $request->phone,
@@ -68,8 +67,6 @@ class AuthController extends Controller
             \Log::error('Failed to create admin notification for new user registration: ' . $e->getMessage());
         }
 
-        // Authenticate user for web session as well
-        Auth::login($user);
 
         // Create token for the new user
         $token = $user->createToken('auth-token')->plainTextToken;
@@ -92,7 +89,6 @@ class AuthController extends Controller
 
         $response = response()->json($responseData, 201);
 
-        \Log::info('Registration response:', ['response' => $response->getContent()]);
 
         return $response;
     }
@@ -104,7 +100,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => 'required|string',
         ]);
 
         $user = User::where('email', $request->email)->first();
@@ -117,19 +113,9 @@ class AuthController extends Controller
                 ]
             ], 422);
 
-            \Log::info('Login failed response:', ['response' => $response->getContent()]);
 
             return $response;
         }
-
-        // Logout any existing web session first to avoid conflicts
-        Auth::logout();
-
-        // Authenticate user for web session as well
-        Auth::login($user);
-
-        // Revoke all existing tokens for the user
-        $user->tokens()->delete();
 
         // Create new token
         $token = $user->createToken('auth-token')->plainTextToken;
@@ -152,7 +138,6 @@ class AuthController extends Controller
 
         $response = response()->json($responseData);
 
-        \Log::info('Login successful response:', ['response' => $response->getContent()]);
 
         return $response;
     }
@@ -162,19 +147,22 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $currentToken = $request->user()->currentAccessToken();
+        if ($currentToken instanceof \Laravel\Sanctum\PersonalAccessToken) {
+            $currentToken->delete();
+        }
 
-        // Also logout from web session
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Bearer-token API requests do not necessarily have a web session.
+        if ($request->hasSession()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         $response = response()->json([
             'message' => 'Logout successful'
         ]);
 
-        \Log::info('Logout response:', ['response' => $response->getContent()]);
 
         return $response;
     }
@@ -184,16 +172,7 @@ class AuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        // Check if user is authenticated via API token or web session
-        $apiUser = $request->user();
-        $webUser = auth()->check() ? auth()->user() : null;
-
-        if (!$apiUser && $webUser) {
-            // If not authenticated via API but web session exists, return web user
-            $user = $webUser;
-        } else {
-            $user = $apiUser;
-        }
+        $user = $request->user();
 
         if (!$user) {
             return response()->json([
@@ -217,7 +196,6 @@ class AuthController extends Controller
 
         $response = response()->json($responseData);
 
-        \Log::info('Me response:', ['response' => $response->getContent()]);
 
         return $response;
     }
@@ -229,16 +207,15 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        // Revoke current token
-        $request->user()->currentAccessToken()->delete();
-
-        // Create new token
-        $token = $user->createToken('auth-token')->plainTextToken;
-
-        // Also update the web session if it exists
-        if (auth()->check() && auth()->id() === $user->id) {
-            auth()->login($user);
+        $currentToken = $user->currentAccessToken();
+        if (! $currentToken instanceof \Laravel\Sanctum\PersonalAccessToken) {
+            return response()->json(['message' => 'Bearer token required.'], 401);
         }
+        $token = \Illuminate\Support\Facades\DB::transaction(function () use ($user, $currentToken) {
+            $token = $user->createToken('auth-token')->plainTextToken;
+            $currentToken->delete();
+            return $token;
+        });
 
         $responseData = [
             'message' => 'Token refreshed successfully',
@@ -258,7 +235,6 @@ class AuthController extends Controller
 
         $response = response()->json($responseData);
 
-        \Log::info('Refresh response:', ['response' => $response->getContent()]);
 
         return $response;
     }

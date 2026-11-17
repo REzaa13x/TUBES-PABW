@@ -51,7 +51,8 @@ Route::get('/login', function() {
     return view('auth.login');
 })->name('login')->middleware('guest');
 
-Route::post('/login', [LoginController::class, 'login'])->name('login.post')->middleware('guest');
+Route::post('/login', [LoginController::class, 'login'])->name('login.post')->middleware(['guest', 'throttle:10,1']);
+Route::post('/register', [RegisterController::class, 'register'])->name('register.post')->middleware(['guest', 'throttle:10,1']);
 
 Route::get('/register', function() {
     return view('auth.register');
@@ -254,3 +255,13 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/api/images/{folder}/{filename}', [App\Http\Controllers\TestImageController::class, 'testImage']);
 
 require __DIR__ . '/donasi-profile.php';
+
+// Website reviews use the same controller and storage with session authentication.
+Route::get('/ulasan', fn () => view('reviews.index'))->name('reviews.index');
+Route::get('/ulasan/data', [\App\Http\Controllers\Api\ReviewController::class, 'index']);
+Route::middleware('auth')->group(function () {
+    Route::get('/ulasan/eligibility', [\App\Http\Controllers\Api\ReviewController::class, 'eligibility']);
+    Route::post('/ulasan', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
+    Route::put('/ulasan/{review}', [\App\Http\Controllers\Api\ReviewController::class, 'update']);
+    Route::delete('/ulasan/{review}', [\App\Http\Controllers\Api\ReviewController::class, 'destroy']);
+});

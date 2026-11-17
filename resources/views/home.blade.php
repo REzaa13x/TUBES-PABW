@@ -694,78 +694,7 @@
         </div>
     </section>
 
-    {{-- ===================== 8. TESTIMONI ===================== --}}
-    <section class="py-20 bg-transparent overflow-hidden">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-14" data-aos="fade-up">
-                <span class="inline-block px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-wider mb-3 border border-blue-100/50">Testimoni</span>
-                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-800">Kata #OrangBaik</h2>
-                <p class="text-gray-500 mt-3">Cerita mereka yang sudah merasakan dampak kebaikan</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {{-- Testimonial 1 --}}
-                <div class="bg-white p-8 rounded-3xl relative card-hover-lift border border-gray-100 shadow-sm" data-aos="fade-up" data-aos-delay="0">
-                    <div class="absolute top-6 right-6 text-blue-100">
-                        <i class="fas fa-quote-right text-4xl"></i>
-                    </div>
-                    <div class="flex items-center gap-1 mb-4">
-                        @for($i = 0; $i < 5; $i++)
-                            <i class="fas fa-star text-amber-400 text-sm"></i>
-                        @endfor
-                    </div>
-                    <p class="text-gray-600 relative z-10 italic mb-6 leading-relaxed">"Platformnya sangat transparan. Saya jadi tidak ragu untuk menyisihkan rezeki setiap bulan di sini."</p>
-                    <div class="flex items-center gap-4 pt-4 border-t border-gray-50">
-                        <img src="https://i.pravatar.cc/150?img=60" class="w-12 h-12 rounded-full ring-2 ring-blue-100" alt="User">
-                        <div>
-                            <p class="font-bold text-gray-900">Rina Suryani</p>
-                            <p class="text-xs text-blue-600 font-semibold">Donatur Rutin</p>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Testimonial 2 (Featured) --}}
-                <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl relative text-white shadow-2xl shadow-blue-500/20 transform md:-translate-y-4 card-hover-lift" data-aos="fade-up" data-aos-delay="100">
-                    <div class="absolute top-6 right-6 text-blue-400/30">
-                        <i class="fas fa-quote-right text-4xl"></i>
-                    </div>
-                    <div class="flex items-center gap-1 mb-4">
-                        @for($i = 0; $i < 5; $i++)
-                            <i class="fas fa-star text-amber-300 text-sm"></i>
-                        @endfor
-                    </div>
-                    <p class="relative z-10 italic mb-6 leading-relaxed text-blue-50">"Proses donasinya cepat banget, cuma hitungan detik. Semoga DonGiv terus amanah menyalurkan bantuan."</p>
-                    <div class="flex items-center gap-4 pt-4 border-t border-white/20">
-                        <img src="https://i.pravatar.cc/150?img=12" class="w-12 h-12 rounded-full border-2 border-white/40 ring-2 ring-white/20" alt="User">
-                        <div>
-                            <p class="font-bold">Dimas Anggara</p>
-                            <p class="text-xs text-blue-200 font-semibold">Karyawan Swasta</p>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Testimonial 3 --}}
-                <div class="bg-white p-8 rounded-3xl relative card-hover-lift border border-gray-100 shadow-sm" data-aos="fade-up" data-aos-delay="200">
-                    <div class="absolute top-6 right-6 text-blue-100">
-                        <i class="fas fa-quote-right text-4xl"></i>
-                    </div>
-                    <div class="flex items-center gap-1 mb-4">
-                        @for($i = 0; $i < 5; $i++)
-                            <i class="fas fa-star text-amber-400 text-sm"></i>
-                        @endfor
-                    </div>
-                    <p class="text-gray-600 relative z-10 italic mb-6 leading-relaxed">"Senang bisa melihat laporan update secara berkala. Jadi tau uangnya beneran dipake beli sembako."</p>
-                    <div class="flex items-center gap-4 pt-4 border-t border-gray-50">
-                        <img src="https://i.pravatar.cc/150?img=44" class="w-12 h-12 rounded-full ring-2 ring-blue-100" alt="User">
-                        <div>
-                            <p class="font-bold text-gray-900">Siti Aminah</p>
-                            <p class="text-xs text-blue-600 font-semibold">Ibu Rumah Tangga</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    @include('reviews.board', ['fullPage' => false])
 
     {{-- ===================== 9. VOLUNTEER CTA ===================== --}}
     <section class="py-24 relative overflow-hidden">
