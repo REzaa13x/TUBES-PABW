@@ -175,9 +175,8 @@
                         <p class="text-slate-500 mt-2">Bergabunglah dengan komunitas kebaikan kami.</p>
                     </div>
 
-                    <form id="registerForm" class="space-y-4">
-                        {{-- Hidden Role (Default to User) --}}
-                        <input type="hidden" name="role" value="user">
+                    <form id="registerForm" method="POST" action="{{ route('register.post', [], false) }}" class="space-y-4">
+                        @csrf
 
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase mb-2 ml-1">Nama Lengkap</label>
@@ -189,12 +188,13 @@
                                     type="text"
                                     id="name"
                                     name="name"
+                                    value="{{ old('name') }}"
                                     required
                                     class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 placeholder:text-slate-400 font-medium"
                                     placeholder="Nama Lengkap"
                                 >
                             </div>
-                            <div id="name-error" class="error-message"></div>
+                            <div id="name-error" class="error-message">@error('name'){{ $message }}@enderror</div>
                         </div>
 
                         <div>
@@ -207,12 +207,13 @@
                                     type="email"
                                     id="email"
                                     name="email"
+                                    value="{{ old('email') }}"
                                     required
                                     class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 placeholder:text-slate-400 font-medium"
                                     placeholder="nama@email.com"
                                 >
                             </div>
-                            <div id="email-error" class="error-message"></div>
+                            <div id="email-error" class="error-message">@error('email'){{ $message }}@enderror</div>
                         </div>
 
                         <div>
@@ -230,7 +231,7 @@
                                     placeholder="Min. 8 karakter"
                                 >
                             </div>
-                            <div id="password-error" class="error-message"></div>
+                            <div id="password-error" class="error-message">@error('password'){{ $message }}@enderror</div>
                         </div>
 
                         <div>
@@ -248,7 +249,7 @@
                                     placeholder="Ulangi password"
                                 >
                             </div>
-                            <div id="password_confirmation-error" class="error-message"></div>
+                            <div id="password_confirmation-error" class="error-message">@error('password_confirmation'){{ $message }}@enderror</div>
                         </div>
 
                         <button
@@ -332,72 +333,5 @@
         </div>
     </footer>
 
-    {{-- REGISTER SCRIPT --}}
-    <script>
-        // Register Form Handler
-        document.getElementById('registerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            // Clear previous errors
-            document.getElementById('name-error').textContent = '';
-            document.getElementById('email-error').textContent = '';
-            document.getElementById('password-error').textContent = '';
-            document.getElementById('password_confirmation-error').textContent = '';
-
-            const formData = new FormData(this);
-            const name = formData.get('name');
-            const email = formData.get('email');
-            const password = formData.get('password');
-            const password_confirmation = formData.get('password_confirmation');
-
-            const registerButton = document.getElementById('registerButton');
-            registerButton.disabled = true;
-            registerButton.textContent = 'Mendaftar...';
-
-            try {
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: JSON.stringify({
-                        name: name,
-                        email: email,
-                        role: formData.get('role'),
-                        password: password,
-                        password_confirmation: password_confirmation
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Save token and user data to localStorage
-                    localStorage.setItem('auth_token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-
-                    // Redirect to homepage
-                    window.location.href = '/';
-                } else {
-                    // Display errors
-                    if (data.errors) {
-                        Object.keys(data.errors).forEach(field => {
-                            document.getElementById(`${field}-error`).textContent = data.errors[field][0];
-                        });
-                    } else if (data.message) {
-                        alert(data.message);
-                    }
-                }
-            } catch (error) {
-                console.error('Registration error:', error);
-                alert('Terjadi kesalahan saat mendaftar. Silakan coba lagi.');
-            } finally {
-                registerButton.disabled = false;
-                registerButton.textContent = 'Daftar Akun';
-            }
-        });
-    </script>
 </body>
 </html>

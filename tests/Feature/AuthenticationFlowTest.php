@@ -51,6 +51,28 @@ class AuthenticationFlowTest extends TestCase
         $this->assertAuthenticated('web');
     }
 
+    public function test_registration_page_submits_to_web_registration_with_csrf(): void
+    {
+        $this->get('/register')->assertOk()
+            ->assertSee('method="POST" action="/register"', false)
+            ->assertSee('name="_token"', false)
+            ->assertDontSee("fetch('/api/register'", false)
+            ->assertDontSee('localStorage.setItem', false);
+    }
+
+    public function test_registration_errors_are_displayed_without_preserving_passwords(): void
+    {
+        $this->from('/register')->post('/register', [
+            'name' => 'Nama Baru', 'email' => 'invalid',
+            'password' => 'short', 'password_confirmation' => 'different',
+        ])->assertRedirect('/register')->assertSessionHasErrors(['email', 'password'])
+            ->assertSessionMissing('_old_input.password')
+            ->assertSessionMissing('_old_input.password_confirmation');
+        $this->get('/register')->assertOk()->assertSee('Format email tidak valid.')
+            ->assertSee('value="Nama Baru"', false);
+        $this->assertGuest('web');
+    }
+
     public function test_api_login_is_stateless_and_keeps_other_device_tokens(): void
     {
         $user = $this->account();
